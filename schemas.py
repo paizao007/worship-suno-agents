@@ -10,7 +10,10 @@ from pydantic import BaseModel, Field
 class UserBriefing(BaseModel):
     """Entrada inicial fornecida pelo usuário."""
     theme: str = Field(description="Tema central da canção (ex: Santidade de Deus, Graça e Redenção)")
-    biblical_reference: str = Field(description="Passagens bíblicas de inspiração (ex: Isaías 6, Salmo 23, Tiago 1)")
+    biblical_reference: Optional[str] = Field(
+        default="",
+        description="Passagens bíblicas de inspiração. Se vazio, o Teólogo selecionará as melhores referências canônicas automaticamente."
+    )
     musical_style_hint: str = Field(
         default="Modern Worship contemporâneo",
         description="Estilo musical sugerido (ex: Hillsong moderno, Balada acústica, Épico orquestral, Black gospel)"

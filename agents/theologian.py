@@ -30,12 +30,56 @@ class TheologianAgent(BaseAgent):
             system_prompt=THEOLOGIAN_SYSTEM_PROMPT,
         )
 
+    def suggest_scriptures(self, theme: str) -> list[str]:
+        """Busca e sugere rapidamente referências bíblicas sólidas para um tema específico."""
+        t_lower = theme.lower()
+        if any(w in t_lower for w in ["santidade", "santo", "trono", "majestade"]):
+            return [
+                "Isaías 6:1-8 (A visão do trono e dos serafins)",
+                "Apocalipse 4:8-11 (Santo, Santo, Santo é o Senhor)",
+                "1 Pedro 1:15-16 (Sede santos como Eu sou santo)",
+                "Salmo 99:5 (Exaltai ao Senhor nosso Deus)"
+            ]
+        elif any(w in t_lower for w in ["graça", "cruz", "redenção", "sangue", "salvação"]):
+            return [
+                "Efésios 2:8-10 (Pela graça sois salvos mediante a fé)",
+                "Romanos 5:1-8 (Justificados pela fé, temos paz com Deus)",
+                "Tito 2:11-14 (A graça de Deus se manifestou salvadora)",
+                "Isaías 53:4-6 (O servo sofredor e a redenção na cruz)"
+            ]
+        elif any(w in t_lower for w in ["provação", "perseverança", "dor", "luta", "força", "refúgio"]):
+            return [
+                "Tiago 1:2-4 (A fé provada gerando perseverança)",
+                "Romanos 8:31-39 (Nada nos separará do amor de Deus)",
+                "2 Coríntios 12:9 (A minha graça te basta)",
+                "Salmo 46:1-3 (Deus é o nosso refúgio e fortaleza)"
+            ]
+        elif any(w in t_lower for w in ["gratidão", "louvor", "júbilo", "celebração", "vitória"]):
+            return [
+                "Salmo 100:1-5 (Celebrai com júbilo ao Senhor)",
+                "Salmo 103:1-5 (Bendize, ó minha alma, ao Senhor)",
+                "Filipenses 4:4-7 (Alegrai-vos sempre no Senhor)",
+                "Colossenses 3:15-17 (Com salmos, hinos e cânticos espirituais)"
+            ]
+        return [
+            "Salmo 145:1-7 (Celebração da grandeza e bondade de Deus)",
+            "João 1:14-17 (O Verbo se fez carne cheio de graça e verdade)",
+            "Apocalipse 5:9-13 (Digno é o Cordeiro de receber honra e glória)"
+        ]
+
     def run(self, briefing: UserBriefing) -> TheologicalDossier:
+        biblical_info = (briefing.biblical_reference or "").strip()
+        if not biblical_info:
+            sugestoes = self.suggest_scriptures(briefing.theme)
+            biblical_info = f"NÃO ESPECIFICADA PELO USUÁRIO. O Teólogo pesquisou e selecionou as seguintes passagens fundamentais para o tema '{briefing.theme}': {', '.join(sugestoes)}"
+
         prompt = f"""Analise este pedido de canção de adoração e construa o Dossier Teológico completo:
 Tema: {briefing.theme}
-Passagem Bíblica: {briefing.biblical_reference}
+Passagens Bíblicas Base: {biblical_info}
 Estilo e Clima: {briefing.musical_style_hint} | {briefing.tempo_hint}
 Preferência Vocal: {briefing.vocal_preference}
+
+IMPORTANTE: Caso o usuário não tenha informado passagens bíblicas, utilize sua erudição para fundamentar com rigor canônico e incluir as passagens mais ricas em 'primary_scriptures'!
 """
         return self.call_llm(prompt, TheologicalDossier)
 

@@ -209,8 +209,12 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                         <input type="text" id="theme" value="A Santidade de Deus e a Visão do Trono Celestial" required>
                     </div>
                     <div class="form-group">
-                        <label>Passagens Bíblicas Base</label>
-                        <input type="text" id="biblical_ref" value="Isaías 6:1-8 e Apocalipse 4:8-11" required>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                            <label style="margin-bottom: 0;">Passagens Bíblicas Base</label>
+                            <button type="button" class="btn-action" style="min-height: 28px; padding: 3px 10px; font-size: 0.78rem; background: rgba(227, 179, 65, 0.15); border-color: var(--accent-gold); color: var(--accent-gold);" onclick="autoFillScriptures()">✨ Sugerir Passagens</button>
+                        </div>
+                        <input type="text" id="biblical_ref" value="Isaías 6:1-8 e Apocalipse 4:8-11" placeholder="Opcional: Deixe em branco para o Teólogo buscar automaticamente...">
+                        <small style="display: block; font-size: 0.75rem; color: var(--text-secondary); margin-top: 4px;">💡 <b>Opcional:</b> Deixe vazio e os agentes pesquisarão as melhores referências bíblicas para o tema!</small>
                     </div>
                     <div class="form-group">
                         <label>Estilo Musical no Suno</label>
@@ -356,6 +360,27 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             });
         }
 
+        async function autoFillScriptures() {
+            const theme = document.getElementById('theme').value.trim();
+            if (!theme) {
+                showToast("⚠️ Digite um tema primeiro!");
+                return;
+            }
+            showToast("🔍 Teólogo pesquisando referências bíblicas...");
+            try {
+                const res = await fetch(`/api/suggest-scriptures?theme=${encodeURIComponent(theme)}`);
+                const data = await res.json();
+                if (data.success && data.formatted) {
+                    document.getElementById('biblical_ref').value = data.formatted;
+                    showToast("✨ Referências preenchidas pelo Teólogo!");
+                } else {
+                    showToast("Aviso: " + (data.error || "Não foi possível sugerir"));
+                }
+            } catch (err) {
+                showToast("Erro ao contatar o Teólogo: " + err);
+            }
+        }
+
         function renderSongOnScreen(item) {
             document.getElementById('styleText').innerText = item.style_of_music;
             document.getElementById('styleCharCount').innerText = item.style_of_music.length;
@@ -473,6 +498,12 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                 if (data.success) {
                     document.getElementById('step4').className = "step-item done";
                     
+                    let finalRef = payload.biblical_reference;
+                    if (!finalRef && data.dossier && data.dossier.primary_scriptures && data.dossier.primary_scriptures.length) {
+                        finalRef = data.dossier.primary_scriptures.join(' | ');
+                        document.getElementById('biblical_ref').value = finalRef;
+                    }
+
                     const newItem = {
                         song_title: data.suno_package.song_title,
                         style_of_music: data.suno_package.style_of_music,
@@ -481,7 +512,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                         dossier: data.dossier,
                         audit: data.audit,
                         theme: payload.theme,
-                        biblical_reference: payload.biblical_reference,
+                        biblical_reference: finalRef,
                         created_at: "Agora"
                     };
                     renderSongOnScreen(newItem);
@@ -567,12 +598,33 @@ def api_status():
     })
 
 
+@app.route("/api/suggest-scriptures", methods=["GET"])
+def api_suggest_scriptures():
+    """Sugere passagens bíblicas sólidas e canônicas para o tema fornecido."""
+    theme = request.args.get("theme", "").strip()
+    if not theme:
+        return jsonify({"success": False, "error": "Por favor, forneça um tema."}), 400
+    try:
+        from agents.theologian import TheologianAgent
+        theologian = TheologianAgent()
+        scriptures = theologian.suggest_scriptures(theme)
+        return jsonify({
+            "success": True,
+            "theme": theme,
+            "scriptures": scriptures,
+            "formatted": " | ".join(scriptures)
+        })
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
 @app.route("/api/compose", methods=["POST"])
 def api_compose():
     data = request.get_json() or {}
+    briefing_ref = (data.get("biblical_reference") or "").strip()
     briefing = UserBriefing(
         theme=data.get("theme", "A Santidade de Deus no Trono"),
-        biblical_reference=data.get("biblical_reference", "Isaías 6 e Apocalipse 4"),
+        biblical_reference=briefing_ref,
         musical_style_hint=data.get("musical_style_hint", "Modern Worship"),
         tempo_hint=data.get("tempo_hint", "Lento com crescendo épico"),
         vocal_preference=data.get("vocal_preference", "Voz masculina emotiva"),
@@ -581,13 +633,21 @@ def api_compose():
     orchestrator = WorshipSunoOrchestrator()
     dossier, draft, report, package = orchestrator.execute(briefing)
 
+    # Se a referência não foi enviada pelo usuário, usa as descobertas pelo Teólogo
+    chosen_ref = briefing.biblical_reference
+    if not chosen_ref:
+        if dossier.primary_scriptures:
+            chosen_ref = " | ".join(dossier.primary_scriptures)
+        else:
+            chosen_ref = "Exegese Canônica Automática"
+
     # Registro persistente no histórico
     now_str = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
     history_entry = {
         "id": datetime.now().strftime("%Y%m%d%H%M%S"),
         "created_at": now_str,
         "theme": briefing.theme,
-        "biblical_reference": briefing.biblical_reference,
+        "biblical_reference": chosen_ref,
         "musical_style_hint": briefing.musical_style_hint,
         "song_title": package.song_title,
         "style_of_music": package.style_of_music,
