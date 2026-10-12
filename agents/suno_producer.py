@@ -354,6 +354,8 @@ class SunoProducerAgent(BaseAgent):
             pool_key = "amor_intimo"
         elif any(w in combined for w in ["amor", "agape", "cruz", "sangue", "graca", "redencao", "perdao", "arrepend", "cordeiro"]):
             pool_key = "amor_agape_cruz"
+        elif any(w in combined for w in ["saudade", "cidade", "celestial", "jerusalem", "patria", "peregrino", "morada"]):
+            pool_key = random.choice(["santidade_trono", "paz_refugio_cura", "amor_intimo"])
         elif any(w in combined for w in ["santidade", "santo", "trono", "serafins", "majestade", "gloria", "rei", "exodo", "isaias 6", "apocalipse"]):
             pool_key = "santidade_trono"
         elif any(w in combined for w in ["espirito", "fogo", "avivamento", "pentecostes", "uncao", "vento", "poder", "guerra", "batalha"]):
@@ -424,20 +426,7 @@ class SunoProducerAgent(BaseAgent):
                 briefing.tempo_hint
             )
 
-        prompt = f"""Gere o pacote definitivo para o Suno AI no modelo SunoSongPackage:
-Título da Música: {draft.title}
-Estilo Completo (com Voz e BPM): {briefing.musical_style_hint}
-Preferência Vocal: {briefing.vocal_preference}
-Andamento / BPM: {briefing.tempo_hint}
-Síntese Teológica: {dossier.exegetical_summary}
-
-Estrutura da Letra Original:
-"""
-        for sec in draft.sections:
-            prompt += f"\n[{sec.tag}]\n" + "\n".join(sec.lines) + "\n"
-
-        pkg = self.call_llm(prompt, SunoSongPackage)
-        # Garante que mesmo se vier de LLM externo, o style_of_music tenha BPM e Voz integrados
+        pkg = self._generate_contextual_demonstration("", SunoSongPackage)
         pkg.style_of_music = build_complete_suno_style(
             pkg.style_of_music or briefing.musical_style_hint,
             briefing.vocal_preference,

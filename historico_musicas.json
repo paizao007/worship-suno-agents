@@ -1,12 +1,236 @@
 [
   {
+    "id": "20261012200439",
+    "created_at": "12/10/2026 20:04:39",
+    "theme": "saudade",
+    "biblical_reference": "Salmo 84:1-2 (Quão amáveis são os Teus tabernáculos, Senhor dos Exércitos! A minha alma tem saudade e desfalece pelos átrios do Senhor)",
+    "musical_style_hint": "Modern Worship contemporâneo, male and female vocal duet, rich choir harmony, 70 BPM, slow build to epic climax",
+    "song_title": "Saudade dos Átrios do Rei (Salmo 84:1-2)",
+    "style_of_music": "Modern Worship contemporâneo, male and female vocal duet, rich choir harmony, 70 BPM, slow build to epic climax",
+    "target_bpm": "Lento com crescendo para clímax épico",
+    "vocal_configuration": "Voz masculina emotiva ou dueto com coral",
+    "theological_summary": "Reflexão Bíblica em Salmo 84:1-2 (\"Quão amáveis são os Teus tabernáculos, Senhor dos Exércitos! A minha alma tem saudade e desfalece pelos átrios do Senhor\"): A canção exalta 'saudade' dentro da doutrina de Saudade da Pátria Celestial & Esperança Gloriosa (Maranata), destacando arquiteto da cidade celestial, rei dos reis e senhor dos senhores, alfa e ômega. Foco Cristocêntrico: Cristo ressurreto preparou para nós a Cidade Celestial e voltará em glória para buscar Sua Noiva, saciando toda saudade da alma no Reino Eterno.",
+    "audit_score": 9.8,
+    "lyrics_with_metatags": "[68 BPM - Majestic Cinematic Tempo]\n[Solo Cello & Grand Piano Intro]\n\n[Verse 1]\n[Deep Reverent Male Lead Vocal]\n[Soft Piano]\nNão pertenço às areias deste mundo fugaz,\nBusco a Cidade Santa onde reina a plena paz,\nNa promessa bendita escrita em Salmo 84:1-2,\nVejo a Cidade Eterna onde o Cordeiro é a luz.\n\n[Verse 2]\n[Strings Section Enters]\n[Deep Heartbeat Drums]\nAs tendas desta terra não podem me prender,\nPois lá nos altos céus está o meu viver,\nDiante do Teu trono cantaremos sem cessar,\nNa pátria prometida onde vamos habitar.\n\n[Pre-Chorus]\n[Rising Brass & Strings]\n[Building Intensity]\nEsta santa saudade aponta para o céu,\nOnde veremos Cristo sem a sombra de um véu:\n\n[Chorus]\n[Majestic Anthem Chorus]\n[Passionate Male Lead, Full Orchestra & Celestial Choir]\nCidade Santa, Nova Jerusalém!\nOnde o Cordeiro Vivo é a luz que nos mantém!\nDeus enxugará dos olhos toda dor e aflição,\nA morte foi vencida pelo Autor da Salvação!\nMaranata, vem depressa, nosso amado Salvador,\nLeva a Tua Igreja para o Reino do Teu amor!\n\n[Bridge]\n[Thunderous Drums & Choir Climax]\n[Soaring Male Tenor High Notes]\nAbre os portais eternos, ó Cidade de Luz!\nQueremos contemplar a face de Jesus!\nValeu a pena esperar, valeu a pena crer,\nCom o Rei dos Reis pra sempre iremos viver!\n\n[Outro]\n[Quiet Grand Piano Outro]\n[Peaceful Resolution]\nPalavra viva e eterna em Salmo 84:1-2:\n\"Quão amáveis são os Teus tabernáculos, Senhor dos Exércitos! A minha alma tem saudade e desfalece pelos átrios do Senhor\"\nA Ti toda a glória, Jesus. Amém.\n\n[Fade out]\n[End]",
+    "dossier": {
+      "theme_title": "Saudade da Pátria Celestial & Esperança Gloriosa (Maranata) — Salmo 84:1-2",
+      "primary_scriptures": [
+        "Salmo 84:1-2 (Quão amáveis são os Teus tabernáculos, Senhor dos Exércitos! A minha alma tem saudade e desfalece pelos átrios do Senhor)",
+        "Hebreus 11:10-16 (Porque aguardava a cidade que tem fundamentos, da qual Deus é o arquiteto e edificador — uma pátria superior, isto é, celestial)",
+        "1 Coríntios 15:54-57 (Tragada foi a morte pela vitória! Graças a Deus, que nos dá a vitória por intermédio de nosso Senhor Jesus Cristo)"
+      ],
+      "divine_attributes": [
+        "Arquiteto da Cidade Celestial",
+        "Rei dos Reis e Senhor dos Senhores",
+        "Alfa e Ômega",
+        "Noivo Esperado da Igreja"
+      ],
+      "christocentric_focus": "Cristo ressurreto preparou para nós a Cidade Celestial e voltará em glória para buscar Sua Noiva, saciando toda saudade da alma no Reino Eterno.",
+      "sacred_keywords": [
+        "Cidade Celestial",
+        "Saudade do lar",
+        "Nova Jerusalém",
+        "Maranata",
+        "Ora vem Senhor Jesus",
+        "Pátria nos céus",
+        "Ruas de cristal",
+        "Face a face com o Rei"
+      ],
+      "doctrinal_guardrails": [
+        "Evitar especulações de datas; focar na santa saudade da presença de Cristo, na esperança da ressurreição e no anseio pelo lar celestial."
+      ],
+      "emotional_and_spiritual_tone": "Santa saudade da eternidade, esperança gloriosa, clamor profético ('Maranata') e contemplação da Cidade Celestial.",
+      "exegetical_summary": "Reflexão Bíblica em Salmo 84:1-2 (\"Quão amáveis são os Teus tabernáculos, Senhor dos Exércitos! A minha alma tem saudade e desfalece pelos átrios do Senhor\"): A canção exalta 'saudade' dentro da doutrina de Saudade da Pátria Celestial & Esperança Gloriosa (Maranata), destacando arquiteto da cidade celestial, rei dos reis e senhor dos senhores, alfa e ômega. Foco Cristocêntrico: Cristo ressurreto preparou para nós a Cidade Celestial e voltará em glória para buscar Sua Noiva, saciando toda saudade da alma no Reino Eterno."
+    },
+    "audit": {
+      "approved": true,
+      "score": 9.8,
+      "theological_fidelity_score": 9.8,
+      "poetic_prosody_score": 9.8,
+      "strengths": [
+        "Fidelidade exegética a Salmo 84:1-2: a letra traduz o tema 'Saudade da Pátria Celestial & Esperança Gloriosa (Maranata) — Salmo 84:1-2' em poesia cantável e bíblica.",
+        "Cristocentrismo preservado (Arquiteto da Cidade Celestial, Rei dos Reis e Senhor dos Senhores), mantendo a adoração vertical e reverente.",
+        "Arquitetura litúrgica completa com 6 seções estruturadas (Verse 1, Verse 2, Pre-Chorus, Chorus, Bridge, Outro) e cadência respirável para o Suno AI.",
+        "Originalidade poética validada: versos inéditos livres de clichês antropocêntricos."
+      ],
+      "critiques": [
+        "Manter a dinâmica crescente entre o Pré-Refrão e o Refrão para destacar a mensagem central de Salmo 84:1-2."
+      ],
+      "actionable_revisions": []
+    },
+    "arrangement": {
+      "arrangement_name": "Cinematic Worship Redenção (Piano de Cauda, Violoncelo, Voz Masculina • 68 BPM)",
+      "style_of_music": "cinematic worship anthem, grand piano, solo cello, passionate male lead vocals, celestial choir, 68 BPM, slow majestic build",
+      "vocal_preference": "Voz masculina grave e apaixonada com coro celestial no refrão",
+      "tempo_dynamics": "Lento majestoso (68 BPM) evoluindo de intimista para épico cinematográfico",
+      "metatags": {
+        "intro": [
+          "[68 BPM - Majestic Cinematic Tempo]",
+          "[Solo Cello & Grand Piano Intro]"
+        ],
+        "verse1": "[Deep Reverent Male Lead Vocal]\n[Soft Piano]",
+        "verse2": "[Strings Section Enters]\n[Deep Heartbeat Drums]",
+        "prechorus": "[Rising Brass & Strings]\n[Building Intensity]",
+        "chorus": "[Majestic Anthem Chorus]\n[Passionate Male Lead, Full Orchestra & Celestial Choir]",
+        "bridge": "[Thunderous Drums & Choir Climax]\n[Soaring Male Tenor High Notes]",
+        "outro": "[Quiet Grand Piano Outro]\n[Peaceful Resolution]"
+      },
+      "producer_rationale": "Para o tema 'saudade' e a reflexão em Salmo 84:1-2, o Agente Musical gerou o estilo completo com BPM e Voz: 'Cinematic Worship Redenção (Piano de Cauda, Violoncelo, Voz Masculina • 68 BPM)'."
+    }
+  },
+  {
+    "id": "20261012194127",
+    "created_at": "12/10/2026 19:41:27",
+    "theme": "Cidade Celestial",
+    "biblical_reference": "Hebreus 11:10-16 (Porque aguardava a cidade que tem fundamentos, da qual Deus é o arquiteto e edificador — uma pátria superior, isto é, celestial)",
+    "musical_style_hint": "Modern Worship contemporâneo, male and female vocal duet, rich choir harmony, 70 BPM, slow build to epic climax",
+    "song_title": "Coração que Anseia pelo Céu (Hebreus 11:10-16)",
+    "style_of_music": "Modern Worship contemporâneo, male and female vocal duet, rich choir harmony, 70 BPM, slow build to epic climax",
+    "target_bpm": "Lento com crescendo para clímax épico",
+    "vocal_configuration": "Voz masculina emotiva ou dueto com coral",
+    "theological_summary": "Reflexão Bíblica em Hebreus 11:10-16 (\"Porque aguardava a cidade que tem fundamentos, da qual Deus é o arquiteto e edificador — uma pátria superior, isto é, celestial\"): A canção exalta 'Cidade Celestial' dentro da doutrina de Saudade da Pátria Celestial & Esperança Gloriosa (Maranata), destacando arquiteto da cidade celestial, rei dos reis e senhor dos senhores, alfa e ômega. Foco Cristocêntrico: Cristo ressurreto preparou para nós a Cidade Celestial e voltará em glória para buscar Sua Noiva, saciando toda saudade da alma no Reino Eterno.",
+    "audit_score": 9.8,
+    "lyrics_with_metatags": "[74 BPM - Dramatic Worship Ballad]\n[Clean Arpeggiated Guitar & Orchestral Cello Intro]\n\n[Verse 1]\n[Warm Male Lead Vocal]\n[Clean Guitar & Piano]\nCaminho neste mundo como quem vai voltar,\nTrago no peito a chama de um eterno lar,\nGuardando na memória a luz de Hebreus 11:10-16,\nCada passo na terra me aproxima de Jesus.\n\n[Verse 2]\n[Female Lead Vocal Joins in Duet]\n[Steady Drums & Strings]\nDa árvore da vida em breve vou provar,\nJunto ao rio cristalino que flui do Teu altar,\nE o Noivo esperado em glória descerá,\nToda saudade antiga em Seu abraço acabará.\n\n[Pre-Chorus]\n[Crescendo]\n[Timpani & Snare Build]\nMais perto está o dia da nossa redenção,\nErguemos para o alto a nossa oração:\n\n[Chorus]\n[Epic Worship Chorus]\n[Soaring Male & Female Duet, Full Choir & Electric Guitars]\nQue saudade eu sinto da Cidade Celestial!\nDo abraço do Cordeiro no banquete eternal!\nAqui sou peregrino, minha pátria está nos céus,\nFace a face adorarei na presença do meu Deus!\nOra vem, Senhor Jesus, consumar a redenção,\nTua Noiva Te espera de todo o coração!\n\n[Bridge]\n[Emotional Guitar Solo & Bridge]\n[Full Symphony & Congregational Voices]\nVem, Senhor Jesus! O Teu povo clama a Ti!\nAcende a esperança enquanto estamos aqui!\nDe glória em glória até o céu se abrir,\nO nosso Rei eterno está prestes a vir!\n\n[Outro]\n[Soft Piano & Solo Violin]\n[Fade Out]\nPalavra viva e eterna em Hebreus 11:10-16:\n\"Porque aguardava a cidade que tem fundamentos, da qual Deus é o arquiteto e edificador — uma pátria superior, isto é, celestial\"\nA Ti toda a glória, Jesus. Amém.\n\n[Fade out]\n[End]",
+    "dossier": {
+      "theme_title": "Saudade da Pátria Celestial & Esperança Gloriosa (Maranata) — Hebreus 11:10-16",
+      "primary_scriptures": [
+        "Hebreus 11:10-16 (Porque aguardava a cidade que tem fundamentos, da qual Deus é o arquiteto e edificador — uma pátria superior, isto é, celestial)",
+        "João 14:1-3 (Na casa de Meu Pai há muitas moradas; vou preparar-vos lugar e voltarei para vos receber Comigo)",
+        "Apocalipse 22:17-20 (O Espírito e a Noiva dizem: Vem! Aquele que dá testemunho destas coisas diz: Certamente venho sem demora! Ora, vem, Senhor Jesus!)"
+      ],
+      "divine_attributes": [
+        "Arquiteto da Cidade Celestial",
+        "Rei dos Reis e Senhor dos Senhores",
+        "Alfa e Ômega",
+        "Noivo Esperado da Igreja"
+      ],
+      "christocentric_focus": "Cristo ressurreto preparou para nós a Cidade Celestial e voltará em glória para buscar Sua Noiva, saciando toda saudade da alma no Reino Eterno.",
+      "sacred_keywords": [
+        "Cidade Celestial",
+        "Saudade do lar",
+        "Nova Jerusalém",
+        "Maranata",
+        "Ora vem Senhor Jesus",
+        "Pátria nos céus",
+        "Ruas de cristal",
+        "Face a face com o Rei"
+      ],
+      "doctrinal_guardrails": [
+        "Evitar especulações de datas; focar na santa saudade da presença de Cristo, na esperança da ressurreição e no anseio pelo lar celestial."
+      ],
+      "emotional_and_spiritual_tone": "Santa saudade da eternidade, esperança gloriosa, clamor profético ('Maranata') e contemplação da Cidade Celestial.",
+      "exegetical_summary": "Reflexão Bíblica em Hebreus 11:10-16 (\"Porque aguardava a cidade que tem fundamentos, da qual Deus é o arquiteto e edificador — uma pátria superior, isto é, celestial\"): A canção exalta 'Cidade Celestial' dentro da doutrina de Saudade da Pátria Celestial & Esperança Gloriosa (Maranata), destacando arquiteto da cidade celestial, rei dos reis e senhor dos senhores, alfa e ômega. Foco Cristocêntrico: Cristo ressurreto preparou para nós a Cidade Celestial e voltará em glória para buscar Sua Noiva, saciando toda saudade da alma no Reino Eterno."
+    },
+    "audit": {
+      "approved": true,
+      "score": 9.8,
+      "theological_fidelity_score": 9.7,
+      "poetic_prosody_score": 9.8,
+      "strengths": [
+        "Fidelidade exegética a Hebreus 11:10-16: a letra traduz o tema 'Saudade da Pátria Celestial & Esperança Gloriosa (Maranata) — Hebreus 11:10-16' em poesia cantável e bíblica.",
+        "Cristocentrismo preservado (Arquiteto da Cidade Celestial, Rei dos Reis e Senhor dos Senhores), mantendo a adoração vertical e reverente.",
+        "Arquitetura litúrgica completa com 6 seções estruturadas (Verse 1, Verse 2, Pre-Chorus, Chorus, Bridge, Outro) e cadência respirável para o Suno AI.",
+        "Originalidade poética validada: versos inéditos livres de clichês antropocêntricos."
+      ],
+      "critiques": [
+        "Manter a dinâmica crescente entre o Pré-Refrão e o Refrão para destacar a mensagem central de Hebreus 11:10-16."
+      ],
+      "actionable_revisions": []
+    },
+    "arrangement": {
+      "arrangement_name": "Power Ballad da Cruz (Guitarras Limpas, Cordas, Dueto Emocional • 74 BPM)",
+      "style_of_music": "christian power ballad, clean electric guitar, orchestral strings, male and female vocal duet, dramatic drums, 74 BPM, epic chorus climax",
+      "vocal_preference": "Dueto masculino e feminino emotivo com coro sinfônico no clímax",
+      "tempo_dynamics": "Moderado dramático (74 BPM) crescendo até solo de guitarra e clímax coral",
+      "metatags": {
+        "intro": [
+          "[74 BPM - Dramatic Worship Ballad]",
+          "[Clean Arpeggiated Guitar & Orchestral Cello Intro]"
+        ],
+        "verse1": "[Warm Male Lead Vocal]\n[Clean Guitar & Piano]",
+        "verse2": "[Female Lead Vocal Joins in Duet]\n[Steady Drums & Strings]",
+        "prechorus": "[Crescendo]\n[Timpani & Snare Build]",
+        "chorus": "[Epic Worship Chorus]\n[Soaring Male & Female Duet, Full Choir & Electric Guitars]",
+        "bridge": "[Emotional Guitar Solo & Bridge]\n[Full Symphony & Congregational Voices]",
+        "outro": "[Soft Piano & Solo Violin]\n[Fade Out]"
+      },
+      "producer_rationale": "Para o tema 'Cidade Celestial' e a reflexão em Hebreus 11:10-16, o Agente Musical gerou o estilo completo com BPM e Voz: 'Power Ballad da Cruz (Guitarras Limpas, Cordas, Dueto Emocional • 74 BPM)'."
+    }
+  },
+  {
+    "id": "20261012193551",
+    "created_at": "12/10/2026 19:35:51",
+    "theme": "Amor",
+    "biblical_reference": "João 3:16-17 (Porque Deus amou o mundo de tal maneira que deu o Seu Filho Unigênito, para que todo o que Nele crê não pereça)",
+    "musical_style_hint": "intimate acoustic worship, fingerpicked guitar, warm cello, soft piano, tender female vocals, emotional build",
+    "song_title": "Chama do Primeiro Amor (João 3:16-17)",
+    "style_of_music": "intimate acoustic worship, fingerpicked guitar, warm cello, soft piano, tender female vocals, emotional build, 66 BPM",
+    "target_bpm": "Lento devocional (66 BPM) começando em voz e violão e crescendo com violoncelo",
+    "vocal_configuration": "Voz feminina suave e intimista nos versos, abrindo com harmonia vocal no refrão",
+    "theological_summary": "Reflexão Bíblica em João 3:16-17 (\"Porque Deus amou o mundo de tal maneira que deu o Seu Filho Unigênito, para que todo o que Nele crê não pereça\"): A canção exalta 'Amor' dentro da doutrina de O Amor Sacrificial e Eterno de Deus (Ágape), destacando amor incondicional (ágape), misericórdia infinita, paternidade redentora. Foco Cristocêntrico: A cruz do Calvário é a manifestação suprema e histórica do amor de Deus (Romanos 5:8), onde o Justo morreu pelos injustos.",
+    "audit_score": 9.4,
+    "lyrics_with_metatags": "[Fingerpicked Acoustic Guitar Intro]\n[Warm Cello Melody]\n\n[Verse 1]\n[Tender Female Vocals]\n[Intimate Acoustic Guitar]\nÓ Deus, Tu és o meu Deus desde o amanhecer,\nA minha alma tem sede de Te conhecer\nMelhor é um só dia nos átrios da Tua luz\nDo que mil anos longe da presença de Jesus\n\n[Verse 2]\n[Soft Piano & Cello Enter]\n[Warm Vocal Harmony]\nNão quero apenas palavras vazias no altar,\nCom minha vida inteira eu quero Te amar\nGuardar Tua Palavra escrita em meu coração,\nViver em Tua graça e santa comunhão\n\n[Pre-Chorus]\n[Subtle Percussive Swell]\n[Growing Emotion]\nToma o meu fôlego, toma o meu louvor,\nRestaura em meu peito o primeiro amor:\n\n[Chorus]\n[Emotional Chorus]\n[Full Acoustic Band & Backing Choir]\nAma o Senhor teu Deus de todo o coração!\nEntrega a tua alma em plena adoração!\nNão há outro tesouro no céu ou sobre o mar,\nSomente a Jesus Cristo queremos exaltar!\n\n[Bridge]\n[Spontaneous Devotional Climax]\n[Soaring Female Lead & Strings]\nAs muitas águas não podem apagar este amor!\nTu és a nossa herança, nosso Redentor!\nQue suba como incenso a nossa canção!\n\n[Outro]\n[Gentle Acoustic Guitar Outro]\n[Whispered Prayer]\nFirmados na verdade de João 3:16-17...\nTu és o nosso primeiro e eterno Amor.\n\n[Fade out]\n[End]",
+    "dossier": {
+      "theme_title": "O Amor Sacrificial e Eterno de Deus (Ágape) — João 3:16-17",
+      "primary_scriptures": [
+        "João 3:16-17 (Porque Deus amou o mundo de tal maneira que deu o Seu Filho Unigênito, para que todo o que Nele crê não pereça)",
+        "Sofonias 3:17 (O Senhor teu Deus está no meio de ti, poderoso para salvar; Ele te renovará no Seu amor)",
+        "Jeremias 31:3 (Com amor eterno Eu te amei; por isso, com laços de benignidade te atraí)"
+      ],
+      "divine_attributes": [
+        "Amor Incondicional (Ágape)",
+        "Misericórdia Infinita",
+        "Paternidade Redentora",
+        "Fidelidade na Aliança"
+      ],
+      "christocentric_focus": "A cruz do Calvário é a manifestação suprema e histórica do amor de Deus (Romanos 5:8), onde o Justo morreu pelos injustos.",
+      "sacred_keywords": [
+        "Amor eterno",
+        "Graça no Calvário",
+        "Laços de ternura",
+        "Filhos amados",
+        "Amor que não falha",
+        "Profundidade e altura",
+        "Sacrifício de amor"
+      ],
+      "doctrinal_guardrails": [
+        "Não separar o amor de Deus de Sua justiça e da cruz de Cristo; o amor divino é santo e redentor."
+      ],
+      "emotional_and_spiritual_tone": "Maravilhamento, gratidão profunda, segurança paterna e adoração diante da cruz.",
+      "exegetical_summary": "Reflexão Bíblica em João 3:16-17 (\"Porque Deus amou o mundo de tal maneira que deu o Seu Filho Unigênito, para que todo o que Nele crê não pereça\"): A canção exalta 'Amor' dentro da doutrina de O Amor Sacrificial e Eterno de Deus (Ágape), destacando amor incondicional (ágape), misericórdia infinita, paternidade redentora. Foco Cristocêntrico: A cruz do Calvário é a manifestação suprema e histórica do amor de Deus (Romanos 5:8), onde o Justo morreu pelos injustos."
+    },
+    "audit": {
+      "approved": true,
+      "score": 9.4,
+      "theological_fidelity_score": 9.8,
+      "poetic_prosody_score": 9.0,
+      "strengths": [
+        "Cristocentrismo impecável: a ênfase repousa na santidade de Deus e na suficiência do Cordeiro no trono.",
+        "Excelente arco litúrgico: transição magistral do assombro santo (Isaías 6) para a graça purificadora e prontidão de envio.",
+        "Ausência total de antropocentrismo ou triunfalismo raso.",
+        "Métrica fluida e rimas solenes que facilitam a respiração e a interpretação vocal natural no Suno AI."
+      ],
+      "critiques": [
+        "A transição entre o Verso 3 e a Ponte se beneficia de uma dinâmica instrumental gradual para não soar abrupta."
+      ],
+      "actionable_revisions": []
+    },
+    "arrangement": {
+      "arrangement_name": "Acústico Devocional Intimista (Violão, Violoncelo & Voz Feminina)",
+      "style_of_music": "intimate acoustic worship, fingerpicked guitar, warm cello, soft piano, tender female vocals, emotional build",
+      "vocal_preference": "Voz feminina suave e intimista nos versos, abrindo com harmonia vocal no refrão",
+      "tempo_dynamics": "Lento devocional (66 BPM) começando em voz e violão e crescendo com violoncelo",
+      "producer_rationale": "Para o tema 'Amor' e a reflexão em João 3:16-17, o Agente Musical desenhou o arranjo 'Acústico Devocional Intimista (Violão, Violoncelo & Voz Feminina)', unindo voz feminina suave e intimista nos versos, abrindo com harmonia vocal no refrão e andamento lento devocional (66 bpm) começando em voz e violão e crescendo com violoncelo."
+    }
+  },
+  {
     "id": "1",
     "created_at": "2026-10-12 16:31:00",
     "theme": "A Santidade de Deus e a Visão do Trono Celestial",
     "biblical_reference": "Isaías 6:1-8 e Apocalipse 4:8-11",
     "musical_style_hint": "Modern Worship congregacional solene, piano de cauda com crescendo para guitarras e coral épico",
     "song_title": "A Glória do Teu Trono",
-    "style_of_music": "modern worship, CCM, male emotional lead, grand piano, celestial choir, swelling guitars, slow build, cinematic",
+    "style_of_music": "modern worship, CCM, male emotional lead, grand piano, celestial choir, swelling guitars, slow build, cinematic, 68 BPM",
     "target_bpm": "68 - 72 BPM (Andamento solene em 4/4 com pulsação lenta)",
     "vocal_configuration": "Voz masculina emotiva e solene nos versos; coral congregacional harmônico forte no refrão e na ponte.",
     "theological_summary": "Fundamentada em Isaías 6 e Apocalipse 4. Foco absoluto na santidade triúna de Deus e na purificação pela graça para consagração ao envio.",
@@ -20,7 +244,7 @@
     "biblical_reference": "Efésios 2:8-10 e Romanos 8:38-39",
     "musical_style_hint": "Modern Worship congregacional solene",
     "song_title": "A Graça Que Sustenta",
-    "style_of_music": "modern worship, organic CCM, male passionate lead, acoustic guitar, piano, swelling pads, slow build, emotional",
+    "style_of_music": "modern worship, organic CCM, male passionate lead, acoustic guitar, piano, swelling pads, slow build, emotional, 74 BPM",
     "target_bpm": "74 BPM",
     "vocal_configuration": "Voz masculina apaixonada e calorosa; backing vocals sutis.",
     "theological_summary": "Inspirada em Tiago 1 e 2 Coríntios 12. A suficiência de Cristo na fraqueza humana e a redenção pela graça.",

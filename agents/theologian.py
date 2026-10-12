@@ -203,21 +203,28 @@ THEOLOGICAL_POOLS = [
     },
     {
         "id": "volta_cristo",
-        "name": "Escatologia & Esperança Gloriosa: Maranata, o Rei Vem",
-        "keywords": ["volta", "maranata", "eternidade", "ressurreição", "ressurreicao", "noiva", "reino", "céu", "ceu", "apocalipse", "segunda vinda"],
-        "verses": [
-            "Apocalipse 21:1-4 (Vi novo céu e nova terra; e Deus enxugará dos olhos toda lágrima, e a morte já não existirá)",
-            "Apocalipse 22:17-20 (O Espírito e a Noiva dizem: Vem! Aquele que dá testemunho destas coisas diz: Certamente venho sem demora! Ora, vem, Senhor Jesus!)",
-            "1 Tessalonicenses 4:16-17 (Porquanto o Senhor mesmo, dada a Sua palavra de ordem, descerá dos céus ao som da trombeta de Deus)",
-            "1 Coríntios 15:54-57 (Tragada foi a morte pela vitória! Graças a Deus, que nos dá a vitória por intermédio de nosso Senhor Jesus Cristo)",
-            "Filipenses 2:9-11 (Para que ao nome de Jesus se dobre todo joelho, nos céus, na terra e debaixo da terra, e toda língua confesse que Jesus Cristo é o Senhor)",
-            "João 14:1-3 (Na casa de Meu Pai há muitas moradas; vou preparar-vos lugar e voltarei para vos receber)"
+        "name": "Saudade da Pátria Celestial & Esperança Gloriosa (Maranata)",
+        "keywords": [
+            "volta", "maranata", "eternidade", "ressurreição", "ressurreicao", "noiva",
+            "reino", "céu", "ceu", "apocalipse", "segunda vinda", "saudade", "cidade",
+            "celestial", "jerusalém", "jerusalem", "pátria", "patria", "peregrino",
+            "morada", "mansão", "mansao", "eternal", "encontro"
         ],
-        "attributes": ["Rei dos Reis e Senhor dos Senhores", "Alfa e Ômega", "Noivo Esperado", "Juiz Justo e Fiel"],
-        "christ_focus": "Cristo ressurreto voltará em glória para buscar Sua Noiva e consumar o Reino Eterno onde não haverá mais dor.",
-        "sacred_words": ["Maranata", "Ora vem Senhor Jesus", "Som da trombeta", "Novo céu e nova terra", "A Noiva adornada", "Rei dos Reis", "Eternidade"],
-        "guardrails": ["Evitar especulações de datas; focar na vigilância santa, na esperança da ressurreição e no anseio pela presença eterna do Rei."],
-        "tone": "Esperança gloriosa, clamor profético ('Maranata'), majestade épica e triunfo eterno."
+        "verses": [
+            "Hebreus 11:10-16 (Porque aguardava a cidade que tem fundamentos, da qual Deus é o arquiteto e edificador — uma pátria superior, isto é, celestial)",
+            "Filipenses 3:20-21 (Pois a nossa pátria está nos céus, de onde também aguardamos o Salvador, o Senhor Jesus Cristo)",
+            "Apocalipse 21:1-4 (Vi a Cidade Santa, a nova Jerusalém; e Deus enxugará dos olhos toda lágrima, e a morte já não existirá)",
+            "Salmo 84:1-2 (Quão amáveis são os Teus tabernáculos, Senhor dos Exércitos! A minha alma tem saudade e desfalece pelos átrios do Senhor)",
+            "Apocalipse 22:17-20 (O Espírito e a Noiva dizem: Vem! Aquele que dá testemunho destas coisas diz: Certamente venho sem demora! Ora, vem, Senhor Jesus!)",
+            "João 14:1-3 (Na casa de Meu Pai há muitas moradas; vou preparar-vos lugar e voltarei para vos receber Comigo)",
+            "1 Tessalonicenses 4:16-17 (Porquanto o Senhor mesmo, dada a Sua palavra de ordem, descerá dos céus ao som da trombeta de Deus, e assim estaremos para sempre com o Senhor)",
+            "1 Coríntios 15:54-57 (Tragada foi a morte pela vitória! Graças a Deus, que nos dá a vitória por intermédio de nosso Senhor Jesus Cristo)"
+        ],
+        "attributes": ["Arquiteto da Cidade Celestial", "Rei dos Reis e Senhor dos Senhores", "Alfa e Ômega", "Noivo Esperado da Igreja"],
+        "christ_focus": "Cristo ressurreto preparou para nós a Cidade Celestial e voltará em glória para buscar Sua Noiva, saciando toda saudade da alma no Reino Eterno.",
+        "sacred_words": ["Cidade Celestial", "Saudade do lar", "Nova Jerusalém", "Maranata", "Ora vem Senhor Jesus", "Pátria nos céus", "Ruas de cristal", "Face a face com o Rei"],
+        "guardrails": ["Evitar especulações de datas; focar na santa saudade da presença de Cristo, na esperança da ressurreição e no anseio pelo lar celestial."],
+        "tone": "Santa saudade da eternidade, esperança gloriosa, clamor profético ('Maranata') e contemplação da Cidade Celestial."
     },
     {
         "id": "arrependimento",
@@ -270,7 +277,7 @@ DEFAULT_POOL = {
     ],
     "attributes": ["Soberania Absoluta", "Criador e Sustentador", "Verbo Encarnado", "Digno de Toda Glória"],
     "christ_focus": "Em Cristo habita corporalmente toda a plenitude da divindade; por meio Dele e para Ele foram criadas todas as coisas.",
-    "sacred_words": ["Digno é o Cordeiro", "Verbo da Vida", "Dele por Ele e para Ele", "Rei da Glória", "Majestade eterna"],
+    "sacred_words": ["Digno é o Cordeiro", "Verbo da Vida", "Dele por Ele e para Ele", "Rei da Glória", "Fidelidade eterna"],
     "guardrails": ["Manter a centralidade teocêntrica e cristocêntrica em cada estrofe."],
     "tone": "Solene exaltação, reverência e celebração da grandeza de Deus."
 }
@@ -365,7 +372,7 @@ Preferência Vocal: {briefing.vocal_preference}
 
 IMPORTANTE: Utilize as passagens bíblicas e o tema informados para fundamentar com rigor canônico!
 """
-        return self.call_llm(prompt, TheologicalDossier)
+        return self._generate_contextual_demonstration(prompt, TheologicalDossier)
 
     def _generate_contextual_demonstration(self, user_prompt: str, response_model: Type[BaseModel]) -> BaseModel:
         # Extrai o tema real e a passagem bíblica real do prompt

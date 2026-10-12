@@ -1,13 +1,17 @@
 """
 Classe base para todos os agentes do sistema.
-Implementa o motor de inteligência artificial híbrido (Google Gemini Cloud API + Ollama Local)
-com fallback automático, inspirado na arquitetura de ER0_DeV.
+Implementa o motor de inteligência artificial multi-provedor com cache de disponibilidade:
+1. Google Gemini Cloud API (gemini-flash-latest / gemini-3.6-flash / gemini-3.8-flash)
+2. Cloud Generative AI (OpenAI-compatible endpoint com timeout rápido e cooldown automático)
+3. Ollama Local / WSL
+4. Motor Poético Combinatório Sacro Inédito (Zero repetição garantida)
 """
 
 import json
 import re
+import time
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Optional, Type
+from typing import Any, Optional, Type
 import requests
 from pydantic import BaseModel
 import config
@@ -15,8 +19,9 @@ import config
 
 def extract_json_from_text(text: str) -> Optional[dict]:
     """Extrai objeto JSON válido de uma string, tratando blocos de código ```json."""
+    if not text:
+        return None
     text = text.strip()
-    # Remove blocos markdown ```json ... ``` se existirem
     if "```" in text:
         match = re.search(r"```(?:json)?\s*([\s\S]*?)\s*```", text)
         if match:
@@ -24,7 +29,6 @@ def extract_json_from_text(text: str) -> Optional[dict]:
     try:
         return json.loads(text)
     except Exception:
-        # Tenta encontrar primeiro { e último }
         start = text.find("{")
         end = text.rfind("}")
         if start != -1 and end != -1 and end > start:
@@ -36,6 +40,10 @@ def extract_json_from_text(text: str) -> Optional[dict]:
 
 
 class BaseAgent(ABC):
+    _gemini_cooldown_until: float = 0.0
+    _cloud_cooldown_until: float = 0.0
+    _ollama_cooldown_until: float = 0.0
+
     def __init__(self, name: str, role: str, system_prompt: str):
         self.name = name
         self.role = role
@@ -46,28 +54,40 @@ class BaseAgent(ABC):
         """Executa a tarefa do agente sobre os dados de entrada e retorna o modelo Pydantic esperado."""
         pass
 
-    def call_llm(self, user_prompt: str, response_model: Type[BaseModel]) -> BaseModel:
+    def call_llm(
+        self,
+        user_prompt: str,
+        response_model: Type[BaseModel],
+        custom_json_example: Optional[str] = None,
+        temperature: float = 0.88,
+    ) -> BaseModel:
         """
-        Executa a inferência de LLM com cascata de confiabilidade:
-        1. Google Gemini Cloud API (com lista de modelos em fallback).
-        2. Ollama Local / WSL (deepseek-r1 / qwen2.5-coder).
-        3. Fallback de Demonstração Contextual.
+        Executa a inferência de IA Generativa com cascata inteligente e zero travamento:
+        1. Google Gemini Cloud API (quando dentro da cota diária).
+        2. Cloud Generative AI (com cooldown automático se houver lentidão externa).
+        3. Ollama Local / WSL.
+        4. Motor Poético Combinatório Sacro Inédito (verifica o histórico para jamais repetir).
         """
-        schema_json = json.dumps(response_model.model_json_schema(), ensure_ascii=False, indent=2)
-        instrucao_formato = (
-            f"\n\nIMPORTANTE: Você deve responder EXCLUSIVAMENTE em formato JSON compatível com este schema:\n"
-            f"{schema_json}\n"
-            "Não adicione comentários, explicações ou texto fora do JSON."
-        )
+        if custom_json_example:
+            instrucao_formato = (
+                f"\n\nIMPORTANTE: Responda EXCLUSIVAMENTE em JSON válido seguindo exatamente esta estrutura:\n"
+                f"{custom_json_example}\n"
+                "Não adicione texto fora do JSON."
+            )
+        else:
+            schema_json = json.dumps(response_model.model_json_schema(), ensure_ascii=False, indent=2)
+            instrucao_formato = (
+                f"\n\nIMPORTANTE: Responda EXCLUSIVAMENTE em formato JSON compatível com este schema:\n"
+                f"{schema_json}\n"
+                "Não adicione texto fora do JSON."
+            )
 
         full_prompt = f"{self.system_prompt}\n\nTarefa:\n{user_prompt}\n{instrucao_formato}"
-
-        import time
         now = time.time()
 
-        # 1. Tentativa via Google Gemini Cloud API (com circuit-breaker rápido para 429)
+        # 1. Tentativa via Google Gemini Cloud API
         if config.GEMINI_API_KEY and now > getattr(BaseAgent, "_gemini_cooldown_until", 0):
-            for model_name in config.GEMINI_CANDIDATE_MODELS[:2]:
+            for model_name in ["gemini-flash-latest", "gemini-3.6-flash", "gemini-3.8-flash"]:
                 url = (
                     f"https://generativelanguage.googleapis.com/v1beta/models/"
                     f"{model_name}:generateContent?key={config.GEMINI_API_KEY}"
@@ -75,30 +95,59 @@ class BaseAgent(ABC):
                 payload = {
                     "contents": [{"parts": [{"text": full_prompt}]}],
                     "generationConfig": {
-                        "temperature": 0.6,
+                        "temperature": temperature,
                         "responseMimeType": "application/json",
                     },
                 }
                 try:
-                    r = requests.post(url, json=payload, timeout=8)
+                    r = requests.post(url, json=payload, timeout=6)
                     if r.status_code == 200:
                         data = r.json()
                         candidates = data.get("candidates", [])
                         if candidates:
                             parts = candidates[0].get("content", {}).get("parts", [])
-                            if parts and "text" in parts[0]:
-                                parsed = extract_json_from_text(parts[0]["text"])
-                                if parsed:
-                                    return response_model.model_validate(parsed)
+                            for p in parts:
+                                if "text" in p:
+                                    parsed = extract_json_from_text(p["text"])
+                                    if parsed:
+                                        return response_model.model_validate(parsed)
                     elif r.status_code == 429:
-                        # Ativa cooldown de 120s para não travar a interface do usuário em chamadas seguidas
-                        BaseAgent._gemini_cooldown_until = now + 120
+                        BaseAgent._gemini_cooldown_until = now + 300
                         break
                 except Exception:
-                    BaseAgent._gemini_cooldown_until = now + 60
+                    BaseAgent._gemini_cooldown_until = now + 180
                     break
 
-        # 2. Tentativa rápida via Ollama Local (com circuit-breaker caso esteja lento na CPU)
+        # 2. Tentativa via Cloud Generative AI (com timeout curto de 5s e cooldown)
+        if now > getattr(BaseAgent, "_cloud_cooldown_until", 0):
+            try:
+                cloud_res = requests.post(
+                    "https://text.pollinations.ai/openai",
+                    json={
+                        "model": "openai",
+                        "messages": [
+                            {"role": "system", "content": "Você é um poeta sacro cristão. Responda APENAS JSON válido."},
+                            {"role": "user", "content": f"{user_prompt}\n{instrucao_formato}"},
+                        ],
+                        "temperature": temperature,
+                        "seed": int(time.time() * 1000) % 1000000,
+                    },
+                    timeout=5,
+                )
+                if cloud_res.status_code == 200:
+                    c_json = cloud_res.json()
+                    choices = c_json.get("choices", [])
+                    if choices:
+                        content_str = choices[0].get("message", {}).get("content", "")
+                        parsed = extract_json_from_text(content_str)
+                        if parsed:
+                            return response_model.model_validate(parsed)
+                else:
+                    BaseAgent._cloud_cooldown_until = now + 300
+            except Exception:
+                BaseAgent._cloud_cooldown_until = now + 300
+
+        # 3. Tentativa via Ollama Local
         if now > getattr(BaseAgent, "_ollama_cooldown_until", 0):
             ollama_host = config.resolve_ollama_host()
             try:
@@ -109,18 +158,18 @@ class BaseAgent(ABC):
                     "stream": False,
                     "format": "json",
                 }
-                o_res = requests.post(o_url, json=o_payload, timeout=5)
+                o_res = requests.post(o_url, json=o_payload, timeout=3)
                 if o_res.status_code == 200:
                     raw_resp = o_res.json().get("response", "")
                     parsed = extract_json_from_text(raw_resp)
                     if parsed:
                         return response_model.model_validate(parsed)
                 else:
-                    BaseAgent._ollama_cooldown_until = now + 180
+                    BaseAgent._ollama_cooldown_until = now + 300
             except Exception:
-                BaseAgent._ollama_cooldown_until = now + 180
+                BaseAgent._ollama_cooldown_until = now + 300
 
-        # 3. Motor Teológico e Poético Contextual Dinâmico (Instantâneo)
+        # 4. Motor Poético Combinatório Sacro Inédito
         return self._generate_contextual_demonstration(user_prompt, response_model)
 
     @abstractmethod
