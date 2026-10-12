@@ -321,9 +321,24 @@ class TheologianAgent(BaseAgent):
         others = [v for v in pool if v != chosen_verse]
         extra_samples = random.sample(others, k=min(2, len(others)))
 
+        # Extrai a referência curta e o texto devocional entre parênteses para compor a Reflexão Bíblica
+        if "(" in chosen_verse and ")" in chosen_verse:
+            ref_part = chosen_verse.split("(")[0].strip()
+            text_part = chosen_verse.split("(", 1)[1].rsplit(")", 1)[0].strip()
+        else:
+            ref_part = chosen_verse
+            text_part = chosen_verse
+
+        biblical_reflection = (
+            f"Meditação em {ref_part}: \"{text_part}\". "
+            f"Sob o tema '{theme_clean}' ({identified_name}), esta passagem revela {', '.join(matched['attributes'][:2]).lower()} "
+            f"e nos conduz a {matched['christ_focus'][0].lower() + matched['christ_focus'][1:]}"
+        )
+
         return {
             "identified_theme": identified_name,
             "chosen_verse": chosen_verse,
+            "biblical_reflection": biblical_reflection,
             "pool_size": len(pool),
             "scriptures": [chosen_verse] + extra_samples,
             "formatted": chosen_verse,
@@ -368,21 +383,34 @@ IMPORTANTE: Utilize as passagens bíblicas e o tema informados para fundamentar 
                 scriptures=analysis["scriptures"]
             )
 
-        primary_refs = [extracted_ref] if extracted_ref else []
+        chosen_ref = extracted_ref if extracted_ref else analysis["chosen_verse"]
+        if "(" in chosen_ref and ")" in chosen_ref:
+            ref_short = chosen_ref.split("(")[0].strip()
+            ref_meaning = chosen_ref.split("(", 1)[1].rsplit(")", 1)[0].strip()
+        else:
+            ref_short = chosen_ref
+            ref_meaning = chosen_ref
+
+        primary_refs = [chosen_ref]
         for s in analysis["scriptures"]:
             if s not in primary_refs:
                 primary_refs.append(s)
 
+        exegetical_reflection = (
+            f"Reflexão Bíblica em {ref_short} (\"{ref_meaning}\"): "
+            f"A canção exalta '{extracted_theme}' dentro da doutrina de {cat['name']}, "
+            f"destacando {', '.join(cat['attributes'][:3]).lower()}. "
+            f"Foco Cristocêntrico: {cat['christ_focus']}"
+        )
+
         return TheologicalDossier(
-            theme_title=f"{analysis['identified_theme']} ({extracted_theme})",
+            theme_title=f"{analysis['identified_theme']} — {ref_short}",
             primary_scriptures=primary_refs[:3],
             divine_attributes=cat["attributes"],
             christocentric_focus=cat["christ_focus"],
             sacred_keywords=cat["sacred_words"],
             doctrinal_guardrails=cat["guardrails"],
             emotional_and_spiritual_tone=cat["tone"],
-            exegetical_summary=(
-                f"A canção celebra '{extracted_theme}' fundamentada em {primary_refs[0]}, "
-                f"conduzindo a igreja à adoração vertical e cristocêntrica com foco em {cat['name']}."
-            )
+            exegetical_summary=exegetical_reflection
         )
+

@@ -218,16 +218,20 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                             <div style="color: var(--accent-gold); font-weight: bold; margin-bottom: 3px;">🧠 Gestão do Agente Teólogo:</div>
                             <div>📌 <b>Tema Identificado:</b> <span id="identifiedThemeText" style="color: #58a6ff;">Santidade Transcendente & Majestade do Trono de Deus</span></div>
                             <div>🎯 <b>Versículo Sorteado:</b> <span id="drawnVerseStatus" style="color: #3fb950;">Isaías 6:1-4 (Clique em "Sortear Versículo" para sortear outro do mesmo tema!)</span></div>
+                            <div style="margin-top: 4px;">📖 <b>Reflexão Bíblica:</b> <span id="biblicalReflectionText" style="color: #d2a8ff;">Meditação na majestade santa do Senhor no alto e sublime trono, conduzindo a igreja à reverência e adoração.</span></div>
                         </div>
                     </div>
                     <div class="form-group">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
                             <label style="margin-bottom: 0;">Estilo Musical no Suno</label>
-                            <span style="font-size: 0.76rem; color: var(--accent-gold); font-weight: bold;">🎶 22+ Estilos & Customizável</span>
+                            <span style="font-size: 0.76rem; color: var(--accent-gold); font-weight: bold;">🤖 Gerado pela Reflexão ou Manual</span>
                         </div>
                         <select id="musical_style_preset" onchange="applyStylePreset()">
+                            <optgroup label="🤖 Gestão Inteligente do Agente Musical (Recomendado)">
+                                <option value="auto" selected>🤖 Automático: Gerar Novo Estilo, Voz e Dinâmica pelo Tema e Reflexão Bíblica</option>
+                            </optgroup>
                             <optgroup label="🕊️ Worship Contemporâneo & Soaking">
-                                <option value="modern worship, CCM, grand piano, celestial choir, swelling guitars, slow build, cinematic" selected>Modern Worship Solene (Hillsong / Elevation Worship)</option>
+                                <option value="modern worship, CCM, grand piano, celestial choir, swelling guitars, slow build, cinematic">Modern Worship Solene (Hillsong / Elevation Worship)</option>
                                 <option value="brazilian worship, organic CCM, acoustic piano, acoustic guitar, passionate male lead, strings crescendo, spontaneous atmosphere">Brazilian Worship Orgânico / Soaking (Morada / FHOP / Casa Worship)</option>
                                 <option value="folk worship, acoustic guitar, mandolin, stomp and holler drums, warm vocal harmonies, heartfelt">Indie Folk Worship (CityAlight / Rend Collective)</option>
                                 <option value="ambient worship, lush pad textures, soft delay electric guitar, intimate piano, whisper vocals, peaceful">Ambient Devotional / Soaking (Quarto de Oração)</option>
@@ -265,12 +269,12 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                             </optgroup>
                         </select>
                         <div style="margin-top: 8px;">
-                            <label style="font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 4px; display: block;">Tags do Estilo (100% Editáveis para o Suno AI):</label>
+                            <label style="font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 4px; display: block;">Tags do Estilo (Geradas pelo Agente ou Editáveis):</label>
                             <input type="text" id="musical_style" value="modern worship, CCM, grand piano, celestial choir, swelling guitars, slow build, cinematic" placeholder="Digite os instrumentos e estilo desejados em inglês ou português...">
                         </div>
                     </div>
                     <div class="form-group">
-                        <label>Preferência Vocal</label>
+                        <label>Preferência Vocal (Gerada pela Reflexão ou Editável)</label>
                         <input type="text" id="vocal_pref" list="vocal_suggestions" value="Voz masculina emotiva nos versos com coral harmônico no refrão">
                         <datalist id="vocal_suggestions">
                             <option value="Voz masculina emotiva nos versos com coral harmônico no refrão">
@@ -282,7 +286,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                         </datalist>
                     </div>
                     <div class="form-group">
-                        <label>Andamento / Dinâmica</label>
+                        <label>Andamento / Dinâmica (Gerado pela Reflexão ou Editável)</label>
                         <input type="text" id="tempo_pref" list="tempo_suggestions" value="Lento (68-72 BPM) com grande crescendo para clímax">
                         <datalist id="tempo_suggestions">
                             <option value="Lento (68-72 BPM) com grande crescendo para clímax">
@@ -291,6 +295,11 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                             <option value="Rápido e vibrante (120-135 BPM) com batida enérgica de júbilo">
                             <option value="Devocional livre (Rubato), sem tempo rígido, focado na oração íntima">
                         </datalist>
+                        <div id="producerManagementBox" style="margin-top: 8px; padding: 10px 12px; background: rgba(88, 166, 255, 0.08); border-left: 3px solid #58a6ff; border-radius: 6px; font-size: 0.78rem; color: #c9d1d9; line-height: 1.45;">
+                            <div style="color: #58a6ff; font-weight: bold; margin-bottom: 3px;">🎹 Gestão do Agente Musical (Baseado no Tema & Reflexão):</div>
+                            <div>🎶 <b>Arranjo Sorteado:</b> <span id="arrangementNameText" style="color: var(--accent-gold);">Automático — Será gerado para cada nova música!</span></div>
+                            <div>💡 <b>Direção Musical:</b> <span id="producerRationaleText" style="color: #8b949e;">Ao clicar em "Compor Música com Agentes", o Diretor Musical criará novo Estilo, Voz e Dinâmica alinhados à Reflexão Bíblica.</span></div>
+                        </div>
                     </div>
                     
                     <button type="submit" class="btn-submit" id="submitBtn">⚡ Compor Música com Agentes</button>
@@ -421,19 +430,32 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         async function autoFillScriptures() {
             const theme = document.getElementById('theme').value.trim();
             const currentRef = document.getElementById('biblical_ref').value.trim();
+            const currentStyle = document.getElementById('musical_style').value.trim();
             if (!theme) {
                 showToast("⚠️ Digite um tema primeiro!");
                 return;
             }
             try {
-                const url = `/api/suggest-scriptures?theme=${encodeURIComponent(theme)}&current=${encodeURIComponent(currentRef)}`;
+                const url = `/api/suggest-scriptures?theme=${encodeURIComponent(theme)}&current=${encodeURIComponent(currentRef)}&current_style=${encodeURIComponent(currentStyle)}`;
                 const res = await fetch(url);
                 const data = await res.json();
                 if (data.success && data.chosen_verse) {
                     document.getElementById('biblical_ref').value = data.chosen_verse;
                     document.getElementById('identifiedThemeText').innerText = data.identified_theme;
                     document.getElementById('drawnVerseStatus').innerText = `${data.chosen_verse} (Sorteado dentre ${data.pool_size} passagens deste tema)`;
-                    showToast(`🎲 Sorteado: ${data.chosen_verse.split(' (')[0]} (${data.identified_theme})`);
+                    if (data.biblical_reflection) {
+                        document.getElementById('biblicalReflectionText').innerText = data.biblical_reflection;
+                    }
+                    // Se estiver no modo Automático pelo Agente, também já atualiza Estilo, Voz e Dinâmica com base na Reflexão Bíblica!
+                    const presetMode = document.getElementById('musical_style_preset').value;
+                    if (presetMode === 'auto' && data.arrangement) {
+                        document.getElementById('musical_style').value = data.arrangement.style_of_music;
+                        document.getElementById('vocal_pref').value = data.arrangement.vocal_preference;
+                        document.getElementById('tempo_pref').value = data.arrangement.tempo_dynamics;
+                        document.getElementById('arrangementNameText').innerText = data.arrangement.arrangement_name;
+                        document.getElementById('producerRationaleText').innerText = data.arrangement.producer_rationale;
+                    }
+                    showToast(`🎲 Sorteado: ${data.chosen_verse.split(' (')[0]} + Novo Arranjo Musical!`);
                 } else {
                     showToast("Aviso: " + (data.error || "Não foi possível sugerir"));
                 }
@@ -446,13 +468,18 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             const selectElem = document.getElementById('musical_style_preset');
             const val = selectElem.value;
             const inputElem = document.getElementById('musical_style');
-            if (val === 'custom') {
+            if (val === 'auto') {
+                showToast("🤖 Modo Automático ativado! O Agente Musical gerará Estilo, Voz e Dinâmica pela Reflexão Bíblica.");
+                autoFillScriptures();
+            } else if (val === 'custom') {
                 inputElem.value = '';
                 inputElem.focus();
                 showToast("✍️ Digite seu estilo e instrumentos livremente!");
             } else {
                 inputElem.value = val;
-                showToast("🎶 Estilo aplicado! Você pode editar o texto se quiser.");
+                document.getElementById('arrangementNameText').innerText = selectElem.options[selectElem.selectedIndex].text;
+                document.getElementById('producerRationaleText').innerText = "Estilo selecionado manualmente pelo usuário na lista.";
+                showToast("🎶 Estilo manual aplicado!");
             }
         }
 
@@ -486,11 +513,21 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             if (updateFormInputs) {
                 if (item.theme) document.getElementById('theme').value = item.theme;
                 if (item.biblical_reference) document.getElementById('biblical_ref').value = item.biblical_reference;
-                if (item.musical_style_hint || item.style_of_music) {
-                    document.getElementById('musical_style').value = item.musical_style_hint || item.style_of_music;
+                if (item.style_of_music || item.musical_style_hint) {
+                    document.getElementById('musical_style').value = item.style_of_music || item.musical_style_hint;
                 }
-                if (item.vocal_preference || item.vocal_configuration) {
-                    document.getElementById('vocal_pref').value = item.vocal_preference || item.vocal_configuration;
+                if (item.vocal_configuration || item.vocal_preference) {
+                    document.getElementById('vocal_pref').value = item.vocal_configuration || item.vocal_preference;
+                }
+                if (item.target_bpm) {
+                    document.getElementById('tempo_pref').value = item.target_bpm;
+                }
+                if (item.dossier && item.dossier.exegetical_summary) {
+                    document.getElementById('biblicalReflectionText').innerText = item.dossier.exegetical_summary;
+                }
+                if (item.arrangement) {
+                    document.getElementById('arrangementNameText').innerText = item.arrangement.arrangement_name || 'Arranjo Personalizado';
+                    document.getElementById('producerRationaleText').innerText = item.arrangement.producer_rationale || '';
                 }
             }
         }
@@ -558,18 +595,22 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             submitBtn.innerText = "⏳ Orquestrando os Agentes...";
             stepper.style.display = "flex";
 
+            const styleMode = document.getElementById('musical_style_preset').value;
+            const currentStyleVal = document.getElementById('musical_style').value;
+
             const payload = {
                 theme: document.getElementById('theme').value,
                 biblical_reference: document.getElementById('biblical_ref').value,
-                musical_style_hint: document.getElementById('musical_style').value,
+                style_mode: styleMode,
+                musical_style_hint: styleMode === 'auto' ? `auto:${currentStyleVal}` : currentStyleVal,
                 tempo_hint: document.getElementById('tempo_pref').value,
                 vocal_preference: document.getElementById('vocal_pref').value
             };
 
             document.getElementById('step1').className = "step-item active";
-            setTimeout(() => { document.getElementById('step1').className = "step-item done"; document.getElementById('step2').className = "step-item active"; }, 300);
-            setTimeout(() => { document.getElementById('step2').className = "step-item done"; document.getElementById('step3').className = "step-item active"; }, 600);
-            setTimeout(() => { document.getElementById('step3').className = "step-item done"; document.getElementById('step4').className = "step-item active"; }, 900);
+            setTimeout(() => { document.getElementById('step1').className = "step-item done"; document.getElementById('step2').className = "step-item active"; }, 250);
+            setTimeout(() => { document.getElementById('step2').className = "step-item done"; document.getElementById('step3').className = "step-item active"; }, 500);
+            setTimeout(() => { document.getElementById('step3').className = "step-item done"; document.getElementById('step4').className = "step-item active"; }, 750);
 
             try {
                 const res = await fetch('/api/compose', {
@@ -581,23 +622,26 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                 if (data.success) {
                     document.getElementById('step4').className = "step-item done";
                     
-                    let finalRef = payload.biblical_reference;
-                    if (!finalRef && data.dossier && data.dossier.primary_scriptures && data.dossier.primary_scriptures.length) {
-                        finalRef = data.dossier.primary_scriptures[0];
+                    let finalRef = data.biblical_reference || payload.biblical_reference;
+                    if (finalRef) {
                         document.getElementById('biblical_ref').value = finalRef;
                     }
                     if (data.dossier && data.dossier.theme_title) {
                         document.getElementById('identifiedThemeText').innerText = data.dossier.theme_title;
                         document.getElementById('drawnVerseStatus').innerText = finalRef;
+                        document.getElementById('biblicalReflectionText').innerText = data.dossier.exegetical_summary || '';
                     }
 
                     const newItem = {
                         song_title: data.suno_package.song_title,
                         style_of_music: data.suno_package.style_of_music,
+                        target_bpm: data.suno_package.target_bpm,
+                        vocal_configuration: data.suno_package.vocal_configuration,
                         lyrics_with_metatags: data.suno_package.lyrics_with_metatags,
                         audit_score: data.audit.score,
                         dossier: data.dossier,
                         audit: data.audit,
+                        arrangement: data.arrangement,
                         theme: payload.theme,
                         biblical_reference: finalRef,
                         created_at: "Agora"
@@ -605,7 +649,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                     renderSongOnScreen(newItem, true);
                     switchTab('tabSuno');
                     loadHistory();
-                    showToast("🎉 Canção '" + data.suno_package.song_title + "' composta com sucesso!");
+                    showToast("🎉 Nova Música + Arranjo gerados com base na Reflexão Bíblica!");
                 } else {
                     showToast("Erro ao compor: " + (data.error || "Desconhecido"));
                 }
@@ -687,23 +731,40 @@ def api_status():
 
 @app.route("/api/suggest-scriptures", methods=["GET"])
 def api_suggest_scriptures():
-    """Identifica o tema doutrinário e sorteia um versículo bíblico pertinente (sem repetir o atual)."""
+    """Identifica o tema doutrinário, sorteia um versículo bíblico, gera a reflexão e o arranjo musical."""
     theme = request.args.get("theme", "").strip()
     current = request.args.get("current", "").strip()
+    current_style = request.args.get("current_style", "").strip()
     if not theme:
         return jsonify({"success": False, "error": "Por favor, forneça um tema."}), 400
     try:
         from agents.theologian import TheologianAgent
+        from agents.suno_producer import SunoProducerAgent
         theologian = TheologianAgent()
+        producer = SunoProducerAgent()
         analysis = theologian.analyze_and_draw_scripture(theme, exclude_current=current)
+        arrangement = producer.design_arrangement_from_reflection(
+            theme=theme,
+            biblical_reference=analysis["chosen_verse"],
+            biblical_reflection=analysis.get("biblical_reflection", ""),
+            exclude_style=current_style
+        )
         return jsonify({
             "success": True,
             "theme": theme,
             "identified_theme": analysis["identified_theme"],
             "chosen_verse": analysis["chosen_verse"],
+            "biblical_reflection": analysis.get("biblical_reflection", ""),
             "pool_size": analysis["pool_size"],
             "scriptures": analysis["scriptures"],
-            "formatted": analysis["chosen_verse"]
+            "formatted": analysis["chosen_verse"],
+            "arrangement": {
+                "arrangement_name": arrangement["arrangement_name"],
+                "style_of_music": arrangement["style_of_music"],
+                "vocal_preference": arrangement["vocal_preference"],
+                "tempo_dynamics": arrangement["tempo_dynamics"],
+                "producer_rationale": arrangement["producer_rationale"],
+            }
         })
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
@@ -716,7 +777,7 @@ def api_compose():
     briefing = UserBriefing(
         theme=data.get("theme", "A Santidade de Deus no Trono"),
         biblical_reference=briefing_ref,
-        musical_style_hint=data.get("musical_style_hint", "Modern Worship"),
+        musical_style_hint=data.get("musical_style_hint", "auto"),
         tempo_hint=data.get("tempo_hint", "Lento com crescendo épico"),
         vocal_preference=data.get("vocal_preference", "Voz masculina emotiva"),
     )
@@ -724,13 +785,21 @@ def api_compose():
     orchestrator = WorshipSunoOrchestrator()
     dossier, draft, report, package = orchestrator.execute(briefing)
 
-    # Se a referência não foi enviada pelo usuário, usa as descobertas pelo Teólogo
     chosen_ref = briefing.biblical_reference
     if not chosen_ref:
         if dossier.primary_scriptures:
-            chosen_ref = " | ".join(dossier.primary_scriptures)
+            chosen_ref = dossier.primary_scriptures[0]
         else:
             chosen_ref = "Exegese Canônica Automática"
+
+    arr_info = orchestrator.producer._last_arrangement or {}
+    arrangement_summary = {
+        "arrangement_name": arr_info.get("arrangement_name", "Arranjo Personalizado"),
+        "style_of_music": package.style_of_music,
+        "vocal_preference": package.vocal_configuration,
+        "tempo_dynamics": package.target_bpm,
+        "producer_rationale": arr_info.get("producer_rationale", ""),
+    }
 
     # Registro persistente no histórico
     now_str = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
@@ -739,7 +808,7 @@ def api_compose():
         "created_at": now_str,
         "theme": briefing.theme,
         "biblical_reference": chosen_ref,
-        "musical_style_hint": briefing.musical_style_hint,
+        "musical_style_hint": package.style_of_music,
         "song_title": package.song_title,
         "style_of_music": package.style_of_music,
         "target_bpm": package.target_bpm,
@@ -749,15 +818,18 @@ def api_compose():
         "lyrics_with_metatags": package.lyrics_with_metatags,
         "dossier": dossier.model_dump(),
         "audit": report.model_dump(),
+        "arrangement": arrangement_summary,
     }
     save_song_to_history(history_entry)
 
     result_payload = {
         "success": True,
+        "biblical_reference": chosen_ref,
         "dossier": dossier.model_dump(),
         "draft": draft.model_dump(),
         "audit": report.model_dump(),
         "suno_package": package.model_dump(),
+        "arrangement": arrangement_summary,
     }
     return jsonify(result_payload)
 
