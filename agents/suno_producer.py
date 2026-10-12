@@ -1,9 +1,11 @@
 """
 Agente 4: Diretor Musical & Engenheiro de Prompt do Suno AI.
 Responsável por analisar o Tema e a Reflexão Bíblica gerada pelo Agente Teólogo e criar
-dinamicamente o Estilo Musical, Preferência Vocal, Andamento/Dinâmica e Metatags do Suno AI.
+dinamicamente o Estilo Musical (já com Instrumentos + Voz + BPM + Dinâmica integrados),
+Preferência Vocal, Andamento/Dinâmica e Metatags do Suno AI.
 """
 
+import re
 import random
 import unicodedata
 from typing import Optional, Type
@@ -13,15 +15,15 @@ from schemas import SongDraft, TheologicalDossier, UserBriefing, SunoSongPackage
 
 
 SUNO_PRODUCER_SYSTEM_PROMPT = """Você é um Produtor Musical Especialista no motor de geração de áudio do Suno AI (v3.5, v4 e v4.5).
-Sua missão é criar a identidade sonora, arranjo, voz, andamento e metatags para a canção com base no Tema e na Reflexão Bíblica do Agente Teólogo.
+Sua missão é criar a identidade sonora, arranjo, voz, andamento (BPM) e metatags para a canção com base no Tema e na Reflexão Bíblica do Agente Teólogo.
 
 REGRAS DE ENGENHARIA PARA O SUNO AI:
-1. CAMPO 'STYLE OF MUSIC' (LIMITE DE 120-140 CARACTERES):
-   - Lista concisa de tags separadas por vírgula em inglês.
-   - Fórmula: [Gênero Principal], [Subgênero/Vibe], [Tipo Vocal], [Instrumentos Chave], [Dinâmica de Produção].
+1. CAMPO 'STYLE OF MUSIC' (ATÉ 180 CARACTERES):
+   - DEVE obrigatoriamente conter: [Gênero/Subgênero], [Instrumentos Chave], [Tipo de Voz/Coral], [BPM Exato] e [Dinâmica de Produção].
+   - Exemplo: intimate acoustic worship, fingerpicked guitar, warm cello, soft piano, tender female lead vocals, vocal harmony, 66 BPM, slow emotional build
 2. CAMPO 'LYRICS' E METATAGS ENTRE COLCHETES:
    - O Suno utiliza colchetes como metatags de controle instrumental e arranjo.
-   - Intercale tags estruturais e de dinâmica alinhadas aos instrumentos escolhidos.
+   - Intercale tags estruturais e de dinâmica alinhadas aos instrumentos, voz e BPM escolhidos.
 """
 
 
@@ -30,111 +32,176 @@ def _norm(text: str) -> str:
     return "".join(c for c in nfkd if not unicodedata.combining(c))
 
 
+def build_complete_suno_style(base_style: str, vocal_pref: str = "", tempo_pref: str = "") -> str:
+    """
+    Garante que o campo 'style_of_music' SEMPRE contenha:
+    Estilo + Instrumentos + Voz (Vocal) + BPM + Dinâmica de acordo com a geração.
+    """
+    style_clean = (base_style or "").strip().rstrip(",")
+    if style_clean.lower().startswith("auto:"):
+        style_clean = style_clean[5:].strip()
+
+    s_low = style_clean.lower()
+    v_low = _norm(vocal_pref)
+    t_low = _norm(tempo_pref)
+
+    # 1. Garante presença da Voz (Vocal) no Style of Music
+    has_vocal_in_style = any(
+        w in s_low for w in ["vocal", "voice", "lead", "duet", "choir", "tenor", "soprano", "baritone", "singer"]
+    )
+    if not has_vocal_in_style:
+        if "dueto" in v_low or "masculino e feminino" in v_low:
+            vocal_tag = "male and female vocal duet, rich choir harmony"
+        elif "feminina" in v_low and "soul" in v_low:
+            vocal_tag = "soulful female lead vocals, full gospel choir"
+        elif "feminina" in v_low:
+            vocal_tag = "anointed female lead vocals, warm backing choir"
+        elif "coral" in v_low and ("4 vozes" in v_low or "sacro" in v_low or "polifonico" in v_low):
+            vocal_tag = "powerful lead vocal, 4-part sacred choir harmony"
+        elif "masculina" in v_low:
+            vocal_tag = "emotional male lead vocals, congregational choir"
+        else:
+            vocal_tag = "passionate lead vocals, congregational choir"
+        style_clean = f"{style_clean}, {vocal_tag}" if style_clean else vocal_tag
+
+    # 2. Garante presença do BPM exato e Dinâmica no Style of Music
+    has_bpm_in_style = bool(re.search(r"\b\d{2,3}\s*bpm\b", style_clean, re.IGNORECASE))
+    if not has_bpm_in_style:
+        bpm_match = re.search(r"(\d{2,3})\s*(?:-\s*\d{2,3})?\s*bpm", tempo_pref or "", re.IGNORECASE)
+        if bpm_match:
+            bpm_tag = f"{bpm_match.group(1)} BPM"
+        elif any(w in t_low for w in ["rapido", "vibrante", "festa", "jubilo", "120"]):
+            bpm_tag = "120 BPM"
+        elif any(w in t_low for w in ["medio", "alegre", "celebr", "100", "106"]):
+            bpm_tag = "104 BPM"
+        elif any(w in t_low for w in ["moderado", "78", "80", "82", "85"]):
+            bpm_tag = "78 BPM"
+        elif any(w in t_low for w in ["calmo", "paz", "consolo", "rubato", "64", "66"]):
+            bpm_tag = "66 BPM"
+        else:
+            bpm_tag = "70 BPM"
+
+        # Dinâmica
+        if any(w in s_low for w in ["build", "climax", "crescendo", "upbeat", "groove", "peaceful"]):
+            style_clean = f"{style_clean}, {bpm_tag}"
+        else:
+            if any(w in t_low for w in ["alegre", "vibrante", "festa", "jubilo"]):
+                dyn_tag = "upbeat celebratory groove"
+            elif any(w in t_low for w in ["calmo", "paz", "intima", "descanso"]):
+                dyn_tag = "intimate peaceful dynamics"
+            else:
+                dyn_tag = "slow build to epic climax"
+            style_clean = f"{style_clean}, {bpm_tag}, {dyn_tag}"
+
+    return style_clean[:190]
+
+
 # Banco inteligente de Arranjos Musicais por Atmosfera Teológica / Reflexão Bíblica
+# Todos os 'style_of_music' já incluem: [Estilo + Instrumentos + Voz + BPM + Dinâmica]
 THEMATIC_ARRANGEMENTS = {
     "amor_intimo": [
         {
-            "arrangement_name": "Acústico Devocional Intimista (Violão, Violoncelo & Voz Feminina)",
-            "style_of_music": "intimate acoustic worship, fingerpicked guitar, warm cello, soft piano, tender female vocals, emotional build",
+            "arrangement_name": "Acústico Devocional Intimista (Violão, Violoncelo, Voz Feminina • 66 BPM)",
+            "style_of_music": "intimate acoustic worship, fingerpicked guitar, warm cello, soft piano, tender female lead vocals, vocal harmony, 66 BPM, slow emotional build",
             "vocal_preference": "Voz feminina suave e intimista nos versos, abrindo com harmonia vocal no refrão",
             "tempo_dynamics": "Lento devocional (66 BPM) começando em voz e violão e crescendo com violoncelo",
             "metatags": {
-                "intro": ["[Fingerpicked Acoustic Guitar Intro]", "[Warm Cello Melody]"],
-                "verse1": "[Tender Female Vocals]\n[Intimate Acoustic Guitar]",
+                "intro": ["[66 BPM - Slow Devotional Tempo]", "[Fingerpicked Acoustic Guitar & Warm Cello Intro]"],
+                "verse1": "[Tender Female Lead Vocals]\n[Intimate Acoustic Guitar]",
                 "verse2": "[Soft Piano & Cello Enter]\n[Warm Vocal Harmony]",
                 "prechorus": "[Subtle Percussive Swell]\n[Growing Emotion]",
-                "chorus": "[Emotional Chorus]\n[Full Acoustic Band & Backing Choir]",
-                "bridge": "[Spontaneous Devotional Climax]\n[Soaring Female Lead & Strings]",
-                "outro": "[Gentle Acoustic Guitar Outro]\n[Whispered Prayer]"
+                "chorus": "[Emotional Chorus]\n[Soaring Female Lead, Acoustic Band & Backing Choir]",
+                "bridge": "[Spontaneous Devotional Climax]\n[Passionate Female Lead & Lush Strings]",
+                "outro": "[Gentle Acoustic Guitar Outro]\n[Whispered Female Vocal Prayer]"
             }
         },
         {
-            "arrangement_name": "Adoração Profética Soaking (Piano Rhodes, Pads & Dueto Vocal)",
-            "style_of_music": "prophetic worship ballad, warm rhodes piano, ambient synth pads, male and female vocal duet, slow crescendo",
+            "arrangement_name": "Adoração Profética Soaking (Piano Rhodes, Pads, Dueto Vocal • 68 BPM)",
+            "style_of_music": "prophetic worship ballad, warm rhodes piano, ambient synth pads, male and female vocal duet, lush strings, 68 BPM, slow atmospheric crescendo",
             "vocal_preference": "Dueto vocal (masculino e feminino) em harmonia apaixonada e suave",
             "tempo_dynamics": "Fluido e contemplativo (68 BPM) com atmosfera envolvente e refrão intenso",
             "metatags": {
-                "intro": ["[Warm Rhodes Piano Intro]", "[Ethereal Synth Pad]"],
-                "verse1": "[Gentle Male Vocal]\n[Soft Rhodes & Ambient Pad]",
-                "verse2": "[Female Vocal Joins in Duet]\n[Deep Bass & Subtle Drums]",
+                "intro": ["[68 BPM - Contemplative Worship Tempo]", "[Warm Rhodes Piano & Ethereal Synth Pad Intro]"],
+                "verse1": "[Gentle Male Lead Vocal]\n[Soft Rhodes & Ambient Pad]",
+                "verse2": "[Female Vocal Joins in Harmony Duet]\n[Deep Bass & Subtle Brush Drums]",
                 "prechorus": "[Swelling Guitars]\n[Building Devotion]",
-                "chorus": "[Passionate Vocal Duet]\n[Full Worship Band & Lush Strings]",
-                "bridge": "[Climactic Prophetic Worship]\n[Soaring Harmonies & Delayed Guitar]",
-                "outro": "[Soft Piano & Ambient Pad Fade]\n[Intimate Ending]"
+                "chorus": "[Passionate Male & Female Vocal Duet]\n[Full Worship Band & Lush Strings]",
+                "bridge": "[Climactic Prophetic Worship]\n[Soaring Duet Harmonies & Delayed Guitar]",
+                "outro": "[Soft Piano & Ambient Pad Fade]\n[Intimate Duet Ending]"
             }
         },
         {
-            "arrangement_name": "Modern Worship Congregacional (Grand Piano, Guitarras & Voz Masculina)",
-            "style_of_music": "modern congregational worship, grand piano, ambient electric guitars, emotional male lead, choir, anthem",
+            "arrangement_name": "Modern Worship Congregacional (Grand Piano, Guitarras, Voz Masculina • 72 BPM)",
+            "style_of_music": "modern congregational worship, grand piano, ambient electric guitars, emotional male lead vocals, full choir, 72 BPM, slow build to anthemic climax",
             "vocal_preference": "Voz masculina emotiva nos versos com coral congregacional forte no refrão",
             "tempo_dynamics": "Moderado solene (72 BPM) iniciando no piano e explodindo no refrão",
             "metatags": {
-                "intro": ["[Atmospheric Grand Piano Intro]", "[Swelling Ambient Guitar]"],
+                "intro": ["[72 BPM - Solemn Worship Tempo]", "[Atmospheric Grand Piano & Swelling Guitar Intro]"],
                 "verse1": "[Emotional Male Lead Vocal]\n[Grand Piano Only]",
                 "verse2": "[Warm Bass & Soft Tom Drums]\n[Subtle Strings]",
                 "prechorus": "[Drums Build Tension]\n[Rising Guitars]",
-                "chorus": "[Anthemic Chorus]\n[Full Band & Congregational Choir]",
-                "bridge": "[Explosive Worship Bridge]\n[Passionate Lead & Full Choir]",
+                "chorus": "[Anthemic Chorus]\n[Passionate Male Lead, Full Band & Congregational Choir]",
+                "bridge": "[Explosive Worship Bridge]\n[Soaring Male Tenor & Full Choir]",
                 "outro": "[Acoustic Piano Breakdown]\n[Reverent Fade Out]"
             }
         }
     ],
     "amor_agape_cruz": [
         {
-            "arrangement_name": "Gospel Soul & Coral Ágape (Piano, Hammond B3 & Coral Black Gospel)",
-            "style_of_music": "soulful gospel ballad, grand piano, warm hammond organ, soulful female lead, rich gospel choir, emotional climax",
+            "arrangement_name": "Gospel Soul & Coral Ágape (Piano, Hammond B3, Voz Feminina Soul • 70 BPM)",
+            "style_of_music": "soulful gospel ballad, grand piano, warm hammond B3 organ, soulful female lead vocals, 3-part gospel choir, 70 BPM, emotional choir climax",
             "vocal_preference": "Voz feminina soulful potente com grande coral gospel harmônico respondendo",
             "tempo_dynamics": "Balada Soul cadenciada (70 BPM) com grande explosão coral no refrão e ponte",
             "metatags": {
-                "intro": ["[Soulful Grand Piano Intro]", "[Warm Hammond B3 Organ]"],
+                "intro": ["[70 BPM - Soulful Gospel Ballad]", "[Grand Piano & Warm Hammond B3 Organ Intro]"],
                 "verse1": "[Soulful Female Lead Vocal]\n[Expressive Piano & Soft Organ]",
-                "verse2": "[Groovy Gospel Bass & Rimshot Drums]\n[Soft Choir Oohs]",
+                "verse2": "[Groovy Gospel Bass & Rimshot Drums]\n[Soft Choir Harmonies]",
                 "prechorus": "[Choir Harmony Swell]\n[Drum Fill Build]",
-                "chorus": "[Powerful Gospel Chorus]\n[Full 3-Part Gospel Choir & Band]",
-                "bridge": "[Key Modulation Climax]\n[Passionate Vocal Melisma & Choir Call-Response]",
+                "chorus": "[Powerful Gospel Chorus]\n[Soulful Female Lead & Full 3-Part Gospel Choir]",
+                "bridge": "[Key Modulation Climax]\n[Passionate Female Vocal Runs & Choir Call-Response]",
                 "outro": "[Gentle Piano & Hammond Chord]\n[Choir Amen]"
             }
         },
         {
-            "arrangement_name": "Power Ballad da Cruz (Guitarras Limpas, Cordas & Dueto Emocional)",
-            "style_of_music": "christian power ballad, clean electric guitar, orchestral strings, male and female duet, dramatic drums, epic chorus",
+            "arrangement_name": "Power Ballad da Cruz (Guitarras Limpas, Cordas, Dueto Emocional • 74 BPM)",
+            "style_of_music": "christian power ballad, clean electric guitar, orchestral strings, male and female vocal duet, dramatic drums, 74 BPM, epic chorus climax",
             "vocal_preference": "Dueto masculino e feminino emotivo com coro sinfônico no clímax",
             "tempo_dynamics": "Moderado dramático (74 BPM) crescendo até solo de guitarra e clímax coral",
             "metatags": {
-                "intro": ["[Clean Arpeggiated Guitar Intro]", "[Orchestral Cello & Piano]"],
+                "intro": ["[74 BPM - Dramatic Worship Ballad]", "[Clean Arpeggiated Guitar & Orchestral Cello Intro]"],
                 "verse1": "[Warm Male Lead Vocal]\n[Clean Guitar & Piano]",
-                "verse2": "[Female Vocal Harmony Enters]\n[Steady Drums & Strings]",
+                "verse2": "[Female Lead Vocal Joins in Duet]\n[Steady Drums & Strings]",
                 "prechorus": "[Crescendo]\n[Timpani & Snare Build]",
-                "chorus": "[Epic Worship Chorus]\n[Soaring Duet, Full Choir & Electric Guitars]",
+                "chorus": "[Epic Worship Chorus]\n[Soaring Male & Female Duet, Full Choir & Electric Guitars]",
                 "bridge": "[Emotional Guitar Solo & Bridge]\n[Full Symphony & Congregational Voices]",
                 "outro": "[Soft Piano & Solo Violin]\n[Fade Out]"
             }
         },
         {
-            "arrangement_name": "Cinematic Worship Redenção (Piano de Cauda, Violoncelo & Voz Masculina)",
-            "style_of_music": "cinematic worship anthem, grand piano, solo cello, passionate male vocals, celestial choir, slow build, majestic",
+            "arrangement_name": "Cinematic Worship Redenção (Piano de Cauda, Violoncelo, Voz Masculina • 68 BPM)",
+            "style_of_music": "cinematic worship anthem, grand piano, solo cello, passionate male lead vocals, celestial choir, 68 BPM, slow majestic build",
             "vocal_preference": "Voz masculina grave e apaixonada com coro celestial no refrão",
             "tempo_dynamics": "Lento majestoso (68 BPM) evoluindo de intimista para épico cinematográfico",
             "metatags": {
-                "intro": ["[Solo Cello & Grand Piano Intro]", "[Cinematic Atmosphere]"],
-                "verse1": "[Deep Reverent Male Vocal]\n[Soft Piano]",
+                "intro": ["[68 BPM - Majestic Cinematic Tempo]", "[Solo Cello & Grand Piano Intro]"],
+                "verse1": "[Deep Reverent Male Lead Vocal]\n[Soft Piano]",
                 "verse2": "[Strings Section Enters]\n[Deep Heartbeat Drums]",
                 "prechorus": "[Rising Brass & Strings]\n[Building Intensity]",
-                "chorus": "[Majestic Anthem Chorus]\n[Full Orchestra, Band & Celestial Choir]",
-                "bridge": "[Thunderous Drums & Choir Climax]\n[Passionate Tenor High Notes]",
+                "chorus": "[Majestic Anthem Chorus]\n[Passionate Male Lead, Full Orchestra & Celestial Choir]",
+                "bridge": "[Thunderous Drums & Choir Climax]\n[Soaring Male Tenor High Notes]",
                 "outro": "[Quiet Grand Piano Outro]\n[Peaceful Resolution]"
             }
         }
     ],
     "santidade_trono": [
         {
-            "arrangement_name": "Épico Sinfônico do Trono (Orquestra, Timpani, Harpa & Coral Sacro)",
-            "style_of_music": "cinematic orchestral worship, symphony strings, brass swell, timpani, powerful lead vocal, 4-part sacred choir, majestic",
+            "arrangement_name": "Épico Sinfônico do Trono (Orquestra, Timpani, Harpa, Coral Sacro • 68 BPM)",
+            "style_of_music": "cinematic orchestral worship, symphony strings, brass swell, timpani, powerful lead vocal, 4-part sacred choir, 68 BPM, majestic throne room climax",
             "vocal_preference": "Solista imponente com Coral Sacro Polifônico (Soprano, Contralto, Tenor, Baixo)",
             "tempo_dynamics": "Solene e grandioso (68 BPM) com dinâmica de sala do trono celestial",
             "metatags": {
-                "intro": ["[Celestial Harp & Symphony Strings Intro]", "[Distant Angelic Choir]"],
-                "verse1": "[Reverent Solo Vocal]\n[Grand Piano & Soft Strings]",
+                "intro": ["[68 BPM - Solemn Throne Room Tempo]", "[Celestial Harp, Symphony Strings & Angelic Choir Intro]"],
+                "verse1": "[Reverent Solo Lead Vocal]\n[Grand Piano & Soft Strings]",
                 "verse2": "[French Horns & Cello Countermelody]\n[Timpani Roll]",
                 "prechorus": "[Orchestral Crescendo]\n[Choir Voices Rising]",
                 "chorus": "[Majestic Throne Room Chorus]\n[Full Symphony Orchestra & 4-Part Sacred Choir]",
@@ -143,48 +210,48 @@ THEMATIC_ARRANGEMENTS = {
             }
         },
         {
-            "arrangement_name": "Arena Worship Solene (Piano, Guitarras c/ Reverb, Synth & Voz Feminina)",
-            "style_of_music": "modern arena worship, grand piano, shimmer reverb guitars, soaring female lead vocals, massive congregational choir",
+            "arrangement_name": "Arena Worship Solene (Piano, Guitarras Shimmer, Voz Feminina & Coral • 72 BPM)",
+            "style_of_music": "modern arena worship, grand piano, shimmer reverb guitars, soaring female lead vocals, massive congregational choir, 72 BPM, slow build to epic climax",
             "vocal_preference": "Voz feminina potente e ungida com milhares de vozes congregacionais no refrão",
             "tempo_dynamics": "Moderado solene (72 BPM) com paredes de guitarra atmosférica e grande clímax",
             "metatags": {
-                "intro": ["[Shimmer Guitar & Grand Piano Intro]", "[Deep Sub Bass Pad]"],
-                "verse1": "[Clear Anointed Female Vocal]\n[Sparse Piano & Ambient Pad]",
+                "intro": ["[72 BPM - Arena Worship Tempo]", "[Shimmer Guitar & Grand Piano Intro]"],
+                "verse1": "[Clear Anointed Female Lead Vocal]\n[Sparse Piano & Ambient Pad]",
                 "verse2": "[Tom-Heavy Worship Drums]\n[Delayed Electric Guitar]",
                 "prechorus": "[Rising Synth & Snare Build]\n[Congregation Singing Along]",
-                "chorus": "[Massive Arena Worship Chorus]\n[Soaring Female Lead & Huge Choir]",
-                "bridge": "[Explosive Worship Bridge]\n[Full Band Wall of Sound & Ad-libs]",
+                "chorus": "[Massive Arena Worship Chorus]\n[Soaring Female Lead & Huge Congregational Choir]",
+                "bridge": "[Explosive Worship Bridge]\n[Full Band Wall of Sound & Female Vocal Ad-libs]",
                 "outro": "[Gentle Piano & Ambient Reverb]\n[Fade Out]"
             }
         }
     ],
     "avivamento_fogo": [
         {
-            "arrangement_name": "Pentecostal de Avivamento & Impacto (Banda Completa, Metais & Coral)",
-            "style_of_music": "pentecostal revival worship, passionate powerhouse vocals, driving drums, electric guitar, piano, choir, intense build",
+            "arrangement_name": "Pentecostal de Avivamento & Impacto (Banda Completa, Metais, Voz Potente • 84 BPM)",
+            "style_of_music": "pentecostal revival worship, driving drums, electric guitar, piano, brass section, powerhouse lead vocals, passionate choir, 84 BPM, intense revival build",
             "vocal_preference": "Voz líder explosiva e pentecostal com coral vibrante em clamor",
-            "tempo_dynamics": "Crescente e intenso (82 BPM) com bateria marcada e explosão de avivamento",
+            "tempo_dynamics": "Crescente e intenso (84 BPM) com bateria marcada e explosão de avivamento",
             "metatags": {
-                "intro": ["[Dramatic Piano & Electric Guitar Intro]", "[Driving Drum Fill]"],
+                "intro": ["[84 BPM - Revival Worship Tempo]", "[Dramatic Piano, Electric Guitar & Driving Drum Fill Intro]"],
                 "verse1": "[Passionate Revival Lead Vocal]\n[Piano & Bass Groove]",
-                "verse2": "[Full Rhythm Section Enters]\n[Organ & Overdriven Guitar]",
+                "verse2": "[Full Rhythm Section Enters]\n[Hammond Organ & Overdriven Guitar]",
                 "prechorus": "[Snare Roll Crescendo]\n[Choir Voices Rising in Power]",
-                "chorus": "[Explosive Revival Chorus]\n[Powerhouse Lead, Brass & Full Choir]",
+                "chorus": "[Explosive Revival Chorus]\n[Powerhouse Lead Vocal, Brass & Full Choir]",
                 "bridge": "[Pentecostal Fire Bridge]\n[Intense Band Jam & Spontaneous Choir Cry]",
                 "outro": "[Final Climactic Chord]\n[Worship Applause & Piano Fade]"
             }
         },
         {
-            "arrangement_name": "Rock Worship Contemporâneo de Batalha (Guitarras, Bateria Forte & Voz Masculina)",
-            "style_of_music": "christian rock worship, driving electric guitars, punchy drums, passionate male vocals, anthemic chorus, high energy",
+            "arrangement_name": "Rock Worship de Batalha & Vitória (Guitarras, Bateria Forte, Voz Masculina • 98 BPM)",
+            "style_of_music": "christian rock worship, driving electric guitars, punchy rock drums, strong male lead vocals, anthemic backing choir, 98 BPM, high energy",
             "vocal_preference": "Voz masculina firme e vibrante com backing vocals em uníssono no refrão",
             "tempo_dynamics": "Energético e firme (98 BPM) com pulsação constante de guitarra e bateria",
             "metatags": {
-                "intro": ["[Anthemic Electric Guitar Riff Intro]", "[Driving Rock Drums]"],
+                "intro": ["[98 BPM - Driving Rock Worship Tempo]", "[Anthemic Electric Guitar Riff & Rock Drums Intro]"],
                 "verse1": "[Strong Male Lead Vocal]\n[Palm-Muted Guitar & Bass]",
                 "verse2": "[Rhythm Guitars Open Up]\n[Energetic Drum Beat]",
                 "prechorus": "[Building Guitar Octaves]\n[Crescendo]",
-                "chorus": "[High-Energy Anthemic Chorus]\n[Distorted Guitars, Full Drums & Backing Choir]",
+                "chorus": "[High-Energy Anthemic Chorus]\n[Strong Male Lead, Distorted Guitars & Backing Choir]",
                 "bridge": "[Epic Guitar Solo & Worship Cry]\n[Half-Time Heavy Groove]",
                 "outro": "[Final Anthemic Riff]\n[Strong Ending]"
             }
@@ -192,31 +259,31 @@ THEMATIC_ARRANGEMENTS = {
     ],
     "celebracao_jubilo": [
         {
-            "arrangement_name": "Praise & Celebração Congregacional Alegre (Pop Gospel, Metais & Coral)",
-            "style_of_music": "upbeat gospel praise, joyful brass section, funky bassline, rhythmic piano, energetic lead vocal, celebratory choir",
+            "arrangement_name": "Praise & Celebração Congregacional Alegre (Pop Gospel, Metais, Coral • 118 BPM)",
+            "style_of_music": "upbeat gospel praise, joyful brass section, funky bassline, rhythmic piano, energetic lead vocals, celebratory choir, 118 BPM, joyful party groove",
             "vocal_preference": "Líder alegre e contagiante com coral de celebração e palmas no refrão",
             "tempo_dynamics": "Rápido e festivo (118 BPM) em clima de gratidão, festa e júbilo",
             "metatags": {
-                "intro": ["[Upbeat Brass & Rhythmic Piano Intro]", "[Funky Gospel Bass & Drums]"],
-                "verse1": "[Joyful Lead Vocal]\n[Upbeat Piano & Tight Drums]",
+                "intro": ["[118 BPM - Upbeat Praise Tempo]", "[Joyful Brass, Rhythmic Piano & Funky Bass Intro]"],
+                "verse1": "[Joyful Energetic Lead Vocal]\n[Upbeat Piano & Tight Drums]",
                 "verse2": "[Choir Call and Response]\n[Rhythm Guitar & Horn Stabs]",
                 "prechorus": "[Handclaps & Drum Build]\n[Rising Excitement]",
-                "chorus": "[Celebratory Praise Chorus]\n[Full Gospel Choir, Brass Section & Groove]",
+                "chorus": "[Celebratory Praise Chorus]\n[Energetic Lead, Full Gospel Choir & Brass Groove]",
                 "bridge": "[Joyful Dance & Praise Breakdown]\n[Bass Solo & Choir Vamp]",
                 "outro": "[Big Finale Brass Hit]\n[Joyful Ending]"
             }
         },
         {
-            "arrangement_name": "Pop Worship Brasileiro / Acústico Alegre (Violão Aço, Percussão & Dueto)",
-            "style_of_music": "upbeat acoustic pop worship, bright steel guitar, rhythmic percussion, warm bass, joyful male and female vocals",
+            "arrangement_name": "Pop Worship Acústico Alegre (Violão Aço, Percussão, Dueto Alegre • 106 BPM)",
+            "style_of_music": "upbeat acoustic pop worship, bright steel guitar, rhythmic percussion, warm bass, joyful male and female vocal duet, youth choir, 106 BPM, uplifting groove",
             "vocal_preference": "Dueto masculino e feminino alegre e luminoso com coro jovem",
             "tempo_dynamics": "Médio alegre (106 BPM) com violão rítmico e batida contagiante",
             "metatags": {
-                "intro": ["[Bright Acoustic Guitar & Percussion Intro]", "[Uplifting Whistle & Piano]"],
-                "verse1": "[Warm Joyful Male Vocal]\n[Strummed Acoustic Guitar & Cajon]",
-                "verse2": "[Bright Female Vocal Joins]\n[Full Drums & Bass Groove]",
+                "intro": ["[106 BPM - Uplifting Acoustic Pop Tempo]", "[Bright Steel Guitar & Percussion Intro]"],
+                "verse1": "[Warm Joyful Male Lead Vocal]\n[Strummed Acoustic Guitar & Cajon]",
+                "verse2": "[Bright Female Lead Joins in Duet]\n[Full Drums & Bass Groove]",
                 "prechorus": "[Rhythmic Claps & Vocal Oohs]\n[Building Joy]",
-                "chorus": "[Uplifting Pop Worship Chorus]\n[Male & Female Duet with Youth Choir]",
+                "chorus": "[Uplifting Pop Worship Chorus]\n[Joyful Male & Female Duet with Youth Choir]",
                 "bridge": "[Acoustic Breakdown & Singalong]\n[Everyone Singing Together]",
                 "outro": "[Upbeat Acoustic Strumming Outro]\n[Clean End]"
             }
@@ -224,32 +291,32 @@ THEMATIC_ARRANGEMENTS = {
     ],
     "paz_refugio_cura": [
         {
-            "arrangement_name": "Piano Neoclássico & Cordas de Consolo (Piano Solo, Violino & Voz Feminina)",
-            "style_of_music": "neoclassical devotional worship, solo grand piano, expressive violin, warm strings, gentle female vocals, peaceful",
+            "arrangement_name": "Piano Neoclássico & Cordas de Consolo (Piano Solo, Violino, Voz Feminina • 64 BPM)",
+            "style_of_music": "neoclassical devotional worship, solo grand piano, expressive violin, warm strings, soothing female lead vocals, angelic choir, 64 BPM, peaceful healing dynamics",
             "vocal_preference": "Voz feminina doce, serena e consoladora com cordas suaves ao fundo",
             "tempo_dynamics": "Calmo e restaurador (64 BPM) transmitindo paz profunda e descanso na alma",
             "metatags": {
-                "intro": ["[Gentle Neoclassical Piano Intro]", "[Expressive Solo Violin]"],
-                "verse1": "[Soothing Female Vocal]\n[Delicate Grand Piano]",
+                "intro": ["[64 BPM - Peaceful Restorative Tempo]", "[Gentle Neoclassical Piano & Solo Violin Intro]"],
+                "verse1": "[Soothing Female Lead Vocal]\n[Delicate Grand Piano]",
                 "verse2": "[Warm String Quartet Enters]\n[Soft Acoustic Guitar]",
                 "prechorus": "[Swelling Strings]\n[Hopeful Crescendo]",
-                "chorus": "[Peaceful Worship Chorus]\n[Clear Female Lead, Lush Strings & Soft Choir]",
-                "bridge": "[Moment of Healing & Peace]\n[Piano Arpeggios & Angelic Harmonies]",
+                "chorus": "[Peaceful Worship Chorus]\n[Clear Female Lead, Lush Strings & Soft Angelic Choir]",
+                "bridge": "[Moment of Healing & Peace]\n[Piano Arpeggios & Soaring Female Harmony]",
                 "outro": "[Solo Piano & Violin Fade]\n[Peaceful Silence]"
             }
         },
         {
-            "arrangement_name": "Folk Worship de Esperança (Violão Dedilhado, Piano Suave & Voz Masculina)",
-            "style_of_music": "indie folk worship, warm acoustic guitar, soft upright piano, comforting male vocals, cello, hopeful crescendo",
+            "arrangement_name": "Folk Worship de Esperança (Violão Dedilhado, Piano, Voz Masculina • 72 BPM)",
+            "style_of_music": "indie folk worship, warm acoustic guitar, upright piano, cello, comforting male lead vocals, warm vocal harmonies, 72 BPM, hopeful crescendo",
             "vocal_preference": "Voz masculina acolhedora e serena nos versos, ganhando força de fé no refrão",
             "tempo_dynamics": "Moderado tranquilo (72 BPM) crescendo da lágrima para a certeza da vitória",
             "metatags": {
-                "intro": ["[Warm Fingerpicked Guitar & Upright Piano]", "[Soft Cello Drone]"],
-                "verse1": "[Comforting Male Vocal]\n[Intimate Guitar & Piano]",
+                "intro": ["[72 BPM - Gentle Folk Worship Tempo]", "[Warm Fingerpicked Guitar & Upright Piano Intro]"],
+                "verse1": "[Comforting Male Lead Vocal]\n[Intimate Guitar & Piano]",
                 "verse2": "[Brush Drums & Upright Bass]\n[Subtle Vocal Harmony]",
                 "prechorus": "[Cello & Acoustic Strum Build]\n[Rising Hope]",
-                "chorus": "[Hopeful Folk Worship Chorus]\n[Full Acoustic Ensemble & Warm Choir]",
-                "bridge": "[Declaration of Faith Bridge]\n[Passionate Vocals & Soaring Strings]",
+                "chorus": "[Hopeful Folk Worship Chorus]\n[Warm Male Lead, Full Acoustic Ensemble & Choir]",
+                "bridge": "[Declaration of Faith Bridge]\n[Passionate Male Vocals & Soaring Strings]",
                 "outro": "[Gentle Acoustic Chord]\n[Peaceful End]"
             }
         }
@@ -278,12 +345,11 @@ class SunoProducerAgent(BaseAgent):
     ) -> dict:
         """
         Analisa o Tema + Versículo + Reflexão Bíblica e gera dinamicamente uma nova
-        configuração de Estilo Musical, Voz, Andamento/Dinâmica e Metatags, garantindo
-        que mude a cada geração.
+        configuração de Estilo Musical (já com Voz e BPM integrados), Preferência Vocal,
+        Andamento/Dinâmica e Metatags, garantindo que mude a cada geração.
         """
         combined = _norm(f"{theme} {biblical_reference} {biblical_reflection}")
 
-        # Classifica a família estética pela reflexão bíblica e tema
         if any(w in combined for w in ["primeiro amor", "amo-te", "madrugada", "sede", "intimidade", "meu amado", "coracao", "devocao"]):
             pool_key = "amor_intimo"
         elif any(w in combined for w in ["amor", "agape", "cruz", "sangue", "graca", "redencao", "perdao", "arrepend", "cordeiro"]):
@@ -297,11 +363,9 @@ class SunoProducerAgent(BaseAgent):
         elif any(w in combined for w in ["paz", "descanso", "refugio", "cura", "consolo", "lagrima", "medo", "ansiedade", "pastor", "salmo 23", "salmo 91", "salmo 121"]):
             pool_key = "paz_refugio_cura"
         else:
-            # Combina todos os pools temáticos para variar amplamente
             pool_key = random.choice(list(THEMATIC_ARRANGEMENTS.keys()))
 
         candidates = list(THEMATIC_ARRANGEMENTS[pool_key])
-        # Adiciona 1 opção complementar de outra família compatível para ampliar a variedade
         if pool_key == "amor_agape_cruz":
             candidates.extend(THEMATIC_ARRANGEMENTS["amor_intimo"])
         elif pool_key == "amor_intimo":
@@ -321,11 +385,16 @@ class SunoProducerAgent(BaseAgent):
         chosen = random.choice(filtered)
         ref_short = biblical_reference.split("(")[0].strip() if biblical_reference else "a passagem bíblica"
         producer_rationale = (
-            f"Para o tema '{theme}' e a reflexão em {ref_short}, o Agente Musical desenhou o arranjo "
-            f"'{chosen['arrangement_name']}', unindo {chosen['vocal_preference'].lower()} e andamento {chosen['tempo_dynamics'].lower()}."
+            f"Para o tema '{theme}' e a reflexão em {ref_short}, o Agente Musical gerou o estilo completo com BPM e Voz: "
+            f"'{chosen['arrangement_name']}'."
         )
 
         result = dict(chosen)
+        result["style_of_music"] = build_complete_suno_style(
+            chosen["style_of_music"],
+            chosen["vocal_preference"],
+            chosen["tempo_dynamics"]
+        )
         result["producer_rationale"] = producer_rationale
         self._last_arrangement = result
         return result
@@ -335,7 +404,6 @@ class SunoProducerAgent(BaseAgent):
         self._last_dossier = dossier
         self._last_briefing = briefing
 
-        # Se o usuário estiver no modo automático (ou para gerar nova configuração baseada na reflexão bíblica):
         arr = self.design_arrangement_from_reflection(
             theme=briefing.theme,
             biblical_reference=briefing.biblical_reference,
@@ -343,18 +411,24 @@ class SunoProducerAgent(BaseAgent):
             exclude_style=briefing.musical_style_hint
         )
 
-        # Se o briefing veio com estilo "auto" ou vazio, aplica o estilo gerado pela reflexão;
-        # caso o usuário tenha escolhido um preset manual específico na hora, respeita as tags dele mas usa a reflexão.
         hint_clean = (briefing.musical_style_hint or "").strip()
         if not hint_clean or hint_clean.lower().startswith("auto"):
-            briefing.musical_style_hint = arr["style_of_music"]
             briefing.vocal_preference = arr["vocal_preference"]
             briefing.tempo_hint = arr["tempo_dynamics"]
+            briefing.musical_style_hint = arr["style_of_music"]
+        else:
+            # Mesmo no modo manual, garante que o Style of Music incorpore a Voz e o BPM escolhidos!
+            briefing.musical_style_hint = build_complete_suno_style(
+                hint_clean,
+                briefing.vocal_preference,
+                briefing.tempo_hint
+            )
 
         prompt = f"""Gere o pacote definitivo para o Suno AI no modelo SunoSongPackage:
 Título da Música: {draft.title}
-Estilo Gerado pela Reflexão Bíblica: {briefing.musical_style_hint} | {briefing.tempo_hint}
+Estilo Completo (com Voz e BPM): {briefing.musical_style_hint}
 Preferência Vocal: {briefing.vocal_preference}
+Andamento / BPM: {briefing.tempo_hint}
 Síntese Teológica: {dossier.exegetical_summary}
 
 Estrutura da Letra Original:
@@ -362,7 +436,14 @@ Estrutura da Letra Original:
         for sec in draft.sections:
             prompt += f"\n[{sec.tag}]\n" + "\n".join(sec.lines) + "\n"
 
-        return self.call_llm(prompt, SunoSongPackage)
+        pkg = self.call_llm(prompt, SunoSongPackage)
+        # Garante que mesmo se vier de LLM externo, o style_of_music tenha BPM e Voz integrados
+        pkg.style_of_music = build_complete_suno_style(
+            pkg.style_of_music or briefing.musical_style_hint,
+            briefing.vocal_preference,
+            briefing.tempo_hint
+        )
+        return pkg
 
     def _generate_contextual_demonstration(self, user_prompt: str, response_model: Type[BaseModel]) -> SunoSongPackage:
         draft = self._last_draft
@@ -370,11 +451,6 @@ Estrutura da Letra Original:
         briefing = self._last_briefing
         arr = self._last_arrangement or THEMATIC_ARRANGEMENTS["amor_intimo"][0]
 
-        style_prompt = (
-            briefing.musical_style_hint.strip()
-            if (briefing and briefing.musical_style_hint and not briefing.musical_style_hint.lower().startswith("auto"))
-            else arr["style_of_music"]
-        )
         bpm = (
             briefing.tempo_hint.strip()
             if (briefing and briefing.tempo_hint)
@@ -385,6 +461,13 @@ Estrutura da Letra Original:
             if (briefing and briefing.vocal_preference)
             else arr["vocal_preference"]
         )
+        raw_style = (
+            briefing.musical_style_hint.strip()
+            if (briefing and briefing.musical_style_hint and not briefing.musical_style_hint.lower().startswith("auto"))
+            else arr["style_of_music"]
+        )
+        style_prompt = build_complete_suno_style(raw_style, vocal_guidance, bpm)
+
         meta = arr.get("metatags", THEMATIC_ARRANGEMENTS["amor_intimo"][0]["metatags"])
 
         if draft and draft.sections:
@@ -423,15 +506,15 @@ Estrutura da Letra Original:
 
         return SunoSongPackage(
             song_title=song_title,
-            style_of_music=style_prompt[:135],
+            style_of_music=style_prompt,
             lyrics_with_metatags=lyrics_with_metatags,
             target_bpm=bpm,
             vocal_configuration=vocal_guidance,
             theological_summary=theo_summary,
             suno_tips=[
                 f"Arranjo Musical Gerado: {arr.get('arrangement_name', 'Worship Personalizado')}",
-                f"Voz Configurada: {vocal_guidance}",
-                f"Dinâmica e BPM: {bpm}",
+                f"Voz Incluída no Style: {vocal_guidance}",
+                f"BPM e Dinâmica Incluídos no Style: {bpm}",
                 "No Suno AI, ative o modo 'Custom' e cole os blocos 'Style of Music' e 'Lyrics'."
             ]
         )

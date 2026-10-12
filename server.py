@@ -29,10 +29,18 @@ HISTORY_FILE = Path(__file__).parent / "historico_musicas.json"
 
 
 def load_song_history():
-    """Carrega o histórico persistente de canções."""
+    """Carrega o histórico persistente de canções garantindo BPM e Voz no Style of Music."""
     if HISTORY_FILE.exists():
         try:
-            return json.loads(HISTORY_FILE.read_text(encoding="utf-8"))
+            from agents.suno_producer import build_complete_suno_style
+            items = json.loads(HISTORY_FILE.read_text(encoding="utf-8"))
+            for item in items:
+                item["style_of_music"] = build_complete_suno_style(
+                    item.get("style_of_music", ""),
+                    item.get("vocal_configuration", item.get("vocal_preference", "")),
+                    item.get("target_bpm", item.get("tempo_hint", ""))
+                )
+            return items
         except Exception:
             return []
     return []
@@ -269,13 +277,13 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                             </optgroup>
                         </select>
                         <div style="margin-top: 10px;">
-                            <label style="font-size: 0.98rem; color: #c9d1d9; margin-bottom: 6px; display: block;">Tags do Estilo (Geradas pelo Agente ou Editáveis):</label>
-                            <input type="text" id="musical_style" value="modern worship, CCM, grand piano, celestial choir, swelling guitars, slow build, cinematic" placeholder="Digite os instrumentos e estilo desejados em inglês ou português...">
+                            <label style="font-size: 0.98rem; color: #c9d1d9; margin-bottom: 6px; display: block;">Tags do Estilo (Já com Estilo + Voz + BPM p/ o Suno AI):</label>
+                            <input type="text" id="musical_style" value="modern worship, CCM, grand piano, celestial choir, swelling guitars, emotional male lead vocals, 70 BPM, slow build to epic climax" placeholder="Digite os instrumentos, voz e BPM desejados...">
                         </div>
                     </div>
                     <div class="form-group">
                         <label>Preferência Vocal (Gerada pela Reflexão ou Editável)</label>
-                        <input type="text" id="vocal_pref" list="vocal_suggestions" value="Voz masculina emotiva nos versos com coral harmônico no refrão">
+                        <input type="text" id="vocal_pref" list="vocal_suggestions" value="Voz masculina emotiva nos versos com coral harmônico no refrão" onchange="syncStyleWithVocalAndBpm()">
                         <datalist id="vocal_suggestions">
                             <option value="Voz masculina emotiva nos versos com coral harmônico no refrão">
                             <option value="Voz feminina suave e ungida com grande alcance no clímax">
@@ -287,7 +295,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                     </div>
                     <div class="form-group">
                         <label>Andamento / Dinâmica (Gerado pela Reflexão ou Editável)</label>
-                        <input type="text" id="tempo_pref" list="tempo_suggestions" value="Lento (68-72 BPM) com grande crescendo para clímax">
+                        <input type="text" id="tempo_pref" list="tempo_suggestions" value="Lento (68-72 BPM) com grande crescendo para clímax" onchange="syncStyleWithVocalAndBpm()">
                         <datalist id="tempo_suggestions">
                             <option value="Lento (68-72 BPM) com grande crescendo para clímax">
                             <option value="Moderado congregacional (78-85 BPM) envolvente e solene">
@@ -297,8 +305,8 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                         </datalist>
                         <div id="producerManagementBox" style="margin-top: 10px; padding: 14px 16px; background: rgba(88, 166, 255, 0.08); border-left: 4px solid #58a6ff; border-radius: 8px; font-size: 1.02rem; color: #e6edf3; line-height: 1.55;">
                             <div style="color: #58a6ff; font-weight: bold; font-size: 1.08rem; margin-bottom: 6px;">🎹 Gestão do Agente Musical (Baseado no Tema & Reflexão):</div>
-                            <div style="margin-bottom: 4px;">🎶 <b>Arranjo Sorteado:</b> <span id="arrangementNameText" style="color: var(--accent-gold);">Automático — Será gerado para cada nova música!</span></div>
-                            <div>💡 <b>Direção Musical:</b> <span id="producerRationaleText" style="color: #c9d1d9;">Ao clicar em "Compor Música com Agentes", o Diretor Musical criará novo Estilo, Voz e Dinâmica alinhados à Reflexão Bíblica.</span></div>
+                            <div style="margin-bottom: 4px;">🎶 <b>Arranjo Sorteado:</b> <span id="arrangementNameText" style="color: var(--accent-gold);">Automático — Será gerado com Estilo + Voz + BPM para cada música!</span></div>
+                            <div>💡 <b>Direção Musical:</b> <span id="producerRationaleText" style="color: #c9d1d9;">Ao clicar em "Compor Música com Agentes", o Diretor Musical criará o Style já com BPM e Voz incluídos de acordo com a geração.</span></div>
                         </div>
                     </div>
                     
@@ -328,8 +336,8 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                 <div class="tab-content active" id="tabSuno">
                     <div class="suno-field">
                         <div class="suno-header">
-                            <span class="suno-title">🎹 Campo 'Style of Music' (<span id="styleCharCount">0</span> carac.)</span>
-                            <button class="btn-copy" onclick="copyText('styleText', 'Style of Music copiado!')">📋 Copiar Estilo</button>
+                            <span class="suno-title">🎹 Campo 'Style of Music' — Já com Voz e BPM (<span id="styleCharCount">0</span> carac.)</span>
+                            <button class="btn-copy" onclick="copyText('styleText', 'Style of Music (com Voz e BPM) copiado!')">📋 Copiar Estilo</button>
                         </div>
                         <pre id="styleText" style="color: var(--accent-gold); font-weight: bold;"></pre>
                     </div>
@@ -427,6 +435,39 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             });
         }
 
+        function syncStyleWithVocalAndBpm() {
+            const styleElem = document.getElementById('musical_style');
+            const vocalVal = (document.getElementById('vocal_pref').value || '').toLowerCase();
+            const tempoVal = (document.getElementById('tempo_pref').value || '');
+            let base = styleElem.value.trim();
+            if (!base) return;
+
+            // Remove tags de BPM antigas para substituir pela nova
+            base = base.replace(/,\\s*\\d{2,3}\\s*BPM[^,]*/gi, '');
+
+            // Verifica se já tem indicação vocal; se o usuário trocou a voz, garante a tag vocal correspondente
+            let vocalTag = "passionate lead vocals & choir";
+            if (vocalVal.includes("dueto")) vocalTag = "male and female vocal duet, rich harmony";
+            else if (vocalVal.includes("feminina") && vocalVal.includes("soul")) vocalTag = "soulful female lead vocals, gospel choir";
+            else if (vocalVal.includes("feminina")) vocalTag = "anointed female lead vocals, backing choir";
+            else if (vocalVal.includes("masculina")) vocalTag = "emotional male lead vocals, congregational choir";
+            else if (vocalVal.includes("4 vozes") || vocalVal.includes("sacro")) vocalTag = "powerful lead vocal, 4-part sacred choir";
+
+            let bpmTag = "70 BPM";
+            const bpmMatch = tempoVal.match(/(\\d{2,3})\\s*(?:-\\s*\\d{2,3})?\\s*BPM/i);
+            if (bpmMatch) bpmTag = bpmMatch[1] + " BPM";
+            else if (tempoVal.toLowerCase().includes("rápido") || tempoVal.toLowerCase().includes("vibrante")) bpmTag = "120 BPM";
+            else if (tempoVal.toLowerCase().includes("médio") || tempoVal.toLowerCase().includes("alegre")) bpmTag = "104 BPM";
+            else if (tempoVal.toLowerCase().includes("moderado")) bpmTag = "78 BPM";
+            else if (tempoVal.toLowerCase().includes("calmo") || tempoVal.toLowerCase().includes("rubato")) bpmTag = "66 BPM";
+
+            if (!/(vocal|voice|lead|duet|choir)/i.test(base)) {
+                base += ", " + vocalTag;
+            }
+            base += ", " + bpmTag;
+            styleElem.value = base;
+        }
+
         async function autoFillScriptures() {
             const theme = document.getElementById('theme').value.trim();
             const currentRef = document.getElementById('biblical_ref').value.trim();
@@ -446,7 +487,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                     if (data.biblical_reflection) {
                         document.getElementById('biblicalReflectionText').innerText = data.biblical_reflection;
                     }
-                    // Se estiver no modo Automático pelo Agente, também já atualiza Estilo, Voz e Dinâmica com base na Reflexão Bíblica!
+                    // Se estiver no modo Automático pelo Agente, também já atualiza Estilo (com Voz e BPM), Voz e Dinâmica!
                     const presetMode = document.getElementById('musical_style_preset').value;
                     if (presetMode === 'auto' && data.arrangement) {
                         document.getElementById('musical_style').value = data.arrangement.style_of_music;
@@ -455,7 +496,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                         document.getElementById('arrangementNameText').innerText = data.arrangement.arrangement_name;
                         document.getElementById('producerRationaleText').innerText = data.arrangement.producer_rationale;
                     }
-                    showToast(`🎲 Sorteado: ${data.chosen_verse.split(' (')[0]} + Novo Arranjo Musical!`);
+                    showToast(`🎲 Sorteado: ${data.chosen_verse.split(' (')[0]} + Style com Voz e BPM!`);
                 } else {
                     showToast("Aviso: " + (data.error || "Não foi possível sugerir"));
                 }
@@ -469,17 +510,18 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             const val = selectElem.value;
             const inputElem = document.getElementById('musical_style');
             if (val === 'auto') {
-                showToast("🤖 Modo Automático ativado! O Agente Musical gerará Estilo, Voz e Dinâmica pela Reflexão Bíblica.");
+                showToast("🤖 Modo Automático ativado! O Agente Musical gerará Estilo, Voz e BPM pela Reflexão Bíblica.");
                 autoFillScriptures();
             } else if (val === 'custom') {
                 inputElem.value = '';
                 inputElem.focus();
-                showToast("✍️ Digite seu estilo e instrumentos livremente!");
+                showToast("✍️ Digite seu estilo, instrumentos, voz e BPM livremente!");
             } else {
                 inputElem.value = val;
+                syncStyleWithVocalAndBpm();
                 document.getElementById('arrangementNameText').innerText = selectElem.options[selectElem.selectedIndex].text;
-                document.getElementById('producerRationaleText').innerText = "Estilo selecionado manualmente pelo usuário na lista.";
-                showToast("🎶 Estilo manual aplicado!");
+                document.getElementById('producerRationaleText').innerText = "Estilo selecionado manualmente (com Voz e BPM integrados no Style).";
+                showToast("🎶 Estilo + Voz + BPM aplicados!");
             }
         }
 
@@ -556,15 +598,18 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                         <div class="history-meta">
                             📅 <b>Criada:</b> ${item.created_at || 'Hoje'} | 📖 <b>Base:</b> ${item.biblical_reference || ''}
                         </div>
-                        <p style="font-size: 1.04rem; color: #c9d1d9; margin-bottom: 10px;">
+                        <p style="font-size: 1.04rem; color: #c9d1d9; margin-bottom: 6px;">
                             <b>Tema:</b> ${item.theme}
                         </p>
-                        <div style="background: var(--bg-primary); padding: 10px; border-radius: 6px; font-size: 0.98rem; color: var(--accent-gold); font-family: monospace; margin-bottom: 10px; word-break: break-all;">
+                        <p style="font-size: 0.96rem; color: #58a6ff; margin-bottom: 10px;">
+                            🎤 <b>Voz:</b> ${item.vocal_configuration || 'Voz & Coral'} &nbsp;|&nbsp; ⏱️ <b>BPM / Dinâmica:</b> ${item.target_bpm || '70 BPM'}
+                        </p>
+                        <div style="background: var(--bg-primary); padding: 12px; border-radius: 6px; font-size: 1.02rem; color: var(--accent-gold); font-family: monospace; margin-bottom: 10px; word-break: break-all;">
                             ${item.style_of_music}
                         </div>
                         <div class="history-actions">
                             <button class="btn-action btn-load" onclick="selectFromHistory(${idx})">👁️ Ver na Tela</button>
-                            <button class="btn-action" onclick="copyRaw(globalHistory[${idx}].style_of_music, 'Style copiado!')">📋 Style</button>
+                            <button class="btn-action" onclick="copyRaw(globalHistory[${idx}].style_of_music, 'Style (com Voz e BPM) copiado!')">📋 Style</button>
                             <button class="btn-action" onclick="copyRaw(globalHistory[${idx}].lyrics_with_metatags, 'Letra copiada!')">📝 Letra</button>
                         </div>
                     </div>
