@@ -40,6 +40,12 @@ class TheologicalDossier(BaseModel):
     exegetical_summary: str = Field(description="Síntese teológica que guiará a composição poética")
 
 
+class ScriptureSuggestion(BaseModel):
+    """Sugestão inteligente de versículos produzida pelo Agente Teólogo após identificar o tema."""
+    identified_theme: str = Field(description="Tema ou doutrina identificada e delimitada pelo Teólogo")
+    scriptures: List[str] = Field(description="Lista de referências bíblicas canônicas selecionadas e sorteadas")
+
+
 class LyricSection(BaseModel):
     """Uma seção estrutural da letra (Verso, Refrão, etc.)."""
     tag: str = Field(description="Nome da seção (ex: Verse 1, Pre-Chorus, Chorus, Bridge, Outro)")
