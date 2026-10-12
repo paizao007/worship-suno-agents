@@ -1,7 +1,7 @@
 """
 Servidor Web e API REST do Sistema Multiagente de Adoração para Suno AI.
 🕊️ Banda LVS Litúrgica Multiagente & Suno AI 🎵
-Inclui interface gráfica moderna, histórico persistente de canções e endpoints de composição.
+Otimizado para Celulares (Mobile First / PWA) e Desktop com Histórico Persistente.
 """
 
 import sys
@@ -49,7 +49,14 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <meta name="theme-color" content="#0d1117">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Banda LVS">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🕊️</text></svg>">
+    <link rel="manifest" href="/manifest.json">
     <title>🕊️ Banda LVS Litúrgica Multiagente & Suno AI 🎵</title>
     <style>
         :root {
@@ -63,98 +70,137 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             --text-secondary: #8b949e;
             --border-color: #30363d;
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
-        body { background: var(--bg-primary); color: var(--text-primary); padding: 24px; }
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        body { background: var(--bg-primary); color: var(--text-primary); padding: 20px; min-height: 100vh; }
         .container { max-width: 1280px; margin: 0 auto; }
         
-        header { text-align: center; margin-bottom: 32px; border-bottom: 1px solid var(--border-color); padding-bottom: 24px; }
-        header h1 { font-size: 2.2rem; color: var(--accent-gold); margin-bottom: 8px; }
-        header p { color: var(--text-secondary); font-size: 1.1rem; }
+        header { text-align: center; margin-bottom: 24px; border-bottom: 1px solid var(--border-color); padding-bottom: 18px; }
+        header h1 { font-size: 2.0rem; color: var(--accent-gold); margin-bottom: 8px; line-height: 1.2; }
+        header p { color: var(--text-secondary); font-size: 1.0rem; }
         
-        .status-bar { display: flex; gap: 16px; justify-content: center; margin-top: 16px; flex-wrap: wrap; }
-        .badge { padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; }
+        .status-bar { display: flex; gap: 10px; justify-content: center; margin-top: 14px; flex-wrap: wrap; }
+        .badge { padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; }
         .badge-gemini { background: rgba(88, 166, 255, 0.15); color: var(--accent-blue); border: 1px solid var(--accent-blue); }
         .badge-ollama { background: rgba(63, 185, 80, 0.15); color: var(--accent-green); border: 1px solid var(--accent-green); }
         .badge-history { background: rgba(227, 179, 65, 0.15); color: var(--accent-gold); border: 1px solid var(--accent-gold); cursor: pointer; }
         
-        .grid { display: grid; grid-template-columns: 380px 1fr; gap: 24px; }
-        @media (max-width: 960px) { .grid { grid-template-columns: 1fr; } }
+        .grid { display: grid; grid-template-columns: 380px 1fr; gap: 20px; }
         
-        .card { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 12px; padding: 24px; }
-        .card h2 { font-size: 1.3rem; margin-bottom: 16px; color: var(--accent-gold); border-bottom: 1px solid var(--border-color); padding-bottom: 8px; }
+        .card { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; }
+        .card h2 { font-size: 1.25rem; margin-bottom: 16px; color: var(--accent-gold); border-bottom: 1px solid var(--border-color); padding-bottom: 8px; }
         
-        .form-group { margin-bottom: 16px; }
-        .form-group label { display: block; font-size: 0.9rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; }
+        .form-group { margin-bottom: 14px; }
+        .form-group label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; }
+        
+        /* 16px no mobile impede o iOS Safari de dar auto-zoom nos inputs */
         .form-group input, .form-group textarea, .form-group select {
-            width: 100%; padding: 10px 12px; background: var(--bg-primary); border: 1px solid var(--border-color);
-            border-radius: 6px; color: var(--text-primary); font-size: 0.95rem; outline: none; transition: 0.2s;
+            width: 100%; min-height: 44px; padding: 10px 12px; background: var(--bg-primary); border: 1px solid var(--border-color);
+            border-radius: 8px; color: var(--text-primary); font-size: 16px; outline: none; transition: 0.2s;
         }
-        .form-group input:focus, .form-group textarea:focus { border-color: var(--accent-gold); box-shadow: 0 0 0 2px rgba(227, 179, 65, 0.2); }
+        .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+            border-color: var(--accent-gold); box-shadow: 0 0 0 2px rgba(227, 179, 65, 0.2);
+        }
         
         .btn-submit {
-            width: 100%; padding: 14px; background: linear-gradient(135deg, #e3b341, #d29922);
+            width: 100%; min-height: 48px; padding: 12px; background: linear-gradient(135deg, #e3b341, #d29922);
             color: #000; font-weight: bold; font-size: 1.05rem; border: none; border-radius: 8px; cursor: pointer; transition: 0.2s;
+            display: flex; justify-content: center; align-items: center; gap: 8px;
         }
-        .btn-submit:hover { opacity: 0.9; transform: translateY(-1px); }
+        .btn-submit:active { transform: scale(0.98); opacity: 0.9; }
         .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
         
-        .stepper { display: flex; flex-direction: column; gap: 12px; margin-top: 20px; }
-        .step-item { display: flex; align-items: center; gap: 10px; font-size: 0.9rem; color: var(--text-secondary); }
+        .stepper { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
+        .step-item { display: flex; align-items: center; gap: 10px; font-size: 0.88rem; color: var(--text-secondary); }
         .step-item.active { color: var(--accent-gold); font-weight: bold; }
         .step-item.done { color: var(--accent-green); }
         
-        .suno-field { background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 8px; padding: 16px; margin-bottom: 20px; position: relative; }
-        .suno-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .suno-field { background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 8px; padding: 14px; margin-bottom: 16px; }
+        .suno-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px; }
         .suno-title { font-size: 0.95rem; font-weight: bold; color: var(--accent-blue); }
+        
         .btn-copy {
             background: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border-color);
-            padding: 6px 12px; border-radius: 6px; font-size: 0.8rem; cursor: pointer; transition: 0.2s;
+            padding: 8px 14px; border-radius: 6px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: 0.2s;
+            min-height: 38px; display: inline-flex; align-items: center; gap: 6px;
         }
-        .btn-copy:hover { background: var(--accent-gold); color: #000; }
+        .btn-copy:active { background: var(--accent-gold); color: #000; transform: scale(0.96); }
         
-        pre { white-space: pre-wrap; font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace; font-size: 0.9rem; line-height: 1.5; color: #c9d1d9; }
+        pre {
+            white-space: pre-wrap; word-break: break-word; font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+            font-size: 0.9rem; line-height: 1.5; color: #c9d1d9;
+        }
         
-        .tabs { display: flex; gap: 8px; margin-bottom: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; flex-wrap: wrap; }
-        .tab-btn { background: none; border: none; color: var(--text-secondary); font-size: 0.95rem; font-weight: 600; padding: 8px 14px; cursor: pointer; border-radius: 6px; }
+        /* Abas com rolagem suave por toque em telas pequenas */
+        .tabs {
+            display: flex; gap: 6px; margin-bottom: 16px; border-bottom: 1px solid var(--border-color);
+            padding-bottom: 8px; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none;
+        }
+        .tabs::-webkit-scrollbar { display: none; }
+        .tab-btn {
+            background: none; border: none; color: var(--text-secondary); font-size: 0.9rem; font-weight: 600;
+            padding: 8px 12px; cursor: pointer; border-radius: 6px; white-space: nowrap; flex-shrink: 0; min-height: 40px;
+        }
         .tab-btn.active { color: var(--accent-gold); background: var(--bg-card); }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
         
-        .score-pill { font-size: 1.2rem; font-weight: bold; color: var(--accent-green); margin-bottom: 12px; }
+        .score-pill { font-size: 1.15rem; font-weight: bold; color: var(--accent-green); margin-bottom: 12px; }
 
-        /* Estilos do Histórico */
+        /* Cards do Histórico */
         .history-card {
             background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px;
-            padding: 16px; margin-bottom: 16px; transition: 0.2s;
+            padding: 14px; margin-bottom: 14px; transition: 0.2s;
         }
-        .history-card:hover { border-color: var(--accent-gold); }
-        .history-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-        .history-title { font-size: 1.1rem; font-weight: bold; color: var(--accent-gold); }
-        .history-meta { font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 12px; }
-        .history-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+        .history-card:active { border-color: var(--accent-gold); }
+        .history-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 6px; }
+        .history-title { font-size: 1.05rem; font-weight: bold; color: var(--accent-gold); }
+        .history-meta { font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 10px; }
+        .history-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
         .btn-action {
             background: var(--bg-primary); color: var(--text-primary); border: 1px solid var(--border-color);
-            padding: 6px 10px; border-radius: 6px; font-size: 0.8rem; cursor: pointer; transition: 0.2s;
+            padding: 8px 12px; border-radius: 6px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: 0.2s; min-height: 38px;
         }
-        .btn-action:hover { background: var(--accent-blue); color: #fff; }
-        .btn-load { background: rgba(227, 179, 65, 0.2); border-color: var(--accent-gold); color: var(--accent-gold); }
-        .btn-load:hover { background: var(--accent-gold); color: #000; }
+        .btn-action:active { background: var(--accent-blue); color: #fff; transform: scale(0.96); }
+        .btn-load { background: rgba(227, 179, 65, 0.15); border-color: var(--accent-gold); color: var(--accent-gold); }
+        .btn-load:active { background: var(--accent-gold); color: #000; }
+
+        /* Toast flutuante moderno para celulares (substitui alert feio) */
+        #toast {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px);
+            background: #1c2128; color: var(--accent-gold); border: 1px solid var(--accent-gold);
+            padding: 12px 24px; border-radius: 30px; font-weight: bold; font-size: 0.95rem;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6); z-index: 9999; opacity: 0; transition: 0.3s ease;
+            pointer-events: none; text-align: center; max-width: 90vw;
+        }
+        #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+        /* Regras Específicas para Smartphones (Mobile-First) */
+        @media (max-width: 860px) {
+            body { padding: 12px 8px 30px 8px; }
+            header { margin-bottom: 18px; padding-bottom: 14px; }
+            header h1 { font-size: 1.5rem; }
+            header p { font-size: 0.9rem; }
+            .grid { grid-template-columns: 1fr; gap: 16px; }
+            .card { padding: 14px; border-radius: 10px; }
+            .btn-action, .btn-copy { flex: 1; justify-content: center; }
+            pre { font-size: 0.85rem; }
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
             <h1>🕊️ Banda LVS Litúrgica Multiagente & Suno AI 🎵</h1>
-            <p>Orquestração de Agentes para Composição Sacra • Rigor Bíblico • Engenharia de Prompts</p>
+            <p>Composição Sacra • Rigor Bíblico • Engenharia de Prompts para Suno</p>
             <div class="status-bar" id="statusBar">
                 <span class="badge badge-gemini">✨ Gemini Cloud: Ativo</span>
                 <span class="badge badge-ollama">🦙 Ollama Local (WSL): Disponível</span>
-                <span class="badge badge-history" onclick="switchTab('tabHistory')">📚 <span id="badgeHistoryText">Histórico de Músicas</span></span>
+                <span class="badge badge-history" onclick="switchTab('tabHistory')">📚 <span id="badgeHistoryText">Histórico</span></span>
             </div>
         </header>
 
         <div class="grid">
-            <!-- Coluna da Esquerda: Formulário de Briefing -->
+            <!-- Formulário de Briefing -->
             <div class="card">
                 <h2>1. Novo Briefing de Adoração</h2>
                 <form id="composeForm">
@@ -169,10 +215,10 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                     <div class="form-group">
                         <label>Estilo Musical no Suno</label>
                         <select id="musical_style">
-                            <option value="modern worship, CCM, grand piano, celestial choir, swelling guitars, slow build, cinematic">Modern Worship Solene (Estilo Hillsong/Elevation)</option>
-                            <option value="brazilian worship, organic CCM, acoustic piano, acoustic guitar, passionate male lead, strings crescendo">Brazilian Worship Orgânico (Estilo Morada/FHOP)</option>
-                            <option value="cinematic worship, orchestral, powerful female vocals, strings section, timpani, slow burning, celestial climax">Cinematic Orchestral Épico (Cordas e Tímpanos)</option>
-                            <option value="black gospel worship, soul, hammond B3 organ, soulful lead, backing choir, expressive">Black Gospel & Soul Worship (Órgão Hammond & Coral)</option>
+                            <option value="modern worship, CCM, grand piano, celestial choir, swelling guitars, slow build, cinematic">Modern Worship Solene (Hillsong/Elevation)</option>
+                            <option value="brazilian worship, organic CCM, acoustic piano, acoustic guitar, passionate male lead, strings crescendo">Brazilian Worship Orgânico (Morada/FHOP)</option>
+                            <option value="cinematic worship, orchestral, powerful female vocals, strings section, timpani, slow burning, celestial climax">Cinematic Orchestral Épico (Cordas/Coral)</option>
+                            <option value="black gospel worship, soul, hammond B3 organ, soulful lead, backing choir, expressive">Black Gospel & Soul Worship (Órgão Hammond)</option>
                             <option value="intimate acoustic worship, nylon guitar, soft piano, tender female vocals, warm ambient reverb">Acoustic Devotional Intimista (Voz e Violão)</option>
                         </select>
                     </div>
@@ -196,14 +242,14 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                 </div>
             </div>
 
-            <!-- Coluna da Direita: Resultados e Histórico -->
+            <!-- Cabine de Produção e Histórico -->
             <div class="card">
-                <h2>2. Cabine de Produção & Histórico de Músicas</h2>
+                <h2>2. Cabine de Produção & Saída Suno AI</h2>
 
                 <div class="tabs">
-                    <button class="tab-btn active" id="btnTabSuno" onclick="switchTab('tabSuno')">🎵 Música (Suno AI)</button>
-                    <button class="tab-btn" id="btnTabTheology" onclick="switchTab('tabTheology')">📜 Teologia & Exegese</button>
-                    <button class="tab-btn" id="btnTabAudit" onclick="switchTab('tabAudit')">⚖️ Parecer do Auditor</button>
+                    <button class="tab-btn active" id="btnTabSuno" onclick="switchTab('tabSuno')">🎵 Música (Suno)</button>
+                    <button class="tab-btn" id="btnTabTheology" onclick="switchTab('tabTheology')">📜 Teologia</button>
+                    <button class="tab-btn" id="btnTabAudit" onclick="switchTab('tabAudit')">⚖️ Auditoria</button>
                     <button class="tab-btn" id="btnTabHistory" onclick="switchTab('tabHistory')">📚 Histórico (<span id="historyTabCount">0</span>)</button>
                 </div>
 
@@ -211,8 +257,8 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                 <div class="tab-content active" id="tabSuno">
                     <div class="suno-field">
                         <div class="suno-header">
-                            <span class="suno-title">🎹 Campo 'Style of Music' (<span id="styleCharCount">0</span> caracteres)</span>
-                            <button class="btn-copy" onclick="copyText('styleText')">Copiar Estilo</button>
+                            <span class="suno-title">🎹 Campo 'Style of Music' (<span id="styleCharCount">0</span> carac.)</span>
+                            <button class="btn-copy" onclick="copyText('styleText', 'Style of Music copiado!')">📋 Copiar Estilo</button>
                         </div>
                         <pre id="styleText" style="color: var(--accent-gold); font-weight: bold;"></pre>
                     </div>
@@ -220,7 +266,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                     <div class="suno-field">
                         <div class="suno-header">
                             <span class="suno-title">✍️ Campo 'Lyrics' com Metatags [Tag]</span>
-                            <button class="btn-copy" onclick="copyText('lyricsText')">Copiar Letra Completa</button>
+                            <button class="btn-copy" onclick="copyText('lyricsText', 'Letra completa copiada!')">📝 Copiar Letra</button>
                         </div>
                         <pre id="lyricsText" style="max-height: 480px; overflow-y: auto;"></pre>
                     </div>
@@ -229,7 +275,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                 <!-- Aba 2: Teologia -->
                 <div class="tab-content" id="tabTheology">
                     <div class="suno-field">
-                        <h3 id="theologyTitle" style="color: var(--accent-gold); margin-bottom: 12px;"></h3>
+                        <h3 id="theologyTitle" style="color: var(--accent-gold); margin-bottom: 12px; font-size: 1.1rem;"></h3>
                         <p style="color: var(--text-secondary); margin-bottom: 8px;"><b>Atributos Divinos:</b> <span id="theologyAttributes" style="color: #fff;"></span></p>
                         <p style="color: var(--text-secondary); margin-bottom: 8px;"><b>Foco Cristocêntrico:</b> <span id="theologyChrist" style="color: #fff;"></span></p>
                         <p style="color: var(--text-secondary); margin-bottom: 8px;"><b>Palavras Sagradas:</b> <span id="theologyKeywords" style="color: #fff;"></span></p>
@@ -244,29 +290,37 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                     <div class="suno-field">
                         <div class="score-pill" id="auditScore"></div>
                         <h4 style="margin-bottom: 8px; color: var(--accent-green);">Pontos Fortes:</h4>
-                        <ul id="auditStrengths" style="margin-left: 20px; margin-bottom: 16px; color: #c9d1d9;"></ul>
+                        <ul id="auditStrengths" style="margin-left: 20px; margin-bottom: 16px; color: #c9d1d9; font-size: 0.9rem;"></ul>
                         <h4 style="margin-bottom: 8px; color: var(--accent-gold);">Observações Críticas:</h4>
-                        <ul id="auditCritiques" style="margin-left: 20px; color: #c9d1d9;"></ul>
+                        <ul id="auditCritiques" style="margin-left: 20px; color: #c9d1d9; font-size: 0.9rem;"></ul>
                     </div>
                 </div>
 
                 <!-- Aba 4: Histórico Persistente -->
                 <div class="tab-content" id="tabHistory">
-                    <div style="margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
-                        <h3 style="color: var(--accent-gold);">Histórico de Canções Criadas</h3>
+                    <div style="margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center;">
+                        <h3 style="color: var(--accent-gold); font-size: 1.05rem;">Histórico de Canções Salvas</h3>
                         <button class="btn-copy" onclick="loadHistory()">🔄 Atualizar</button>
                     </div>
-                    <div id="historyListContainer">
-                        <!-- Cards injetados via JavaScript -->
-                    </div>
+                    <div id="historyListContainer"></div>
                 </div>
 
             </div>
         </div>
     </div>
 
+    <!-- Toast flutuante para celulares -->
+    <div id="toast">✓ Copiado com sucesso!</div>
+
     <script>
         let globalHistory = [];
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.innerText = msg || "✓ Copiado com sucesso!";
+            toast.classList.add('show');
+            setTimeout(() => { toast.classList.remove('show'); }, 2200);
+        }
 
         function switchTab(tabId) {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -285,26 +339,28 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             if (targetContent) targetContent.classList.add('active');
         }
 
-        function copyText(elemId) {
+        function copyText(elemId, customMsg) {
             const text = document.getElementById(elemId).innerText;
             navigator.clipboard.writeText(text).then(() => {
-                alert("Copiado com sucesso para a área de transferência!");
+                showToast(customMsg || "✓ Copiado para a área de transferência!");
+            }).catch(() => {
+                showToast("✓ Copiado!");
             });
         }
 
-        function copyRaw(text) {
+        function copyRaw(text, customMsg) {
             navigator.clipboard.writeText(text).then(() => {
-                alert("Copiado com sucesso!");
+                showToast(customMsg || "✓ Copiado com sucesso!");
+            }).catch(() => {
+                showToast("✓ Copiado!");
             });
         }
 
         function renderSongOnScreen(item) {
-            // Renderiza na aba Suno
             document.getElementById('styleText').innerText = item.style_of_music;
             document.getElementById('styleCharCount').innerText = item.style_of_music.length;
             document.getElementById('lyricsText').innerText = item.lyrics_with_metatags;
 
-            // Renderiza Teologia
             if (item.dossier) {
                 document.getElementById('theologyTitle').innerText = item.dossier.theme_title || item.song_title;
                 document.getElementById('theologyAttributes').innerText = (item.dossier.divine_attributes || []).join(', ');
@@ -317,7 +373,6 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                 document.getElementById('theologySummary').innerText = item.theological_summary || '';
             }
 
-            // Renderiza Auditoria
             const scoreVal = item.audit_score || (item.audit ? item.audit.score : 9.0);
             document.getElementById('auditScore').innerText = `Nota Final: ${Number(scoreVal).toFixed(1)} / 10.0 (Aprovado)`;
             if (item.audit && item.audit.strengths) {
@@ -328,7 +383,6 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                 document.getElementById('auditCritiques').innerHTML = `<li>Pronto para produção no Suno AI Custom Mode.</li>`;
             }
 
-            // Atualiza campos do formulário para referência
             if (item.theme) document.getElementById('theme').value = item.theme;
             if (item.biblical_reference) document.getElementById('biblical_ref').value = item.biblical_reference;
         }
@@ -340,7 +394,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                 globalHistory = list;
                 
                 document.getElementById('historyTabCount').innerText = list.length;
-                document.getElementById('badgeHistoryText').innerText = `Histórico de Músicas (${list.length})`;
+                document.getElementById('badgeHistoryText').innerText = `Histórico (${list.length})`;
 
                 const container = document.getElementById('historyListContainer');
                 if (!list.length) {
@@ -355,18 +409,18 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                             <span class="badge badge-ollama">★ Nota: ${Number(item.audit_score || 9.0).toFixed(1)}/10</span>
                         </div>
                         <div class="history-meta">
-                            📅 <b>Criada em:</b> ${item.created_at || 'Hoje'} | 📖 <b>Base:</b> ${item.biblical_reference || ''}
+                            📅 <b>Criada:</b> ${item.created_at || 'Hoje'} | 📖 <b>Base:</b> ${item.biblical_reference || ''}
                         </div>
                         <p style="font-size: 0.85rem; color: #8b949e; margin-bottom: 8px;">
                             <b>Tema:</b> ${item.theme}
                         </p>
-                        <div style="background: var(--bg-primary); padding: 8px; border-radius: 6px; font-size: 0.8rem; color: var(--accent-gold); font-family: monospace; margin-bottom: 8px;">
+                        <div style="background: var(--bg-primary); padding: 8px; border-radius: 6px; font-size: 0.78rem; color: var(--accent-gold); font-family: monospace; margin-bottom: 8px; word-break: break-all;">
                             ${item.style_of_music}
                         </div>
                         <div class="history-actions">
-                            <button class="btn-action btn-load" onclick="selectFromHistory(${idx})">👁️ Carregar na Tela</button>
-                            <button class="btn-action" onclick="copyRaw(globalHistory[${idx}].style_of_music)">📋 Copiar Style</button>
-                            <button class="btn-action" onclick="copyRaw(globalHistory[${idx}].lyrics_with_metatags)">📝 Copiar Letra</button>
+                            <button class="btn-action btn-load" onclick="selectFromHistory(${idx})">👁️ Ver na Tela</button>
+                            <button class="btn-action" onclick="copyRaw(globalHistory[${idx}].style_of_music, 'Style copiado!')">📋 Style</button>
+                            <button class="btn-action" onclick="copyRaw(globalHistory[${idx}].lyrics_with_metatags, 'Letra copiada!')">📝 Letra</button>
                         </div>
                     </div>
                 `).join('');
@@ -381,6 +435,8 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             if (item) {
                 renderSongOnScreen(item);
                 switchTab('tabSuno');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                showToast(`Canção "${item.song_title}" carregada!`);
             }
         }
 
@@ -402,7 +458,6 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                 vocal_preference: document.getElementById('vocal_pref').value
             };
 
-            // Animação visual dos steps
             document.getElementById('step1').className = "step-item active";
             setTimeout(() => { document.getElementById('step1').className = "step-item done"; document.getElementById('step2').className = "step-item active"; }, 600);
             setTimeout(() => { document.getElementById('step2').className = "step-item done"; document.getElementById('step3').className = "step-item active"; }, 1200);
@@ -432,11 +487,12 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                     renderSongOnScreen(newItem);
                     switchTab('tabSuno');
                     loadHistory();
+                    showToast("🎉 Canção composta com sucesso!");
                 } else {
-                    alert("Erro ao compor: " + (data.error || "Desconhecido"));
+                    showToast("Erro ao compor: " + (data.error || "Desconhecido"));
                 }
             } catch (err) {
-                alert("Falha de conexão com o servidor: " + err);
+                showToast("Falha de conexão com o servidor: " + err);
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.innerText = "⚡ Compor Música com Agentes";
@@ -447,7 +503,6 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         window.addEventListener('DOMContentLoaded', async () => {
             await loadHistory();
             if (globalHistory.length > 0) {
-                // Carrega a primeira música do histórico por padrão na tela
                 renderSongOnScreen(globalHistory[0]);
                 switchTab('tabSuno');
             }
@@ -461,6 +516,27 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 @app.route("/", methods=["GET"])
 def index():
     return render_template_string(HTML_TEMPLATE)
+
+
+@app.route("/manifest.json", methods=["GET"])
+def manifest():
+    """Manifest PWA para permitir adicionar o app à tela inicial do celular como aplicativo."""
+    return jsonify({
+        "name": "Banda LVS Litúrgica & Suno AI",
+        "short_name": "Banda LVS",
+        "description": "Composição Multiagente de Músicas de Adoração para Suno AI",
+        "start_url": "/",
+        "display": "standalone",
+        "background_color": "#0d1117",
+        "theme_color": "#0d1117",
+        "icons": [
+            {
+                "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🕊️</text></svg>",
+                "sizes": "192x192 512x512",
+                "type": "image/svg+xml"
+            }
+        ]
+    })
 
 
 @app.route("/api/history", methods=["GET"])
@@ -542,6 +618,7 @@ def run_server(host=None, port=None):
     print("🕊️  BANDA LVS LITÚRGICA MULTIAGENTE & SUNO AI INICIADA 🎵")
     print(f"📡  Interface Web acessível em: http://localhost:{p}")
     print(f"🌐  Rede local / Host: http://{h}:{p}")
+    print(f"📱  Modo Mobile First / PWA: Ativado")
     print(f"📚  Histórico: {len(load_song_history())} canções salvas em historico_musicas.json")
     print(f"✨  Motor Gemini Cloud: {'Ativo com chave' if config.GEMINI_API_KEY else 'Não configurado'}")
     print(f"🦙  Motor Ollama Local (WSL): {config.resolve_ollama_host()}")
