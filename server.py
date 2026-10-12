@@ -71,94 +71,94 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             --border-color: #30363d;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
-        body { background: var(--bg-primary); color: var(--text-primary); padding: 20px; min-height: 100vh; }
-        .container { max-width: 1280px; margin: 0 auto; }
+        body { background: var(--bg-primary); color: var(--text-primary); padding: 24px; min-height: 100vh; font-size: 18px; }
+        .container { max-width: 1480px; margin: 0 auto; }
         
-        header { text-align: center; margin-bottom: 24px; border-bottom: 1px solid var(--border-color); padding-bottom: 18px; }
-        header h1 { font-size: 2.0rem; color: var(--accent-gold); margin-bottom: 8px; line-height: 1.2; }
-        header p { color: var(--text-secondary); font-size: 1.0rem; }
+        header { text-align: center; margin-bottom: 26px; border-bottom: 1px solid var(--border-color); padding-bottom: 20px; }
+        header h1 { font-size: 2.35rem; color: var(--accent-gold); margin-bottom: 10px; line-height: 1.25; }
+        header p { color: var(--text-secondary); font-size: 1.18rem; }
         
-        .status-bar { display: flex; gap: 10px; justify-content: center; margin-top: 14px; flex-wrap: wrap; }
-        .badge { padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; }
+        .status-bar { display: flex; gap: 12px; justify-content: center; margin-top: 16px; flex-wrap: wrap; }
+        .badge { padding: 8px 16px; border-radius: 20px; font-size: 0.98rem; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; }
         .badge-gemini { background: rgba(88, 166, 255, 0.15); color: var(--accent-blue); border: 1px solid var(--accent-blue); }
         .badge-ollama { background: rgba(63, 185, 80, 0.15); color: var(--accent-green); border: 1px solid var(--accent-green); }
         .badge-history { background: rgba(227, 179, 65, 0.15); color: var(--accent-gold); border: 1px solid var(--accent-gold); cursor: pointer; }
         
-        .grid { display: grid; grid-template-columns: 380px 1fr; gap: 20px; }
+        .grid { display: grid; grid-template-columns: 480px 1fr; gap: 24px; }
         
-        .card { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; }
-        .card h2 { font-size: 1.25rem; margin-bottom: 16px; color: var(--accent-gold); border-bottom: 1px solid var(--border-color); padding-bottom: 8px; }
+        .card { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 12px; padding: 24px; }
+        .card h2 { font-size: 1.5rem; margin-bottom: 18px; color: var(--accent-gold); border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
         
-        .form-group { margin-bottom: 14px; }
-        .form-group label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; }
+        .form-group { margin-bottom: 18px; }
+        .form-group label { display: block; font-size: 1.08rem; font-weight: 600; color: #c9d1d9; margin-bottom: 8px; }
         
-        /* 16px no mobile impede o iOS Safari de dar auto-zoom nos inputs */
+        /* Fontes grandes e confortáveis nos campos de entrada */
         .form-group input, .form-group textarea, .form-group select {
-            width: 100%; min-height: 44px; padding: 10px 12px; background: var(--bg-primary); border: 1px solid var(--border-color);
-            border-radius: 8px; color: var(--text-primary); font-size: 16px; outline: none; transition: 0.2s;
+            width: 100%; min-height: 50px; padding: 12px 14px; background: var(--bg-primary); border: 1px solid var(--border-color);
+            border-radius: 8px; color: var(--text-primary); font-size: 1.12rem; outline: none; transition: 0.2s;
         }
         .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
             border-color: var(--accent-gold); box-shadow: 0 0 0 2px rgba(227, 179, 65, 0.2);
         }
         
         .btn-submit {
-            width: 100%; min-height: 48px; padding: 12px; background: linear-gradient(135deg, #e3b341, #d29922);
-            color: #000; font-weight: bold; font-size: 1.05rem; border: none; border-radius: 8px; cursor: pointer; transition: 0.2s;
+            width: 100%; min-height: 56px; padding: 14px; background: linear-gradient(135deg, #e3b341, #d29922);
+            color: #000; font-weight: bold; font-size: 1.22rem; border: none; border-radius: 8px; cursor: pointer; transition: 0.2s;
             display: flex; justify-content: center; align-items: center; gap: 8px;
         }
         .btn-submit:active { transform: scale(0.98); opacity: 0.9; }
         .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
         
-        .stepper { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
-        .step-item { display: flex; align-items: center; gap: 10px; font-size: 0.88rem; color: var(--text-secondary); }
+        .stepper { display: flex; flex-direction: column; gap: 12px; margin-top: 18px; }
+        .step-item { display: flex; align-items: center; gap: 10px; font-size: 1.05rem; color: var(--text-secondary); }
         .step-item.active { color: var(--accent-gold); font-weight: bold; }
         .step-item.done { color: var(--accent-green); }
         
-        .suno-field { background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 8px; padding: 14px; margin-bottom: 16px; }
-        .suno-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px; }
-        .suno-title { font-size: 0.95rem; font-weight: bold; color: var(--accent-blue); }
+        .suno-field { background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 8px; padding: 18px; margin-bottom: 18px; }
+        .suno-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px; }
+        .suno-title { font-size: 1.18rem; font-weight: bold; color: var(--accent-blue); }
         
         .btn-copy {
             background: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border-color);
-            padding: 8px 14px; border-radius: 6px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: 0.2s;
-            min-height: 38px; display: inline-flex; align-items: center; gap: 6px;
+            padding: 10px 16px; border-radius: 6px; font-size: 1.02rem; font-weight: 600; cursor: pointer; transition: 0.2s;
+            min-height: 42px; display: inline-flex; align-items: center; gap: 6px;
         }
         .btn-copy:active { background: var(--accent-gold); color: #000; transform: scale(0.96); }
         
         pre {
             white-space: pre-wrap; word-break: break-word; font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
-            font-size: 0.9rem; line-height: 1.5; color: #c9d1d9;
+            font-size: 1.12rem; line-height: 1.65; color: #e6edf3;
         }
         
         /* Abas com rolagem suave por toque em telas pequenas */
         .tabs {
-            display: flex; gap: 6px; margin-bottom: 16px; border-bottom: 1px solid var(--border-color);
-            padding-bottom: 8px; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none;
+            display: flex; gap: 8px; margin-bottom: 18px; border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none;
         }
         .tabs::-webkit-scrollbar { display: none; }
         .tab-btn {
-            background: none; border: none; color: var(--text-secondary); font-size: 0.9rem; font-weight: 600;
-            padding: 8px 12px; cursor: pointer; border-radius: 6px; white-space: nowrap; flex-shrink: 0; min-height: 40px;
+            background: none; border: none; color: var(--text-secondary); font-size: 1.08rem; font-weight: 600;
+            padding: 10px 16px; cursor: pointer; border-radius: 6px; white-space: nowrap; flex-shrink: 0; min-height: 44px;
         }
         .tab-btn.active { color: var(--accent-gold); background: var(--bg-card); }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
         
-        .score-pill { font-size: 1.15rem; font-weight: bold; color: var(--accent-green); margin-bottom: 12px; }
+        .score-pill { font-size: 1.35rem; font-weight: bold; color: var(--accent-green); margin-bottom: 14px; }
 
         /* Cards do Histórico */
         .history-card {
             background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px;
-            padding: 14px; margin-bottom: 14px; transition: 0.2s;
+            padding: 16px; margin-bottom: 16px; transition: 0.2s;
         }
         .history-card:active { border-color: var(--accent-gold); }
-        .history-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 6px; }
-        .history-title { font-size: 1.05rem; font-weight: bold; color: var(--accent-gold); }
-        .history-meta { font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 10px; }
-        .history-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+        .history-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 6px; }
+        .history-title { font-size: 1.22rem; font-weight: bold; color: var(--accent-gold); }
+        .history-meta { font-size: 0.96rem; color: var(--text-secondary); margin-bottom: 10px; }
+        .history-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
         .btn-action {
             background: var(--bg-primary); color: var(--text-primary); border: 1px solid var(--border-color);
-            padding: 8px 12px; border-radius: 6px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: 0.2s; min-height: 38px;
+            padding: 10px 16px; border-radius: 6px; font-size: 1.0rem; font-weight: 600; cursor: pointer; transition: 0.2s; min-height: 42px;
         }
         .btn-action:active { background: var(--accent-blue); color: #fff; transform: scale(0.96); }
         .btn-load { background: rgba(227, 179, 65, 0.15); border-color: var(--accent-gold); color: var(--accent-gold); }
@@ -168,22 +168,22 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         #toast {
             position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px);
             background: #1c2128; color: var(--accent-gold); border: 1px solid var(--accent-gold);
-            padding: 12px 24px; border-radius: 30px; font-weight: bold; font-size: 0.95rem;
+            padding: 14px 28px; border-radius: 30px; font-weight: bold; font-size: 1.1rem;
             box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6); z-index: 9999; opacity: 0; transition: 0.3s ease;
             pointer-events: none; text-align: center; max-width: 90vw;
         }
         #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
 
         /* Regras Específicas para Smartphones (Mobile-First) */
-        @media (max-width: 860px) {
-            body { padding: 12px 8px 30px 8px; }
+        @media (max-width: 920px) {
+            body { padding: 14px 10px 30px 10px; font-size: 17px; }
             header { margin-bottom: 18px; padding-bottom: 14px; }
-            header h1 { font-size: 1.5rem; }
-            header p { font-size: 0.9rem; }
-            .grid { grid-template-columns: 1fr; gap: 16px; }
-            .card { padding: 14px; border-radius: 10px; }
+            header h1 { font-size: 1.75rem; }
+            header p { font-size: 1.05rem; }
+            .grid { grid-template-columns: 1fr; gap: 18px; }
+            .card { padding: 16px; border-radius: 10px; }
             .btn-action, .btn-copy { flex: 1; justify-content: center; }
-            pre { font-size: 0.85rem; }
+            pre { font-size: 1.02rem; }
         }
     </style>
 </head>
@@ -209,22 +209,22 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                         <input type="text" id="theme" value="A Santidade de Deus e a Visão do Trono Celestial" onchange="autoFillScriptures()" required>
                     </div>
                     <div class="form-group">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; gap: 8px; flex-wrap: wrap;">
                             <label style="margin-bottom: 0;">Passagens Bíblicas Base</label>
-                            <button type="button" class="btn-action" style="min-height: 28px; padding: 3px 10px; font-size: 0.78rem; background: rgba(227, 179, 65, 0.15); border-color: var(--accent-gold); color: var(--accent-gold);" onclick="autoFillScriptures()">🎲 Sortear Versículo do Tema</button>
+                            <button type="button" class="btn-action" style="min-height: 36px; padding: 6px 14px; font-size: 0.96rem; background: rgba(227, 179, 65, 0.15); border-color: var(--accent-gold); color: var(--accent-gold);" onclick="autoFillScriptures()">🎲 Sortear Versículo do Tema</button>
                         </div>
                         <input type="text" id="biblical_ref" value="Isaías 6:1-4 (Vi o Senhor assentado sobre um alto e sublime trono, e os serafins clamavam: Santo, Santo, Santo)" placeholder="Opcional: Deixe em branco para o Teólogo sortear automaticamente...">
-                        <div id="agentManagementBox" style="margin-top: 8px; padding: 10px 12px; background: rgba(227, 179, 65, 0.08); border-left: 3px solid var(--accent-gold); border-radius: 6px; font-size: 0.78rem; color: #c9d1d9; line-height: 1.45;">
-                            <div style="color: var(--accent-gold); font-weight: bold; margin-bottom: 3px;">🧠 Gestão do Agente Teólogo:</div>
-                            <div>📌 <b>Tema Identificado:</b> <span id="identifiedThemeText" style="color: #58a6ff;">Santidade Transcendente & Majestade do Trono de Deus</span></div>
-                            <div>🎯 <b>Versículo Sorteado:</b> <span id="drawnVerseStatus" style="color: #3fb950;">Isaías 6:1-4 (Clique em "Sortear Versículo" para sortear outro do mesmo tema!)</span></div>
-                            <div style="margin-top: 4px;">📖 <b>Reflexão Bíblica:</b> <span id="biblicalReflectionText" style="color: #d2a8ff;">Meditação na majestade santa do Senhor no alto e sublime trono, conduzindo a igreja à reverência e adoração.</span></div>
+                        <div id="agentManagementBox" style="margin-top: 10px; padding: 14px 16px; background: rgba(227, 179, 65, 0.08); border-left: 4px solid var(--accent-gold); border-radius: 8px; font-size: 1.02rem; color: #e6edf3; line-height: 1.55;">
+                            <div style="color: var(--accent-gold); font-weight: bold; font-size: 1.08rem; margin-bottom: 6px;">🧠 Gestão do Agente Teólogo:</div>
+                            <div style="margin-bottom: 4px;">📌 <b>Tema Identificado:</b> <span id="identifiedThemeText" style="color: #58a6ff;">Santidade Transcendente & Majestade do Trono de Deus</span></div>
+                            <div style="margin-bottom: 4px;">🎯 <b>Versículo Sorteado:</b> <span id="drawnVerseStatus" style="color: #3fb950;">Isaías 6:1-4 (Clique em "Sortear Versículo" para sortear outro do mesmo tema!)</span></div>
+                            <div style="margin-top: 6px;">📖 <b>Reflexão Bíblica:</b> <span id="biblicalReflectionText" style="color: #d2a8ff;">Meditação na majestade santa do Senhor no alto e sublime trono, conduzindo a igreja à reverência e adoração.</span></div>
                         </div>
                     </div>
                     <div class="form-group">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap;">
                             <label style="margin-bottom: 0;">Estilo Musical no Suno</label>
-                            <span style="font-size: 0.76rem; color: var(--accent-gold); font-weight: bold;">🤖 Gerado pela Reflexão ou Manual</span>
+                            <span style="font-size: 0.95rem; color: var(--accent-gold); font-weight: bold;">🤖 Gerado pela Reflexão ou Manual</span>
                         </div>
                         <select id="musical_style_preset" onchange="applyStylePreset()">
                             <optgroup label="🤖 Gestão Inteligente do Agente Musical (Recomendado)">
@@ -268,8 +268,8 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                                 <option value="custom">✍️ Digitar Outro Estilo Livremente...</option>
                             </optgroup>
                         </select>
-                        <div style="margin-top: 8px;">
-                            <label style="font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 4px; display: block;">Tags do Estilo (Geradas pelo Agente ou Editáveis):</label>
+                        <div style="margin-top: 10px;">
+                            <label style="font-size: 0.98rem; color: #c9d1d9; margin-bottom: 6px; display: block;">Tags do Estilo (Geradas pelo Agente ou Editáveis):</label>
                             <input type="text" id="musical_style" value="modern worship, CCM, grand piano, celestial choir, swelling guitars, slow build, cinematic" placeholder="Digite os instrumentos e estilo desejados em inglês ou português...">
                         </div>
                     </div>
@@ -295,10 +295,10 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                             <option value="Rápido e vibrante (120-135 BPM) com batida enérgica de júbilo">
                             <option value="Devocional livre (Rubato), sem tempo rígido, focado na oração íntima">
                         </datalist>
-                        <div id="producerManagementBox" style="margin-top: 8px; padding: 10px 12px; background: rgba(88, 166, 255, 0.08); border-left: 3px solid #58a6ff; border-radius: 6px; font-size: 0.78rem; color: #c9d1d9; line-height: 1.45;">
-                            <div style="color: #58a6ff; font-weight: bold; margin-bottom: 3px;">🎹 Gestão do Agente Musical (Baseado no Tema & Reflexão):</div>
-                            <div>🎶 <b>Arranjo Sorteado:</b> <span id="arrangementNameText" style="color: var(--accent-gold);">Automático — Será gerado para cada nova música!</span></div>
-                            <div>💡 <b>Direção Musical:</b> <span id="producerRationaleText" style="color: #8b949e;">Ao clicar em "Compor Música com Agentes", o Diretor Musical criará novo Estilo, Voz e Dinâmica alinhados à Reflexão Bíblica.</span></div>
+                        <div id="producerManagementBox" style="margin-top: 10px; padding: 14px 16px; background: rgba(88, 166, 255, 0.08); border-left: 4px solid #58a6ff; border-radius: 8px; font-size: 1.02rem; color: #e6edf3; line-height: 1.55;">
+                            <div style="color: #58a6ff; font-weight: bold; font-size: 1.08rem; margin-bottom: 6px;">🎹 Gestão do Agente Musical (Baseado no Tema & Reflexão):</div>
+                            <div style="margin-bottom: 4px;">🎶 <b>Arranjo Sorteado:</b> <span id="arrangementNameText" style="color: var(--accent-gold);">Automático — Será gerado para cada nova música!</span></div>
+                            <div>💡 <b>Direção Musical:</b> <span id="producerRationaleText" style="color: #c9d1d9;">Ao clicar em "Compor Música com Agentes", o Diretor Musical criará novo Estilo, Voz e Dinâmica alinhados à Reflexão Bíblica.</span></div>
                         </div>
                     </div>
                     
@@ -339,38 +339,38 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                             <span class="suno-title">✍️ Campo 'Lyrics' com Metatags [Tag]</span>
                             <button class="btn-copy" onclick="copyText('lyricsText', 'Letra completa copiada!')">📝 Copiar Letra</button>
                         </div>
-                        <pre id="lyricsText" style="max-height: 480px; overflow-y: auto;"></pre>
+                        <pre id="lyricsText" style="max-height: 620px; overflow-y: auto;"></pre>
                     </div>
                 </div>
 
                 <!-- Aba 2: Teologia -->
                 <div class="tab-content" id="tabTheology">
-                    <div class="suno-field">
-                        <h3 id="theologyTitle" style="color: var(--accent-gold); margin-bottom: 12px; font-size: 1.1rem;"></h3>
-                        <p style="color: var(--text-secondary); margin-bottom: 8px;"><b>Atributos Divinos:</b> <span id="theologyAttributes" style="color: #fff;"></span></p>
-                        <p style="color: var(--text-secondary); margin-bottom: 8px;"><b>Foco Cristocêntrico:</b> <span id="theologyChrist" style="color: #fff;"></span></p>
-                        <p style="color: var(--text-secondary); margin-bottom: 8px;"><b>Palavras Sagradas:</b> <span id="theologyKeywords" style="color: #fff;"></span></p>
-                        <p style="color: var(--text-secondary); margin-bottom: 12px;"><b>Salvaguardas Doutrinárias:</b> <span id="theologyGuardrails" style="color: #ff7b72;"></span></p>
-                        <p style="color: var(--text-secondary);"><b>Síntese Exegética:</b></p>
-                        <p id="theologySummary" style="color: #c9d1d9; margin-top: 4px; line-height: 1.5;"></p>
+                    <div class="suno-field" style="font-size: 1.08rem; line-height: 1.6;">
+                        <h3 id="theologyTitle" style="color: var(--accent-gold); margin-bottom: 14px; font-size: 1.35rem;"></h3>
+                        <p style="color: var(--text-secondary); margin-bottom: 10px;"><b>Atributos Divinos:</b> <span id="theologyAttributes" style="color: #fff;"></span></p>
+                        <p style="color: var(--text-secondary); margin-bottom: 10px;"><b>Foco Cristocêntrico:</b> <span id="theologyChrist" style="color: #fff;"></span></p>
+                        <p style="color: var(--text-secondary); margin-bottom: 10px;"><b>Palavras Sagradas:</b> <span id="theologyKeywords" style="color: #fff;"></span></p>
+                        <p style="color: var(--text-secondary); margin-bottom: 14px;"><b>Salvaguardas Doutrinárias:</b> <span id="theologyGuardrails" style="color: #ff7b72;"></span></p>
+                        <p style="color: var(--text-secondary);"><b>Síntese Exegética & Reflexão:</b></p>
+                        <p id="theologySummary" style="color: #e6edf3; margin-top: 6px; line-height: 1.65;"></p>
                     </div>
                 </div>
 
                 <!-- Aba 3: Auditoria -->
                 <div class="tab-content" id="tabAudit">
-                    <div class="suno-field">
+                    <div class="suno-field" style="font-size: 1.08rem; line-height: 1.6;">
                         <div class="score-pill" id="auditScore"></div>
-                        <h4 style="margin-bottom: 8px; color: var(--accent-green);">Pontos Fortes:</h4>
-                        <ul id="auditStrengths" style="margin-left: 20px; margin-bottom: 16px; color: #c9d1d9; font-size: 0.9rem;"></ul>
-                        <h4 style="margin-bottom: 8px; color: var(--accent-gold);">Observações Críticas:</h4>
-                        <ul id="auditCritiques" style="margin-left: 20px; color: #c9d1d9; font-size: 0.9rem;"></ul>
+                        <h4 style="margin-bottom: 10px; color: var(--accent-green); font-size: 1.18rem;">Pontos Fortes:</h4>
+                        <ul id="auditStrengths" style="margin-left: 22px; margin-bottom: 18px; color: #e6edf3; font-size: 1.06rem;"></ul>
+                        <h4 style="margin-bottom: 10px; color: var(--accent-gold); font-size: 1.18rem;">Observações Críticas:</h4>
+                        <ul id="auditCritiques" style="margin-left: 22px; color: #e6edf3; font-size: 1.06rem;"></ul>
                     </div>
                 </div>
 
                 <!-- Aba 4: Histórico Persistente -->
                 <div class="tab-content" id="tabHistory">
-                    <div style="margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center;">
-                        <h3 style="color: var(--accent-gold); font-size: 1.05rem;">Histórico de Canções Salvas</h3>
+                    <div style="margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
+                        <h3 style="color: var(--accent-gold); font-size: 1.25rem;">Histórico de Canções Salvas</h3>
                         <button class="btn-copy" onclick="loadHistory()">🔄 Atualizar</button>
                     </div>
                     <div id="historyListContainer"></div>
@@ -556,10 +556,10 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                         <div class="history-meta">
                             📅 <b>Criada:</b> ${item.created_at || 'Hoje'} | 📖 <b>Base:</b> ${item.biblical_reference || ''}
                         </div>
-                        <p style="font-size: 0.85rem; color: #8b949e; margin-bottom: 8px;">
+                        <p style="font-size: 1.04rem; color: #c9d1d9; margin-bottom: 10px;">
                             <b>Tema:</b> ${item.theme}
                         </p>
-                        <div style="background: var(--bg-primary); padding: 8px; border-radius: 6px; font-size: 0.78rem; color: var(--accent-gold); font-family: monospace; margin-bottom: 8px; word-break: break-all;">
+                        <div style="background: var(--bg-primary); padding: 10px; border-radius: 6px; font-size: 0.98rem; color: var(--accent-gold); font-family: monospace; margin-bottom: 10px; word-break: break-all;">
                             ${item.style_of_music}
                         </div>
                         <div class="history-actions">
