@@ -1,0 +1,20 @@
+# Ambientes Virtuais e Dependências
+.venv/
+venv/
+ENV/
+env/
+
+# Arquivos de Segredos e Variáveis Locais
+.env
+*.env.local
+
+# Caches do Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.log
+
+# Arquivos de Sistema
+.DS_Store
+Thumbs.db
+suno_output_pronto.txt
