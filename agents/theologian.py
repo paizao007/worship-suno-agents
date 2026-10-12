@@ -1,10 +1,11 @@
 """
 Agente 1: Teólogo & Exegeta Bíblico.
-Responsável por extrair a fundamentação bíblica, ortodoxia cristocêntrica, atributos divinos
-e salvaguardas doutrinárias para evitar antropocentrismo ou desvios heréticos.
+Responsável por identificar a doutrina central do tema, sortear versículos canônicos pertinentes
+e extrair a fundamentação bíblica, ortodoxia cristocêntrica, atributos divinos e salvaguardas doutrinárias.
 """
 
 import random
+import re
 from typing import Type
 from pydantic import BaseModel
 from .base import BaseAgent
@@ -23,6 +24,258 @@ DIRETRIZES FUNDAMENTAIS:
 """
 
 
+# Acervo Canônico Categorizado para Gestão Instantânea e Sorteio do Agente Teólogo
+THEOLOGICAL_POOLS = [
+    {
+        "id": "amor_a_deus",
+        "name": "Devoção & Amor Intenso a Deus (Primeiro Amor)",
+        "keywords": ["amor a deus", "amar a deus", "amo a deus", "te amo deus", "te amo senhor", "primeiro amor", "devoção", "devocao", "intimidade", "sede de deus", "apaixonado por deus"],
+        "verses": [
+            "Marcos 12:30 (Amarás o Senhor teu Deus de todo o teu coração, de toda a tua alma e de todo o teu entendimento)",
+            "Salmo 18:1 (Eu Te amo, ó Senhor, força minha, rocha minha e meu libertador)",
+            "Salmo 73:25-26 (Quem tenho eu no céu além de Ti? E na terra não há quem eu deseje além de Ti)",
+            "Salmo 42:1-2 (Como a corça anseia pelas correntes das águas, assim a minha alma suspira por Ti, ó Deus)",
+            "1 João 4:19 (Nós O amamos porque Ele nos amou primeiro)",
+            "Deuteronômio 6:5 (Amarás o Senhor teu Deus de todo o teu coração, de toda a tua alma e de toda a tua força)",
+            "Salmo 63:1-3 (Ó Deus, Tu és o meu Deus, de madrugada Te buscarei; a Tua benignidade é melhor do que a vida)",
+            "João 14:21 (Aquele que tem os Meus mandamentos e os guarda, esse é o que Me ama)",
+            "Apocalipse 2:4-5 (Lembra-te de onde caíste, arrepende-te e volta à prática das primeiras obras do primeiro amor)"
+        ],
+        "attributes": ["Digno de Todo Afeto", "Fonte de Água Viva", "Noivo Celestial", "Amor Primeiro e Eterno"],
+        "christ_focus": "Nosso amor a Deus nasce como resposta grata ao sacrifício de Cristo na cruz: nós O amamos porque Ele nos amou primeiro (1 João 4:19).",
+        "sacred_words": ["Primeiro amor", "Todo o meu coração", "Minha alma tem sede", "Tesouro supremo", "Altar de adoração", "Chama viva", "Devoção sincera"],
+        "guardrails": ["Evitar tratar o amor a Deus como sentimento romântico humano superficial; focar em aliança, reverência, entrega e obediência amorosa."],
+        "tone": "Devoção ardente, entrega total, sede espiritual e intimidade reverente no Santo dos Santos."
+    },
+    {
+        "id": "amor_de_deus",
+        "name": "O Amor Sacrificial e Eterno de Deus (Ágape)",
+        "keywords": ["amor", "ágape", "agape", "amou", "amado", "bondade", "misericórdia", "misericordia", "benignidade", "cuidado de deus"],
+        "verses": [
+            "1 João 4:7-10 (Nisto se manifestou o amor de Deus para conosco: em haver Deus enviado o Seu Filho Unigênito ao mundo)",
+            "Romanos 5:8 (Mas Deus prova o Seu próprio amor para conosco pelo fato de ter Cristo morrido por nós, sendo nós ainda pecadores)",
+            "João 3:16-17 (Porque Deus amou o mundo de tal maneira que deu o Seu Filho Unigênito, para que todo o que Nele crê não pereça)",
+            "Efésios 3:17-19 (Compreender com todos os santos a largura, o comprimento, a altura e a profundidade do amor de Cristo)",
+            "Romanos 8:38-39 (Nem a morte, nem a vida, nem principados poderão nos separar do amor de Deus que está em Cristo Jesus)",
+            "Jeremias 31:3 (Com amor eterno Eu te amei; por isso, com laços de benignidade te atraí)",
+            "1 Coríntios 13:4-8 (O amor é paciente, é benigno; tudo sofre, tudo crê, tudo espera, o amor jamais acaba)",
+            "Sofonias 3:17 (O Senhor teu Deus está no meio de ti, poderoso para salvar; Ele te renovará no Seu amor)",
+            "1 João 3:1 (Vede que grande amor nos tem concedido o Pai, a ponto de sermos chamados filhos de Deus)"
+        ],
+        "attributes": ["Amor Incondicional (Ágape)", "Misericórdia Infinita", "Paternidade Redentora", "Fidelidade na Aliança"],
+        "christ_focus": "A cruz do Calvário é a manifestação suprema e histórica do amor de Deus (Romanos 5:8), onde o Justo morreu pelos injustos.",
+        "sacred_words": ["Amor eterno", "Graça no Calvário", "Laços de ternura", "Filhos amados", "Amor que não falha", "Profundidade e altura", "Sacrifício de amor"],
+        "guardrails": ["Não separar o amor de Deus de Sua justiça e da cruz de Cristo; o amor divino é santo e redentor."],
+        "tone": "Maravilhamento, gratidão profunda, segurança paterna e adoração diante da cruz."
+    },
+    {
+        "id": "santidade",
+        "name": "Santidade Transcendente & Majestade do Trono de Deus",
+        "keywords": ["santidade", "santo", "trono", "majestade", "glória", "gloria", "soberano", "altíssimo", "altissimo", "reverência", "temor", "isaías"],
+        "verses": [
+            "Isaías 6:1-4 (Vi o Senhor assentado sobre um alto e sublime trono, e os serafins clamavam: Santo, Santo, Santo é o Senhor dos Exércitos)",
+            "Apocalipse 4:8-11 (Santo, Santo, Santo é o Senhor Deus, o Todo-Poderoso, que era, que é e que há de vir)",
+            "Salmo 99:1-5 (O Senhor reina; exaltai ao Senhor nosso Deus e prostrai-vos ante o Seu estrado, porque Ele é Santo)",
+            "Êxodo 15:11 (Quem é semelhante a Ti, ó Senhor, glorioso em santidade, terrível em feitos gloriosos, que operas maravilhas?)",
+            "1 Pedro 1:15-16 (Segundo é santo Aquele que vos chamou, tornai-vos santos também vós em todo o vosso procedimento)",
+            "Salmo 29:2 (Tributai ao Senhor a glória devida ao Seu nome; adorai ao Senhor na beleza da Sua santidade)",
+            "Hebreus 12:28-29 (Retenhamos a graça, servindo a Deus com reverência e santo temor, porque o nosso Deus é fogo consumidor)",
+            "Apocalipse 15:3-4 (Quem não temerá e não glorificará o Teu nome, ó Senhor? Pois só Tu és Santo)"
+        ],
+        "attributes": ["Santidade Inegociável (Kadosh)", "Majestade e Soberania Eterna", "Glória Transcendente", "Fogo Consumidor e Purificador"],
+        "christ_focus": "Jesus é o Rei glorioso contemplado por Isaías (João 12:41) e o Cordeiro imolado no centro do trono celestial (Apocalipse 5).",
+        "sacred_words": ["Alto e sublime trono", "Orlas do manto", "Serafins", "Santo, Santo, Santo", "Brasa viva", "Coroas aos Teus pés", "Beleza da santidade"],
+        "guardrails": ["Jamais colocar o ser humano como centro; a visão da santidade de Deus gera quebrantamento, purificação e prontidão ('Eis-me aqui')."],
+        "tone": "Reverência solene, assombro diante do Sagrado, quebrantamento e doxologia majestosa."
+    },
+    {
+        "id": "graca_cruz",
+        "name": "Graça Salvadora, Redenção & O Sacrifício da Cruz",
+        "keywords": ["graça", "graca", "cruz", "redenção", "redencao", "sangue", "salvação", "salvacao", "calvário", "calvario", "cordeiro", "sacrifício", "sacrificio"],
+        "verses": [
+            "Efésios 2:8-9 (Porque pela graça sois salvos, mediante a fé; e isto não vem de vós, é dom de Deus; não de obras)",
+            "Romanos 5:1-2 (Justificados, pois, mediante a fé, temos paz com Deus por meio de nosso Senhor Jesus Cristo)",
+            "Isaías 53:4-5 (Ele foi traspassado pelas nossas transgressões e moído pelas nossas iniquidades; pelas Suas pisaduras fomos sarados)",
+            "Tito 2:11-14 (Porque a graça de Deus se manifestou salvadora a todos os homens)",
+            "Hebreus 9:12-14 (Pelo Seu próprio sangue, entrou no Santo dos Santos, havendo obtido eterna redenção)",
+            "2 Coríntios 5:21 (Aquele que não conheceu pecado, Ele O fez pecado por nós, para que Nele fôssemos feitos justiça de Deus)",
+            "Gálatas 2:20 (Já não sou eu quem vive, mas Cristo vive em mim; e esse viver que agora tenho na carne, vivo pela fé no Filho de Deus)"
+        ],
+        "attributes": ["Graça Imerecida", "Justiça Redentora", "Cordeiro Imaculado", "Perdão Pleno"],
+        "christ_focus": "A obra consumada de Cristo no Gólgota ('Está consumado'), rasgando o véu do templo e reconciliando o pecador com o Pai.",
+        "sacred_words": ["Precioso sangue", "Véu rasgado", "Graça que alcançou", "Madeiro da cruz", "Cordeiro imolado", "Eterna redenção", "Justificados pela fé"],
+        "guardrails": ["Excluir qualquer noção de mérito próprio ou barganha espiritual; a salvação é 100% dom da graça mediante o sangue de Cristo."],
+        "tone": "Profunda gratidão, contrição diante do Calvário e júbilo pela salvação consumada."
+    },
+    {
+        "id": "provacao_refugio",
+        "name": "Fidelidade Divina na Provação & Deus como Refúgio",
+        "keywords": ["provação", "provacao", "perseverança", "perseveranca", "dor", "luta", "força", "forca", "refúgio", "refugio", "consolo", "deserto", "tempestade", "aflição"],
+        "verses": [
+            "Tiago 1:2-4 (Tende por motivo de toda alegria o passardes por várias provações, sabendo que a provação da fé produz perseverança)",
+            "2 Coríntios 12:9 (A Minha graça te basta, porque o Meu poder se aperfeiçoa na fraqueza)",
+            "Salmo 46:1-2 (Deus é o nosso refúgio e fortaleza, socorro bem presente nas tribulações)",
+            "Salmo 91:1-4 (Aquele que habita no esconderijo do Altíssimo e descansa à sombra do Onipotente)",
+            "Habacuque 3:17-18 (Ainda que a figueira não floresça, todavia eu me alegrarei no Senhor, exultarei no Deus da minha salvação)",
+            "Salmo 23:1-4 (O Senhor é o meu Pastor, nada me faltará; ainda que eu ande pelo vale da sombra da morte, não temerei mal algum)",
+            "Romanos 8:18 (Os sofrimentos do tempo presente não podem ser comparados com a glória a ser revelada em nós)"
+        ],
+        "attributes": ["Refúgio Inabalável", "Pastor Fiel no Vale", "Suficiência na Fraqueza", "Soberania nas Tempestades"],
+        "christ_focus": "Cristo é a Rocha Eterna e o Bom Pastor que caminha conosco no vale e acalma os ventos com Sua voz.",
+        "sacred_words": ["Esconderijo do Altíssimo", "Rocha inabalável", "Vale da sombra", "Tua graça me basta", "Âncora da alma", "Fogo refinador", "Socorro presente"],
+        "guardrails": ["Evitar triunfalismo mágico ou negação da realidade da dor; enfatizar que a presença de Cristo sustenta e aperfeiçoa a fé na provação."],
+        "tone": "Esperança firme, consolo profundo, confiança serena e entrega incondicional."
+    },
+    {
+        "id": "louvor_gratidao",
+        "name": "Louvor Congregacional, Ações de Graças & Júbilo ao Senhor",
+        "keywords": ["gratidão", "gratidao", "louvor", "júbilo", "jubilo", "celebração", "celebracao", "vitória", "vitoria", "alegria", "festa", "exaltação"],
+        "verses": [
+            "Salmo 100:1-4 (Celebrai com júbilo ao Senhor, todas as terras; entrai por Suas portas com ações de graças e nos Seus átrios com hinos)",
+            "Salmo 103:1-5 (Bendize, ó minha alma, ao Senhor, e tudo o que há em mim bendiga ao Seu santo nome)",
+            "Salmo 150:1-6 (Louvai a Deus no Seu santuário; tudo quanto tem fôlego louve ao Senhor! Aleluia!)",
+            "Filipenses 4:4 (Alegrai-vos sempre no Senhor; outra vez digo: alegrai-vos!)",
+            "Colossenses 3:16 (Habite ricamente em vós a palavra de Cristo; louvando a Deus com salmos, hinos e cânticos espirituais)",
+            "Salmo 34:1-3 (Bendirei o Senhor em todo o tempo, o Seu louvor estará sempre nos meus lábios)",
+            "Salmo 118:24 (Este é o dia que o Senhor fez; regozijemo-nos e alegremo-nos nele)"
+        ],
+        "attributes": ["Bondade Eterna", "Fidelidade de Geração em Geração", "Digno de Todo Louvor", "Autor da Alegria"],
+        "christ_focus": "Por meio de Jesus oferecemos continuamente a Deus sacrifício de louvor, que é o fruto de lábios que confessam o Seu nome (Hebreus 13:15).",
+        "sacred_words": ["Portas com ações de graças", "Bendize ó minha alma", "Tudo o que tem fôlego", "Cânticos espirituais", "Júbilo nos átrios", "Aleluia ao Rei"],
+        "guardrails": ["Manter a alegria centrada nos feitos e no caráter de Deus, não em vaidade humana."],
+        "tone": "Celebração vibrante, júbilo congregacional, gratidão transbordante e exaltação festiva."
+    },
+    {
+        "id": "espirito_santo",
+        "name": "Pneumatologia: Derramamento, Fogo & Presença do Espírito Santo",
+        "keywords": ["espírito", "espirito", "pentecostes", "avivamento", "fogo", "presença", "presenca", "unção", "uncao", "consolador", "vento"],
+        "verses": [
+            "Atos 2:1-4 (De repente veio do céu um som, como de um vento impetuoso, e todos foram cheios do Espírito Santo)",
+            "João 14:16-17 (E Eu rogarei ao Pai, e Ele vos dará outro Consolador, a fim de que esteja para sempre convosco: o Espírito da verdade)",
+            "Ezequiel 37:4-5 (Profetiza sobre estes ossos secos: Eis que farei entrar em vós o espírito, e vivereis)",
+            "Romanos 8:26-27 (O mesmo Espírito intercede por nós sobremaneira, com gemidos inexprimíveis)",
+            "Gálatas 5:22-25 (Mas o fruto do Espírito é: amor, alegria, paz, longanimidade, benignidade, bondade, fidelidade, mansidão, domínio próprio)",
+            "Zacarias 4:6 (Não por força nem por violência, mas pelo Meu Espírito, diz o Senhor dos Exércitos)",
+            "João 7:37-39 (Quem crer em Mim, como diz a Escritura, do seu interior fluirão rios de água viva)"
+        ],
+        "attributes": ["Espírito Consolador (Parakletos)", "Sopro de Vida do Criador", "Fogo Santificador", "Rios de Água Viva"],
+        "christ_focus": "O Espírito Santo glorifica a Cristo (João 16:14), aplica a redenção ao coração do crente e prepara a Igreja como Noiva de Jesus.",
+        "sacred_words": ["Vento impetuoso", "Fogo do altar", "Espírito da Verdade", "Rios de água viva", "Sopro de vida", "Habita em nós", "Consolador"],
+        "guardrails": ["A obra do Espírito Santo sempre aponta para Cristo, produzindo santificação e fruto espiritual, nunca misticismo desordenado."],
+        "tone": "Clamor por avivamento, sensibilidade espiritual, reverência e fome pela presença de Deus."
+    },
+    {
+        "id": "fe_paz",
+        "name": "Fé Inabalável, Confiança & A Paz que Excede Todo Entendimento",
+        "keywords": ["fé", "fe", "confiança", "confianca", "esperança", "esperanca", "descanso", "paz", "promessa", "crer"],
+        "verses": [
+            "Hebreus 11:1 (Ora, a fé é a certeza de coisas que se esperam, a convicção de fatos que se não veem)",
+            "Filipenses 4:6-7 (E a paz de Deus, que excede todo o entendimento, guardará o vosso coração e a vossa mente em Cristo Jesus)",
+            "Isaías 40:31 (Mas os que esperam no Senhor renovam as suas forças, sobem com asas como águias)",
+            "Provérbios 3:5-6 (Confia no Senhor de todo o teu coração e não te estribes no teu próprio entendimento)",
+            "Mateus 11:28-29 (Vinde a Mim, todos os que estais cansados e sobrecarregados, e Eu vos aliviarei)",
+            "João 14:27 (Deixo-vos a paz, a Minha paz vos dou; não vo-la dou como o mundo a dá)",
+            "Lamentações 3:22-23 (As misericórdias do Senhor são a causa de não sermos consumidos; renovam-se a cada manhã)"
+        ],
+        "attributes": ["Fidelidade nas Promessas", "Príncipe da Paz", "Rocha dos Séculos", "Renovador das Forças"],
+        "christ_focus": "Jesus é o Autor e Consumador da nossa fé (Hebreus 12:2) e a nossa verdadeira Paz.",
+        "sacred_words": ["Asas como águias", "Paz que excede o entendimento", "Descanso da alma", "Fiel é o que prometeu", "Olhos fitos em Jesus", "Certeza viva"],
+        "guardrails": ["A fé bíblica não é pensamento positivo humano, mas confiança plena no caráter e nas promessas de Deus."],
+        "tone": "Paz profunda, serenidade, confiança firme e renovo espiritual."
+    },
+    {
+        "id": "cura_restauracao",
+        "name": "Cristo o Médico dos Médicos: Cura, Libertação & Restauração",
+        "keywords": ["cura", "milagre", "restauração", "restauracao", "libertação", "libertacao", "enfermidade", "saúde", "saude", "vida"],
+        "verses": [
+            "Isaías 53:5 (O castigo que nos traz a paz estava sobre Ele, e pelas Suas pisaduras fomos sarados)",
+            "Salmo 103:2-3 (É Ele quem perdoa todas as tuas iniquidades; quem sara todas as tuas enfermidades)",
+            "Jeremias 17:14 (Cura-me, Senhor, e serei curado; salva-me, e serei salvo; porque Tu és o meu louvor)",
+            "Lucas 4:18-19 (O Espírito do Senhor está sobre Mim, para proclamar libertação aos cativos e restaurar os oprimidos)",
+            "Êxodo 15:26 (Porque Eu sou o Senhor que te sara — Jeová Rafá)",
+            "malaquias 4:2 (Mas para vós outros, os que temeis o Meu nome, nascerá o Sol da Justiça, trazendo salvação e cura nas Suas asas)"
+        ],
+        "attributes": ["Jeová Rafá (O Senhor que Sara)", "Sol da Justiça", "Restaurador da Alma", "Poder Libertador"],
+        "christ_focus": "Em Seu ministério terreno e na cruz, Jesus revelou o Reino de Deus curando enfermos, libertando cativos e vencendo a morte.",
+        "sacred_words": ["Pelas Suas pisaduras", "Sol da Justiça", "Jeová Rafá", "Bálsamo de Gileade", "Toque nas vestes", "Vida em abundância"],
+        "guardrails": ["Submeter o clamor por cura à soberania amorosa de Deus, exaltando a cura maior da alma juntamente com o poder divino de restaurar."],
+        "tone": "Fé expectante, clamor humilde, gratidão pela restauração e exaltação ao poder de Cristo."
+    },
+    {
+        "id": "volta_cristo",
+        "name": "Escatologia & Esperança Gloriosa: Maranata, o Rei Vem",
+        "keywords": ["volta", "maranata", "eternidade", "ressurreição", "ressurreicao", "noiva", "reino", "céu", "ceu", "apocalipse", "segunda vinda"],
+        "verses": [
+            "Apocalipse 21:1-4 (Vi novo céu e nova terra; e Deus enxugará dos olhos toda lágrima, e a morte já não existirá)",
+            "Apocalipse 22:17-20 (O Espírito e a Noiva dizem: Vem! Aquele que dá testemunho destas coisas diz: Certamente venho sem demora! Ora, vem, Senhor Jesus!)",
+            "1 Tessalonicenses 4:16-17 (Porquanto o Senhor mesmo, dada a Sua palavra de ordem, descerá dos céus ao som da trombeta de Deus)",
+            "1 Coríntios 15:54-57 (Tragada foi a morte pela vitória! Graças a Deus, que nos dá a vitória por intermédio de nosso Senhor Jesus Cristo)",
+            "Filipenses 2:9-11 (Para que ao nome de Jesus se dobre todo joelho, nos céus, na terra e debaixo da terra, e toda língua confesse que Jesus Cristo é o Senhor)",
+            "João 14:1-3 (Na casa de Meu Pai há muitas moradas; vou preparar-vos lugar e voltarei para vos receber)"
+        ],
+        "attributes": ["Rei dos Reis e Senhor dos Senhores", "Alfa e Ômega", "Noivo Esperado", "Juiz Justo e Fiel"],
+        "christ_focus": "Cristo ressurreto voltará em glória para buscar Sua Noiva e consumar o Reino Eterno onde não haverá mais dor.",
+        "sacred_words": ["Maranata", "Ora vem Senhor Jesus", "Som da trombeta", "Novo céu e nova terra", "A Noiva adornada", "Rei dos Reis", "Eternidade"],
+        "guardrails": ["Evitar especulações de datas; focar na vigilância santa, na esperança da ressurreição e no anseio pela presença eterna do Rei."],
+        "tone": "Esperança gloriosa, clamor profético ('Maranata'), majestade épica e triunfo eterno."
+    },
+    {
+        "id": "arrependimento",
+        "name": "Contrição, Quebrantamento & Graça Purificadora",
+        "keywords": ["arrependimento", "perdão", "perdao", "quebrantamento", "humildade", "confissão", "confissao", "pecado", "purificação", "misericórdia"],
+        "verses": [
+            "Salmo 51:10-17 (Cria em mim, ó Deus, um coração puro e renova dentro de mim um espírito inabalável; ao coração quebrantado e contrito não desprezarás)",
+            "Isaías 57:15 (Habito no alto e santo lugar, mas habito também com o contrito e abatido de espírito, para vivificar o coração dos contritos)",
+            "1 João 1:9 (Se confessarmos os nossos pecados, Ele é fiel e justo para nos perdoar os pecados e nos purificar de toda injustiça)",
+            "2 Crônicas 7:14 (Se o Meu povo, que se chama pelo Meu nome, se humilhar, e orar, e me buscar, então Eu ouvirei dos céus)",
+            "Salmo 32:1-5 (Bem-aventurado aquele cuja iniquidade é perdoada; confessei-Te o meu pecado e perdoaste a culpabilidade)",
+            "Lucas 15:20-24 (Quando ainda estava longe, seu pai o viu, compadeceu-se dele e, correndo, o abraçou; este meu filho estava morto e reviveu)"
+        ],
+        "attributes": ["Rico em Perdoar", "Pai Compassivo", "Purificador dos Corações", "Justo e Fiel"],
+        "christ_focus": "Em Cristo temos um Advogado junto ao Pai e o Seu sangue nos lava mais alvos que a neve.",
+        "sacred_words": ["Coração quebrantado", "Cria em mim um coração puro", "Mais alvo que a neve", "Braços do Pai", "Misericórdia sem fim", "Purifica-me"],
+        "guardrails": ["O arrependimento bíblico nunca termina em desespero, mas na alegria da restauração e do perdão conquistado por Cristo."],
+        "tone": "Humildade profunda, sinceridade na confissão, quebrantamento e alívio gracioso no perdão."
+    },
+    {
+        "id": "familia_alianca",
+        "name": "Aliança Familiar & Edificação do Lar sobre a Rocha",
+        "keywords": ["família", "familia", "casa", "filhos", "aliança", "alianca", "casamento", "lar", "gerações"],
+        "verses": [
+            "Josué 24:15 (Porém eu e a minha casa serviremos ao Senhor)",
+            "Salmo 127:1 (Se o Senhor não edificar a casa, em vão trabalham os que a edificam)",
+            "Salmo 128:1-4 (Bem-aventurado aquele que teme ao Senhor e anda nos Seus caminhos; a tua família será abençoada)",
+            "Deuteronômio 6:6-7 (Estas palavras que hoje te ordeno estarão no teu coração; tu as inculcarás a teus filhos)",
+            "Efésios 5:25-27 (Cristo amou a igreja e a si mesmo se entregou por ela, para a santificar)"
+        ],
+        "attributes": ["Deus de Aliança Geracional", "Edificador da Casa", "Guardião das Famílias"],
+        "christ_focus": "Cristo é a Pedra Angular sobre a qual o lar cristão é edificado e o modelo supremo de amor sacrificial.",
+        "sacred_words": ["Eu e a minha casa", "Edificada sobre a Rocha", "De geração em geração", "Altar na família", "Aliança eterna"],
+        "guardrails": ["Manter Deus como o Senhor da família, evitando idolatria familiar e apontando o lar para o serviço ao Reino."],
+        "tone": "Gratidão familiar, consagração do lar, bênção sacerdotal e aliança solene."
+    }
+]
+
+DEFAULT_POOL = {
+    "id": "soberania_geral",
+    "name": "Soberania, Criação & Glória de Cristo",
+    "keywords": [],
+    "verses": [
+        "Salmo 145:1-7 (Exaltar-Te-ei, ó Deus meu e Rei; bendirei o Teu nome pelos séculos dos séculos)",
+        "João 1:14-17 (E o Verbo se fez carne e habitou entre nós, cheio de graça e de verdade, e vimos a Sua glória)",
+        "Apocalipse 5:9-13 (Digno é o Cordeiro que foi morto de receber o poder, e riqueza, e sabedoria, e força, e honra, e glória)",
+        "Salmo 19:1-4 (Os céus proclamam a glória de Deus e o firmamento anuncia as obras das Suas mãos)",
+        "Colossenses 1:15-17 (Ele é a imagem do Deus invisível, o primogênito de toda a criação; tudo foi criado por meio Dele e para Ele)",
+        "Romanos 11:33-36 (Ó profundidade da riqueza, tanto da sabedoria como do conhecimento de Deus! Porque Dele, e por meio Dele, e para Ele são todas as coisas)"
+    ],
+    "attributes": ["Soberania Absoluta", "Criador e Sustentador", "Verbo Encarnado", "Digno de Toda Glória"],
+    "christ_focus": "Em Cristo habita corporalmente toda a plenitude da divindade; por meio Dele e para Ele foram criadas todas as coisas.",
+    "sacred_words": ["Digno é o Cordeiro", "Verbo da Vida", "Dele por Ele e para Ele", "Rei da Glória", "Majestade eterna"],
+    "guardrails": ["Manter a centralidade teocêntrica e cristocêntrica em cada estrofe."],
+    "tone": "Solene exaltação, reverência e celebração da grandeza de Deus."
+}
+
+
 class TheologianAgent(BaseAgent):
     def __init__(self):
         super().__init__(
@@ -31,160 +284,63 @@ class TheologianAgent(BaseAgent):
             system_prompt=THEOLOGIAN_SYSTEM_PROMPT,
         )
 
-    def suggest_scriptures(self, theme: str) -> list[str]:
+    def _match_pool(self, theme: str) -> dict:
+        """Identifica a categoria doutrinária exata a partir do tema digitado pelo usuário."""
+        t_lower = (theme or "").strip().lower()
+        for category in THEOLOGICAL_POOLS:
+            for kw in category["keywords"]:
+                if kw in t_lower:
+                    return category
+        return DEFAULT_POOL
+
+    def analyze_and_draw_scripture(self, theme: str, exclude_current: str = "") -> dict:
         """
-        Identifica a essência teológica do tema informado pelo usuário e seleciona/sorteia
-        passagens bíblicas canônicas de alta precisão doutrinária.
+        Gestão do Agente Teólogo (Instantânea):
+        1. Identifica o tema doutrinário a partir do que o usuário escreveu.
+        2. Sorteia 1 versículo bíblico específico daquele tema (garantindo não repetir o atual).
+        3. Retorna metadados completos da gestão do agente para exibição na interface.
         """
         theme_clean = (theme or "").strip()
         if not theme_clean:
-            return ["Salmo 100:1-5 (Celebrai com júbilo ao Senhor)"]
+            theme_clean = "Louvor e Adoração a Deus"
 
-        # 1. Tenta consulta ao motor de IA (Gemini Cloud ou Ollama)
-        try:
-            prompt = (
-                f"Você é um Teólogo e Exegeta Bíblico especialista em adoração e hinologia sacra.\n"
-                f"Analise o seguinte tema doutrinário informado pelo usuário: '{theme_clean}'.\n"
-                f"Identifique o foco teológico e selecione exatamente 3 referências bíblicas canônicas e profundas "
-                f"(equilibrando Antigo e Novo Testamento) que se relacionem diretamente com o tema.\n"
-                f"Para cada referência, adicione uma explicação sucinta no formato 'Livro Capítulo:Versículos (Explicação)'.\n"
-                f"Responda no formato JSON com 'identified_theme' e 'scriptures'."
-            )
-            result = self.call_llm(prompt, ScriptureSuggestion)
-            if result and result.scriptures and len(result.scriptures) >= 1:
-                return result.scriptures
-        except Exception:
-            pass
+        matched = self._match_pool(theme_clean)
+        identified_name = matched["name"]
+        if matched["id"] == "soberania_geral":
+            identified_name = f"Exegese Cristocêntrica sobre '{theme_clean}'"
 
-        # 2. Identificação Temática Canônica com Sorteio Dinâmico (Fallback Robusto)
-        return self._identify_and_sample_scriptures(theme_clean)
+        pool = list(matched["verses"])
+        exclude_clean = (exclude_current or "").strip()
 
-    def _identify_and_sample_scriptures(self, theme: str) -> list[str]:
-        """Identifica o núcleo temático e sorteia 2 a 3 versículos altamente pertinentes de um acervo robusto."""
-        t_lower = theme.lower()
+        # Filtra o versículo que já está no campo para que cada clique sorteie um DIFERENTE
+        available = [v for v in pool if v != exclude_clean and v.split(" (")[0] not in exclude_clean]
+        if not available:
+            available = pool
 
-        # 1. Tema: Amor / Ágape / Amor de Deus / Bondade / Misericórdia
-        if any(w in t_lower for w in ["amor", "ágape", "agape", "amou", "amado", "bondade", "misericórdia", "misericordia", "benignidade"]):
-            pool = [
-                "1 João 4:7-12 (O amor procede de Deus; nisto conhecemos o amor: Ele nos amou primeiro)",
-                "Romanos 5:8 (Deus prova o Seu próprio amor para conosco pelo sacrifício de Cristo na cruz)",
-                "João 3:16-17 (Porque Deus amou o mundo de tal maneira que deu o Seu Filho unigênito)",
-                "Efésios 3:17-19 (Compreender a largura, comprimento, altura e profundidade do amor de Cristo)",
-                "1 Coríntios 13:4-8 (O hino ao amor ágape: paciente, benigno e que jamais acaba)",
-                "Jeremias 31:3 (Com amor eterno te amei; com laços de benignidade te atraí)",
-                "Romanos 8:38-39 (Nem a morte, nem a vida, nada nos poderá separar do amor de Deus)",
-                "Sofonias 3:17 (O Senhor se deleitará em ti com júbilo e te renovará no Seu amor)",
-                "1 João 3:1 (Vede que grande amor nos tem concedido o Pai, a ponto de sermos chamados filhos de Deus)"
-            ]
-        # 2. Tema: Santidade / Glória / Trono / Majestade
-        elif any(w in t_lower for w in ["santidade", "santo", "trono", "majestade", "glória", "gloria", "soberano", "altíssimo", "altissimo"]):
-            pool = [
-                "Isaías 6:1-8 (A visão do trono alto e sublime e os serafins clamando Santo, Santo, Santo)",
-                "Apocalipse 4:8-11 (Os seres viventes prostrados clamando Santo é o Senhor Deus Todo-Poderoso)",
-                "Salmo 99:5-9 (Exaltai ao Senhor nosso Deus e prostrai-vos ante o estrado dos Seus pés)",
-                "1 Pedro 1:15-16 (Sede santos em todo o vosso procedimento, porque Eu sou santo)",
-                "Êxodo 15:11 (Quem é semelhante a Ti, ó Senhor, glorioso em santidade e terrível em louvores?)",
-                "Hebreus 12:28-29 (Servir a Deus com reverência e santo temor, pois Ele é fogo consumidor)",
-                "Salmo 29:2 (Tributai ao Senhor a glória devida ao Seu nome; adorai na beleza da santidade)"
-            ]
-        # 3. Tema: Graça / Salvação / Cruz / Redenção / Sangue
-        elif any(w in t_lower for w in ["graça", "graca", "cruz", "redenção", "redencao", "sangue", "salvação", "salvacao", "calvário", "calvario"]):
-            pool = [
-                "Efésios 2:8-10 (Pela graça sois salvos mediante a fé, isso não vem de vós, é dom de Deus)",
-                "Romanos 5:1-8 (Justificados mediante a fé, temos paz com Deus por nosso Senhor Jesus)",
-                "Tito 2:11-14 (A graça salvadora de Deus se manifestou a todos os homens ensinando a piedade)",
-                "Isaías 53:4-6 (O servo sofredor traspassado pelas nossas transgressões e moído por nossos pecados)",
-                "Hebreus 9:11-14 (O sangue precioso de Cristo que purifica a nossa consciência do pecado)",
-                "2 Coríntios 5:17-21 (A reconciliação em Cristo e a justiça de Deus imputada aos pecadores)",
-                "Gálatas 2:20 (Estou crucificado com Cristo; já não sou eu quem vive, mas Cristo vive em mim)"
-            ]
-        # 4. Tema: Provação / Perseverança / Refúgio / Consolo / Dor
-        elif any(w in t_lower for w in ["provação", "provacao", "perseverança", "perseveranca", "dor", "luta", "força", "forca", "refúgio", "refugio", "consolo", "deserto"]):
-            pool = [
-                "Tiago 1:2-4 (A fé provada gerando paciência e maturidade perfeita em Cristo)",
-                "2 Coríntios 12:9-10 (A Minha graça te basta, pois o Meu poder se aperfeiçoa na fraqueza)",
-                "Salmo 46:1-3 (Deus é o nosso refúgio e fortaleza, socorro bem presente nas tribulações)",
-                "Salmo 91:1-4 (Aquele que habita no esconderijo do Altíssimo descansará sob as Suas asas)",
-                "Romanos 8:31-39 (Se Deus é por nós, quem será contra nós? Em tudo somos mais que vencedores)",
-                "Habacuque 3:17-19 (Ainda que a figueira não floresça, todavia eu me alegrarei no Senhor meu Salvador)",
-                "Salmo 23:1-6 (O Senhor é o meu pastor; ainda que eu ande pelo vale da sombra da morte, não temerei)"
-            ]
-        # 5. Tema: Gratidão / Louvor / Júbilo / Celebração / Vitória / Alegria
-        elif any(w in t_lower for w in ["gratidão", "gratidao", "louvor", "júbilo", "jubilo", "celebração", "celebracao", "vitória", "vitoria", "alegria"]):
-            pool = [
-                "Salmo 100:1-5 (Celebrai com júbilo ao Senhor, entrai pelas Suas portas com ações de graças)",
-                "Salmo 103:1-5 (Bendize, ó minha alma, ao Senhor, e não te esqueças de nenhum dos Seus benefícios)",
-                "Filipenses 4:4-7 (Alegrai-vos sempre no Senhor; a paz de Deus guardará vossa mente)",
-                "Colossenses 3:15-17 (Com salmos, hinos e cânticos espirituais, louvando com gratidão no coração)",
-                "Salmo 150:1-6 (Tudo quanto tem fôlego louve ao Senhor! Louvai ao Senhor nas alturas)",
-                "Salmo 34:1-3 (Louvarei ao Senhor em todo o tempo; o Seu louvor estará continuamente nos meus lábios)"
-            ]
-        # 6. Tema: Espírito Santo / Pentecostes / Avivamento / Fogo / Presença
-        elif any(w in t_lower for w in ["espírito", "espirito", "pentecostes", "avivamento", "fogo", "presença", "presenca", "unção", "uncao"]):
-            pool = [
-                "Atos 2:1-4 (O derramamento do Espírito Santo no Pentecostes com poder e línguas de fogo)",
-                "João 14:16-17 (O Consolador, o Espírito da Verdade que habita para sempre convosco)",
-                "Romanos 8:26-27 (O Espírito intercede por nós sobremaneira com gemidos inexprimíveis)",
-                "Gálatas 5:22-25 (O fruto do Espírito: amor, paz, paciência, bondade, mansidão)",
-                "Ezequiel 37:1-10 (O sopro de vida do Espírito Santo ressuscitando o vale de ossos secos)",
-                "Zacarias 4:6 (Não por força nem por violência, mas pelo Meu Espírito, diz o Senhor dos Exércitos)"
-            ]
-        # 7. Tema: Fé / Confiança / Esperança / Descanso / Paz
-        elif any(w in t_lower for w in ["fé", "fe", "confiança", "confianca", "esperança", "esperanca", "descanso", "paz", "crença"]):
-            pool = [
-                "Hebreus 11:1-6 (A fé é a certeza das coisas que se esperam e a convicção do que não se vê)",
-                "Provérbios 3:5-6 (Confia no Senhor de todo o teu coração e Ele endireitará as tuas veredas)",
-                "Isaías 40:29-31 (Os que esperam no Senhor renovam as suas forças e voam como águias)",
-                "Mateus 11:28-30 (Vinde a Mim todos os cansados e oprimidos, e Eu vos darei descanso)",
-                "João 14:27 (Deixo-vos a paz, a Minha paz vos dou; não se turbe o vosso coração)",
-                "Lamentações 3:22-24 (As misericórdias do Senhor se renovam a cada manhã; grande é a Tua fidelidade)"
-            ]
-        # 8. Tema: Cura / Milagres / Restauração / Libertação
-        elif any(w in t_lower for w in ["cura", "milagre", "restauração", "restauracao", "libertação", "libertacao", "enfermidade", "saúde"]):
-            pool = [
-                "Isaías 53:5 (Ele foi ferido por nossas transgressões, e pelas Suas pisaduras fomos sarados)",
-                "Salmo 103:2-3 (Ele é quem perdoa todas as tuas iniquidades e sara todas as tuas enfermidades)",
-                "Jeremias 17:14 (Cura-me, Senhor, e serei curado; salva-me, e serei salvo, pois és meu louvor)",
-                "Lucas 4:18-19 (O Espírito do Senhor me ungiu para proclamar libertação e cura aos quebrantados)",
-                "Tiago 5:14-16 (A oração da fé salvará o enfermo, e o Senhor o levantará em poder)"
-            ]
-        # 9. Tema: Volta de Cristo / Eternidade / Noiva / Ressurreição
-        elif any(w in t_lower for w in ["volta", "maranata", "eternidade", "ressurreição", "ressurreicao", "noiva", "reino", "segunda vinda"]):
-            pool = [
-                "Apocalipse 21:1-5 (Eis que faço novas todas as coisas; novo céu e nova terra sem pranto e sem dor)",
-                "Apocalipse 22:17-20 (O Espírito e a Noiva dizem: Vem! Aquele que testifica diz: Certamente venho sem demora)",
-                "1 Tessalonicenses 4:16-18 (O Senhor descerá dos céus com brado de arcanjo e ao som da trombeta de Deus)",
-                "1 Coríntios 15:51-57 (Tragada foi a morte na vitória; graças a Deus que nos dá vitória por Cristo)",
-                "Filipenses 2:9-11 (Ao nome de Jesus se dobre todo joelho nos céus, na terra e debaixo da terra)"
-            ]
-        # 10. Tema: Arrependimento / Perdão / Quebrantamento
-        elif any(w in t_lower for w in ["arrependimento", "perdão", "perdao", "quebrantamento", "humildade", "confissão", "pecado"]):
-            pool = [
-                "Salmo 51:1-12 (Cria em mim, ó Deus, um coração puro; o coração quebrantado e contrito não desprezarás)",
-                "Isaías 57:15 (Habito no alto e santo lugar, mas também com o contrito e humilde de espírito)",
-                "1 João 1:9 (Se confessarmos os nossos pecados, Ele é fiel e justo para nos perdoar e purificar)",
-                "2 Crônicas 7:14 (Se o Meu povo se humilhar, orar, buscar a Minha face e se converter dos maus caminhos)",
-                "Lucas 18:13-14 (Ó Deus, sê propício a mim, pecador! Justificado pela graça e humildade)"
-            ]
-        # 11. Tema Geral / Criação / Soberania Canônica
-        else:
-            pool = [
-                "Salmo 145:1-7 (Celebração da grandeza incomensurável e bondade soberana de Deus)",
-                "João 1:14-17 (O Verbo se fez carne e habitou entre nós, cheio de graça e de verdade)",
-                "Apocalipse 5:9-13 (Digno é o Cordeiro de receber honra, glória, louvor e domínio eterno)",
-                "Salmo 19:1-4 (Os céus proclamam a glória de Deus e o firmamento anuncia as Suas obras)",
-                "Colossenses 1:15-17 (Ele é a imagem do Deus invisível; Nele subsistem todas as coisas)",
-                "Romanos 11:33-36 (Ó profundidade das riquezas de Deus! Porque Dele, por Ele e para Ele são todas as coisas)"
-            ]
+        chosen_verse = random.choice(available)
+        others = [v for v in pool if v != chosen_verse]
+        extra_samples = random.sample(others, k=min(2, len(others)))
 
-        qtd = min(3, len(pool))
-        return random.sample(pool, k=qtd)
+        return {
+            "identified_theme": identified_name,
+            "chosen_verse": chosen_verse,
+            "pool_size": len(pool),
+            "scriptures": [chosen_verse] + extra_samples,
+            "formatted": chosen_verse,
+            "category_data": matched,
+        }
+
+    def suggest_scriptures(self, theme: str, exclude_current: str = "") -> list[str]:
+        """Retorna a lista de versículos sorteados pelo Agente Teólogo após identificar o tema."""
+        analysis = self.analyze_and_draw_scripture(theme, exclude_current=exclude_current)
+        return analysis["scriptures"]
 
     def run(self, briefing: UserBriefing) -> TheologicalDossier:
         biblical_info = (briefing.biblical_reference or "").strip()
         if not biblical_info:
-            sugestoes = self.suggest_scriptures(briefing.theme)
-            biblical_info = f"NÃO ESPECIFICADA PELO USUÁRIO. O Teólogo pesquisou e selecionou as seguintes passagens fundamentais para o tema '{briefing.theme}': {', '.join(sugestoes)}"
+            analysis = self.analyze_and_draw_scripture(briefing.theme)
+            biblical_info = analysis["chosen_verse"]
+            briefing.biblical_reference = biblical_info
 
         prompt = f"""Analise este pedido de canção de adoração e construa o Dossier Teológico completo:
 Tema: {briefing.theme}
@@ -192,81 +348,41 @@ Passagens Bíblicas Base: {biblical_info}
 Estilo e Clima: {briefing.musical_style_hint} | {briefing.tempo_hint}
 Preferência Vocal: {briefing.vocal_preference}
 
-IMPORTANTE: Caso o usuário não tenha informado passagens bíblicas, utilize sua erudição para fundamentar com rigor canônico e incluir as passagens mais ricas em 'primary_scriptures'!
+IMPORTANTE: Utilize as passagens bíblicas e o tema informados para fundamentar com rigor canônico!
 """
         return self.call_llm(prompt, TheologicalDossier)
 
     def _generate_contextual_demonstration(self, user_prompt: str, response_model: Type[BaseModel]) -> BaseModel:
+        # Extrai o tema real e a passagem bíblica real do prompt
+        theme_match = re.search(r"Tema:\s*(.+)", user_prompt)
+        ref_match = re.search(r"Passagens Bíblicas Base:\s*(.+)", user_prompt)
+        extracted_theme = theme_match.group(1).strip() if theme_match else user_prompt
+        extracted_ref = ref_match.group(1).strip() if ref_match else ""
+
+        analysis = self.analyze_and_draw_scripture(extracted_theme)
+        cat = analysis["category_data"]
+
         if response_model == ScriptureSuggestion:
-            samples = self._identify_and_sample_scriptures(user_prompt)
             return ScriptureSuggestion(
-                identified_theme="Tema Bíblico Identificado",
-                scriptures=samples
+                identified_theme=analysis["identified_theme"],
+                scriptures=analysis["scriptures"]
             )
 
-        # Se for o tema de Isaías 6 / Santidade de Deus
-        if "Isaías" in user_prompt or "Santidade" in user_prompt or "Trono" in user_prompt:
-            return TheologicalDossier(
-                theme_title="A Majestade Transcendente e a Santidade do Deus do Trono",
-                primary_scriptures=[
-                    "Isaías 6:1-8 (A visão do trono alto e sublime e o envio)",
-                    "Apocalipse 4:8-11 (Os quatro seres viventes e os 24 anciãos clamando Santo)",
-                    "Salmo 99:5 (Exaltai ao Senhor nosso Deus e prostrai-vos ante Seu estrado)"
-                ],
-                divine_attributes=[
-                    "Santidade Inegociável (Kadosh - três vezes santo)",
-                    "Majestade e Soberania Eterna",
-                    "Glória que enche toda a criação",
-                    "Graça Purificadora (a brasa viva do altar)"
-                ],
-                christocentric_focus=(
-                    "Jesus é o Rei glorioso visto por Isaías (João 12:41) e o Cordeiro imolado no centro do trono (Ap 5). "
-                    "A purificação do homem impuro não vem de obras humanas, mas do sacrifício propiciatório de Cristo."
-                ),
-                sacred_keywords=[
-                    "Alto e sublime trono", "Orlas do manto", "Serafins", "Santo, Santo, Santo",
-                    "Brasa viva", "Lábios purificados", "Eis-me aqui", "Cordeiro no trono", "Anciãos e coroas"
-                ],
-                doctrinal_guardrails=[
-                    "NUNCA colocar o homem como o protagonista da cena: o protagonista é o Rei no trono.",
-                    "Evitar antropocentrismo triunfalista ou sentimentalismo raso.",
-                    "O reconhecimento da própria impureza deve levar à graça purificadora e à prontidão para o envio ('Envia-me a mim')."
-                ],
-                emotional_and_spiritual_tone="Reverência profunda, assombro diante do Sagrado, quebrantamento sincero e consagração solene.",
-                exegetical_summary=(
-                    "A canção deve conduzir a igreja da contemplação da glória celestial (onde a voz do homem se cala) "
-                    "ao quebrantamento do coração diante da santidade de Deus, culminando na purificação graciosa e "
-                    "no clamor uníssono de adoração ao Cordeiro eterno."
-                )
-            )
+        primary_refs = [extracted_ref] if extracted_ref else []
+        for s in analysis["scriptures"]:
+            if s not in primary_refs:
+                primary_refs.append(s)
 
-        # Caso seja outro tema (ex: Tiago 1 / Perseverança / Graça)
         return TheologicalDossier(
-            theme_title=f"A Soberania da Graça e a Fidelidade Divina na Provação",
-            primary_scriptures=[
-                "Tiago 1:2-4 (A fé provada gerando perseverança e maturidade)",
-                "Romanos 5:3-5 (A tribulação produz paciência e esperança que não confunde)",
-                "2 Coríntios 12:9 (A minha graça te basta, pois o poder se aperfeiçoa na fraqueza)"
-            ],
-            divine_attributes=[
-                "Fidelidade Inabalável no Sofrimento",
-                "Suficiência da Graça Divina",
-                "Sabedoria e Soberania Pedagógica de Deus"
-            ],
-            christocentric_focus=(
-                "Nossa esperança na provação repousa em Cristo, o autor e consumador da fé, que suportou a cruz pelo regozijo proposto."
-            ),
-            sacred_keywords=[
-                "Fogo refinador", "Âncora da alma", "Graça que sustenta", "Paciência santa", "Maturidade em Cristo", "Fidelidade eterna"
-            ],
-            doctrinal_guardrails=[
-                "Não prometer isenção mágica de dor nem teologia da prosperidade.",
-                "Não tratar o sofrimento como ausência de Deus, mas como solo onde a fidelidade divina floresce.",
-                "Manter o olhar fixo na eternidade e no aperfeiçoamento da fé."
-            ],
-            emotional_and_spiritual_tone="Confiança serena, esperança inabalável, consolo genuíno e louvor perseverante.",
+            theme_title=f"{analysis['identified_theme']} ({extracted_theme})",
+            primary_scriptures=primary_refs[:3],
+            divine_attributes=cat["attributes"],
+            christocentric_focus=cat["christ_focus"],
+            sacred_keywords=cat["sacred_words"],
+            doctrinal_guardrails=cat["guardrails"],
+            emotional_and_spiritual_tone=cat["tone"],
             exegetical_summary=(
-                "A canção guia a congregação do reconhecimento honesto da fraqueza humana à celebração da suficiência de Cristo, "
-                "declarando que as provações não anulam o amor de Deus, mas forjam a perseverança dos santos."
+                f"A canção celebra '{extracted_theme}' fundamentada em {primary_refs[0]}, "
+                f"conduzindo a igreja à adoração vertical e cristocêntrica com foco em {cat['name']}."
             )
         )

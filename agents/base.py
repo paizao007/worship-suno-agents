@@ -62,9 +62,12 @@ class BaseAgent(ABC):
 
         full_prompt = f"{self.system_prompt}\n\nTarefa:\n{user_prompt}\n{instrucao_formato}"
 
-        # 1. Tentativa via Google Gemini Cloud API
-        if config.GEMINI_API_KEY:
-            for model_name in config.GEMINI_CANDIDATE_MODELS:
+        import time
+        now = time.time()
+
+        # 1. Tentativa via Google Gemini Cloud API (com circuit-breaker rápido para 429)
+        if config.GEMINI_API_KEY and now > getattr(BaseAgent, "_gemini_cooldown_until", 0):
+            for model_name in config.GEMINI_CANDIDATE_MODELS[:2]:
                 url = (
                     f"https://generativelanguage.googleapis.com/v1beta/models/"
                     f"{model_name}:generateContent?key={config.GEMINI_API_KEY}"
@@ -72,12 +75,12 @@ class BaseAgent(ABC):
                 payload = {
                     "contents": [{"parts": [{"text": full_prompt}]}],
                     "generationConfig": {
-                        "temperature": 0.4,
+                        "temperature": 0.6,
                         "responseMimeType": "application/json",
                     },
                 }
                 try:
-                    r = requests.post(url, json=payload, timeout=25)
+                    r = requests.post(url, json=payload, timeout=8)
                     if r.status_code == 200:
                         data = r.json()
                         candidates = data.get("candidates", [])
@@ -86,38 +89,38 @@ class BaseAgent(ABC):
                             if parts and "text" in parts[0]:
                                 parsed = extract_json_from_text(parts[0]["text"])
                                 if parsed:
-                                    # print(f"[{self.name}] [+] Sucesso via Gemini ({model_name})")
                                     return response_model.model_validate(parsed)
                     elif r.status_code == 429:
-                        # Rate limit: continua para o próximo modelo candidato ou Ollama
-                        continue
+                        # Ativa cooldown de 120s para não travar a interface do usuário em chamadas seguidas
+                        BaseAgent._gemini_cooldown_until = now + 120
+                        break
                 except Exception:
-                    pass
+                    BaseAgent._gemini_cooldown_until = now + 60
+                    break
 
-        # 2. Tentativa via Ollama Local / WSL
-        ollama_host = config.resolve_ollama_host()
-        candidate_ollama_models = [config.OLLAMA_MODEL, config.OLLAMA_FALLBACK_MODEL, "qwen2.5-coder:7b"]
-        for o_model in candidate_ollama_models:
+        # 2. Tentativa rápida via Ollama Local (com circuit-breaker caso esteja lento na CPU)
+        if now > getattr(BaseAgent, "_ollama_cooldown_until", 0):
+            ollama_host = config.resolve_ollama_host()
             try:
                 o_url = f"{ollama_host}/api/generate"
                 o_payload = {
-                    "model": o_model,
+                    "model": config.OLLAMA_MODEL,
                     "prompt": full_prompt,
                     "stream": False,
                     "format": "json",
                 }
-                o_res = requests.post(o_url, json=o_payload, timeout=30)
+                o_res = requests.post(o_url, json=o_payload, timeout=5)
                 if o_res.status_code == 200:
                     raw_resp = o_res.json().get("response", "")
                     parsed = extract_json_from_text(raw_resp)
                     if parsed:
-                        # print(f"[{self.name}] [+] Sucesso via Ollama ({o_model}) em {ollama_host}")
                         return response_model.model_validate(parsed)
+                else:
+                    BaseAgent._ollama_cooldown_until = now + 180
             except Exception:
-                pass
+                BaseAgent._ollama_cooldown_until = now + 180
 
-        # 3. Fallback de Demonstração Contextual de alta qualidade
-        # print(f"[{self.name}] [!] Utilizando motor analítico contextual para este ciclo.")
+        # 3. Motor Teológico e Poético Contextual Dinâmico (Instantâneo)
         return self._generate_contextual_demonstration(user_prompt, response_model)
 
     @abstractmethod

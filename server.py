@@ -206,15 +206,19 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                 <form id="composeForm">
                     <div class="form-group">
                         <label>Tema Central / Doutrina</label>
-                        <input type="text" id="theme" value="A Santidade de Deus e a Visão do Trono Celestial" required>
+                        <input type="text" id="theme" value="A Santidade de Deus e a Visão do Trono Celestial" onchange="autoFillScriptures()" required>
                     </div>
                     <div class="form-group">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
                             <label style="margin-bottom: 0;">Passagens Bíblicas Base</label>
-                            <button type="button" class="btn-action" style="min-height: 28px; padding: 3px 10px; font-size: 0.78rem; background: rgba(227, 179, 65, 0.15); border-color: var(--accent-gold); color: var(--accent-gold);" onclick="autoFillScriptures()">✨ Sugerir Passagens</button>
+                            <button type="button" class="btn-action" style="min-height: 28px; padding: 3px 10px; font-size: 0.78rem; background: rgba(227, 179, 65, 0.15); border-color: var(--accent-gold); color: var(--accent-gold);" onclick="autoFillScriptures()">🎲 Sortear Versículo do Tema</button>
                         </div>
-                        <input type="text" id="biblical_ref" value="Isaías 6:1-8 e Apocalipse 4:8-11" placeholder="Opcional: Deixe em branco para o Teólogo buscar automaticamente...">
-                        <small style="display: block; font-size: 0.75rem; color: var(--text-secondary); margin-top: 4px;">💡 <b>Opcional:</b> Deixe vazio e os agentes pesquisarão as melhores referências bíblicas para o tema!</small>
+                        <input type="text" id="biblical_ref" value="Isaías 6:1-4 (Vi o Senhor assentado sobre um alto e sublime trono, e os serafins clamavam: Santo, Santo, Santo)" placeholder="Opcional: Deixe em branco para o Teólogo sortear automaticamente...">
+                        <div id="agentManagementBox" style="margin-top: 8px; padding: 10px 12px; background: rgba(227, 179, 65, 0.08); border-left: 3px solid var(--accent-gold); border-radius: 6px; font-size: 0.78rem; color: #c9d1d9; line-height: 1.45;">
+                            <div style="color: var(--accent-gold); font-weight: bold; margin-bottom: 3px;">🧠 Gestão do Agente Teólogo:</div>
+                            <div>📌 <b>Tema Identificado:</b> <span id="identifiedThemeText" style="color: #58a6ff;">Santidade Transcendente & Majestade do Trono de Deus</span></div>
+                            <div>🎯 <b>Versículo Sorteado:</b> <span id="drawnVerseStatus" style="color: #3fb950;">Isaías 6:1-4 (Clique em "Sortear Versículo" para sortear outro do mesmo tema!)</span></div>
+                        </div>
                     </div>
                     <div class="form-group">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
@@ -416,17 +420,20 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 
         async function autoFillScriptures() {
             const theme = document.getElementById('theme').value.trim();
+            const currentRef = document.getElementById('biblical_ref').value.trim();
             if (!theme) {
                 showToast("⚠️ Digite um tema primeiro!");
                 return;
             }
-            showToast("🔍 Teólogo pesquisando referências bíblicas...");
             try {
-                const res = await fetch(`/api/suggest-scriptures?theme=${encodeURIComponent(theme)}`);
+                const url = `/api/suggest-scriptures?theme=${encodeURIComponent(theme)}&current=${encodeURIComponent(currentRef)}`;
+                const res = await fetch(url);
                 const data = await res.json();
-                if (data.success && data.formatted) {
-                    document.getElementById('biblical_ref').value = data.formatted;
-                    showToast("✨ Referências preenchidas pelo Teólogo!");
+                if (data.success && data.chosen_verse) {
+                    document.getElementById('biblical_ref').value = data.chosen_verse;
+                    document.getElementById('identifiedThemeText').innerText = data.identified_theme;
+                    document.getElementById('drawnVerseStatus').innerText = `${data.chosen_verse} (Sorteado dentre ${data.pool_size} passagens deste tema)`;
+                    showToast(`🎲 Sorteado: ${data.chosen_verse.split(' (')[0]} (${data.identified_theme})`);
                 } else {
                     showToast("Aviso: " + (data.error || "Não foi possível sugerir"));
                 }
@@ -449,7 +456,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             }
         }
 
-        function renderSongOnScreen(item) {
+        function renderSongOnScreen(item, updateFormInputs = true) {
             document.getElementById('styleText').innerText = item.style_of_music;
             document.getElementById('styleCharCount').innerText = item.style_of_music.length;
             document.getElementById('lyricsText').innerText = item.lyrics_with_metatags;
@@ -476,13 +483,15 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                 document.getElementById('auditCritiques').innerHTML = `<li>Pronto para produção no Suno AI Custom Mode.</li>`;
             }
 
-            if (item.theme) document.getElementById('theme').value = item.theme;
-            if (item.biblical_reference) document.getElementById('biblical_ref').value = item.biblical_reference;
-            if (item.musical_style_hint || item.style_of_music) {
-                document.getElementById('musical_style').value = item.musical_style_hint || item.style_of_music;
-            }
-            if (item.vocal_preference || item.vocal_configuration) {
-                document.getElementById('vocal_pref').value = item.vocal_preference || item.vocal_configuration;
+            if (updateFormInputs) {
+                if (item.theme) document.getElementById('theme').value = item.theme;
+                if (item.biblical_reference) document.getElementById('biblical_ref').value = item.biblical_reference;
+                if (item.musical_style_hint || item.style_of_music) {
+                    document.getElementById('musical_style').value = item.musical_style_hint || item.style_of_music;
+                }
+                if (item.vocal_preference || item.vocal_configuration) {
+                    document.getElementById('vocal_pref').value = item.vocal_preference || item.vocal_configuration;
+                }
             }
         }
 
@@ -532,7 +541,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         function selectFromHistory(idx) {
             const item = globalHistory[idx];
             if (item) {
-                renderSongOnScreen(item);
+                renderSongOnScreen(item, true);
                 switchTab('tabSuno');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
                 showToast(`Canção "${item.song_title}" carregada!`);
@@ -558,9 +567,9 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             };
 
             document.getElementById('step1').className = "step-item active";
-            setTimeout(() => { document.getElementById('step1').className = "step-item done"; document.getElementById('step2').className = "step-item active"; }, 600);
-            setTimeout(() => { document.getElementById('step2').className = "step-item done"; document.getElementById('step3').className = "step-item active"; }, 1200);
-            setTimeout(() => { document.getElementById('step3').className = "step-item done"; document.getElementById('step4').className = "step-item active"; }, 1800);
+            setTimeout(() => { document.getElementById('step1').className = "step-item done"; document.getElementById('step2').className = "step-item active"; }, 300);
+            setTimeout(() => { document.getElementById('step2').className = "step-item done"; document.getElementById('step3').className = "step-item active"; }, 600);
+            setTimeout(() => { document.getElementById('step3').className = "step-item done"; document.getElementById('step4').className = "step-item active"; }, 900);
 
             try {
                 const res = await fetch('/api/compose', {
@@ -574,8 +583,12 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                     
                     let finalRef = payload.biblical_reference;
                     if (!finalRef && data.dossier && data.dossier.primary_scriptures && data.dossier.primary_scriptures.length) {
-                        finalRef = data.dossier.primary_scriptures.join(' | ');
+                        finalRef = data.dossier.primary_scriptures[0];
                         document.getElementById('biblical_ref').value = finalRef;
+                    }
+                    if (data.dossier && data.dossier.theme_title) {
+                        document.getElementById('identifiedThemeText').innerText = data.dossier.theme_title;
+                        document.getElementById('drawnVerseStatus').innerText = finalRef;
                     }
 
                     const newItem = {
@@ -589,10 +602,10 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                         biblical_reference: finalRef,
                         created_at: "Agora"
                     };
-                    renderSongOnScreen(newItem);
+                    renderSongOnScreen(newItem, true);
                     switchTab('tabSuno');
                     loadHistory();
-                    showToast("🎉 Canção composta com sucesso!");
+                    showToast("🎉 Canção '" + data.suno_package.song_title + "' composta com sucesso!");
                 } else {
                     showToast("Erro ao compor: " + (data.error || "Desconhecido"));
                 }
@@ -604,11 +617,11 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             }
         });
 
-        // Carrega ao iniciar a página
+        // Carrega ao iniciar a página (sem sobrescrever os campos de edição do usuário)
         window.addEventListener('DOMContentLoaded', async () => {
             await loadHistory();
             if (globalHistory.length > 0) {
-                renderSongOnScreen(globalHistory[0]);
+                renderSongOnScreen(globalHistory[0], false);
                 switchTab('tabSuno');
             }
         });
@@ -674,19 +687,23 @@ def api_status():
 
 @app.route("/api/suggest-scriptures", methods=["GET"])
 def api_suggest_scriptures():
-    """Sugere passagens bíblicas sólidas e canônicas para o tema fornecido."""
+    """Identifica o tema doutrinário e sorteia um versículo bíblico pertinente (sem repetir o atual)."""
     theme = request.args.get("theme", "").strip()
+    current = request.args.get("current", "").strip()
     if not theme:
         return jsonify({"success": False, "error": "Por favor, forneça um tema."}), 400
     try:
         from agents.theologian import TheologianAgent
         theologian = TheologianAgent()
-        scriptures = theologian.suggest_scriptures(theme)
+        analysis = theologian.analyze_and_draw_scripture(theme, exclude_current=current)
         return jsonify({
             "success": True,
             "theme": theme,
-            "scriptures": scriptures,
-            "formatted": " | ".join(scriptures)
+            "identified_theme": analysis["identified_theme"],
+            "chosen_verse": analysis["chosen_verse"],
+            "pool_size": analysis["pool_size"],
+            "scriptures": analysis["scriptures"],
+            "formatted": analysis["chosen_verse"]
         })
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
