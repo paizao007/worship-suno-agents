@@ -29,7 +29,7 @@ console = Console(legacy_windows=False)
 def print_banner():
     banner = """
     ╔═══════════════════════════════════════════════════════════════════════════════╗
-    ║        🕊️  SISTEMA MULTIAGENTE DE ADORAÇÃO SACRA PARA SUNO AI  🎵             ║
+    ║        🕊️  BANDA LVS LITÚRGICA MULTIAGENTE & SUNO AI  🎵                     ║
     ║        Harmonia Teológica • Prosódia Bíblica • Engenharia de Áudio             ║
     ╚═══════════════════════════════════════════════════════════════════════════════╝
     """

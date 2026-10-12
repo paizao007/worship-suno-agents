@@ -2,7 +2,7 @@
 cd "$(dirname "$0")"
 
 echo "======================================================================"
-echo "  🕊️ INICIANDO SERVIDOR DE AGENTES DE ADORAÇÃO PARA SUNO AI (LINUX/WSL)"
+echo "  🕊️ INICIANDO BANDA LVS LITÚRGICA MULTIAGENTE & SUNO AI 🎵 (LINUX/WSL)"
 echo "======================================================================"
 
 if [ -f .env ]; then

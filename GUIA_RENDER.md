@@ -1,6 +1,7 @@
 # 🌐 Guia Passo a Passo: Como Subir no Render (render.com)
+### 🕊️ Banda LVS Litúrgica Multiagente & Suno AI 🎵
 
-Este guia ensina como colocar o **Sistema Multiagente de Adoração para Suno AI** no ar na nuvem usando o plano gratuito do **Render**.
+Este guia ensina como colocar a **Banda LVS Litúrgica Multiagente & Suno AI** no ar na nuvem usando o plano gratuito do **Render**.
 
 ---
 

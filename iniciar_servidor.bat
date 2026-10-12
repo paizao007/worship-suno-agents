@@ -1,10 +1,10 @@
 @echo off
 chcp 65001 > nul
-title Servidor de Agentes de Adoracao para Suno AI
+title 🕊️ Banda LVS Liturgica Multiagente e Suno AI 🎵
 cd /d "%~dp0"
 
 echo ======================================================================
-echo   🕊️ INICIANDO SERVIDOR DE AGENTES DE ADORACAO PARA SUNO AI
+echo   🕊️ INICIANDO BANDA LVS LITÚRGICA MULTIAGENTE & SUNO AI 🎵
 echo ======================================================================
 
 if not exist ".venv\Scripts\python.exe" (

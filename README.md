@@ -1,4 +1,4 @@
-# 🕊️ Sistema Multiagente de Adoração Sacra para Suno AI 🎵
+# 🕊️ Banda LVS Litúrgica Multiagente & Suno AI 🎵
 
 Um sistema colaborativo de agentes de Inteligência Artificial especializados em teologia bíblica, prosódia lírica e engenharia de áudio para composição de músicas de adoração cristã destinadas ao **Suno AI**.
 

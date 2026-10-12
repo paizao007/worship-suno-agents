@@ -32,7 +32,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Suno Worship AI - Banda Litúrgica Multiagente</title>
+    <title>🕊️ Banda LVS Litúrgica Multiagente & Suno AI 🎵</title>
     <style>
         :root {
             --bg-primary: #0d1117;
@@ -108,7 +108,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 <body>
     <div class="container">
         <header>
-            <h1>🕊️ Banda Litúrgica Multiagente & Suno AI 🎵</h1>
+            <h1>🕊️ Banda LVS Litúrgica Multiagente & Suno AI 🎵</h1>
             <p>Orquestração de Agentes para Composição Sacra • Rigor Bíblico • Engenharia de Prompts</p>
             <div class="status-bar" id="statusBar">
                 <span class="badge badge-gemini">✨ Gemini Cloud: Ativo</span>
@@ -328,7 +328,7 @@ def api_status():
 
     return jsonify({
         "status": "online",
-        "service": "Worship Suno Multiagent Server",
+        "service": "🕊️ Banda LVS Litúrgica Multiagente & Suno AI 🎵",
         "gemini_api_key_configured": bool(config.GEMINI_API_KEY),
         "gemini_model": config.GEMINI_MODEL,
         "ollama_host": ollama_host,
@@ -366,7 +366,7 @@ def run_server(host=None, port=None):
     h = host or config.SERVER_HOST
     p = port or config.SERVER_PORT
     print("=" * 70)
-    print("🕊️  SERVIDOR MULTIAGENTE DE ADORAÇÃO SACRA PARA SUNO AI INICIADO")
+    print("🕊️  BANDA LVS LITÚRGICA MULTIAGENTE & SUNO AI INICIADA 🎵")
     print(f"📡  Interface Web acessível em: http://localhost:{p}")
     print(f"🌐  Rede local / Host: http://{h}:{p}")
     print(f"✨  Motor Gemini Cloud: {'Ativo com chave' if config.GEMINI_API_KEY else 'Não configurado'}")

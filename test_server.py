@@ -9,7 +9,7 @@ client = app.test_client()
 print("[1] Testando rota GET /...")
 res_index = client.get("/")
 assert res_index.status_code == 200, f"Falha no index: {res_index.status_code}"
-assert "Banda Litúrgica" in res_index.text, "Index não contém título esperado"
+assert "Banda LVS Litúrgica" in res_index.text, "Index não contém título esperado"
 print("✓ Rota GET / retornou 200 OK com template HTML renderizado!")
 
 print("\n[2] Testando rota GET /api/status...")
