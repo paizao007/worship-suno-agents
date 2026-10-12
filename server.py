@@ -1,7 +1,7 @@
 """
 Servidor Web e API REST do Sistema Multiagente de Adoração para Suno AI.
-Fornece interface gráfica moderna no navegador e endpoints para composição automatizada.
-Inspirado na arquitetura de servidores de ER0_DeV / Moltbook.
+🕊️ Banda LVS Litúrgica Multiagente & Suno AI 🎵
+Inclui interface gráfica moderna, histórico persistente de canções e endpoints de composição.
 """
 
 import sys
@@ -9,6 +9,7 @@ import os
 import argparse
 import json
 import urllib.request
+from datetime import datetime
 from pathlib import Path
 from flask import Flask, request, jsonify, render_template_string
 
@@ -24,8 +25,25 @@ from orchestrator import WorshipSunoOrchestrator
 
 app = Flask(__name__)
 
-# Histórico em memória de canções geradas nesta sessão
-SESSION_HISTORY = []
+HISTORY_FILE = Path(__file__).parent / "historico_musicas.json"
+
+
+def load_song_history():
+    """Carrega o histórico persistente de canções."""
+    if HISTORY_FILE.exists():
+        try:
+            return json.loads(HISTORY_FILE.read_text(encoding="utf-8"))
+        except Exception:
+            return []
+    return []
+
+
+def save_song_to_history(entry):
+    """Salva uma canção no histórico persistente."""
+    history = load_song_history()
+    history.insert(0, entry)
+    HISTORY_FILE.write_text(json.dumps(history, ensure_ascii=False, indent=2), encoding="utf-8")
+
 
 HTML_TEMPLATE = """<!DOCTYPE html>
 <html lang="pt-BR">
@@ -47,19 +65,20 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
         body { background: var(--bg-primary); color: var(--text-primary); padding: 24px; }
-        .container { max-width: 1200px; margin: 0 auto; }
+        .container { max-width: 1280px; margin: 0 auto; }
         
         header { text-align: center; margin-bottom: 32px; border-bottom: 1px solid var(--border-color); padding-bottom: 24px; }
         header h1 { font-size: 2.2rem; color: var(--accent-gold); margin-bottom: 8px; }
         header p { color: var(--text-secondary); font-size: 1.1rem; }
         
-        .status-bar { display: flex; gap: 16px; justify-content: center; margin-top: 16px; }
+        .status-bar { display: flex; gap: 16px; justify-content: center; margin-top: 16px; flex-wrap: wrap; }
         .badge { padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; }
         .badge-gemini { background: rgba(88, 166, 255, 0.15); color: var(--accent-blue); border: 1px solid var(--accent-blue); }
         .badge-ollama { background: rgba(63, 185, 80, 0.15); color: var(--accent-green); border: 1px solid var(--accent-green); }
+        .badge-history { background: rgba(227, 179, 65, 0.15); color: var(--accent-gold); border: 1px solid var(--accent-gold); cursor: pointer; }
         
         .grid { display: grid; grid-template-columns: 380px 1fr; gap: 24px; }
-        @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+        @media (max-width: 960px) { .grid { grid-template-columns: 1fr; } }
         
         .card { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 12px; padding: 24px; }
         .card h2 { font-size: 1.3rem; margin-bottom: 16px; color: var(--accent-gold); border-bottom: 1px solid var(--border-color); padding-bottom: 8px; }
@@ -84,7 +103,6 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         .step-item.active { color: var(--accent-gold); font-weight: bold; }
         .step-item.done { color: var(--accent-green); }
         
-        .result-box { display: none; }
         .suno-field { background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 8px; padding: 16px; margin-bottom: 20px; position: relative; }
         .suno-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
         .suno-title { font-size: 0.95rem; font-weight: bold; color: var(--accent-blue); }
@@ -96,13 +114,31 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         
         pre { white-space: pre-wrap; font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace; font-size: 0.9rem; line-height: 1.5; color: #c9d1d9; }
         
-        .tabs { display: flex; gap: 8px; margin-bottom: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; }
-        .tab-btn { background: none; border: none; color: var(--text-secondary); font-size: 0.95rem; font-weight: 600; padding: 6px 12px; cursor: pointer; border-radius: 6px; }
+        .tabs { display: flex; gap: 8px; margin-bottom: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; flex-wrap: wrap; }
+        .tab-btn { background: none; border: none; color: var(--text-secondary); font-size: 0.95rem; font-weight: 600; padding: 8px 14px; cursor: pointer; border-radius: 6px; }
         .tab-btn.active { color: var(--accent-gold); background: var(--bg-card); }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
         
         .score-pill { font-size: 1.2rem; font-weight: bold; color: var(--accent-green); margin-bottom: 12px; }
+
+        /* Estilos do Histórico */
+        .history-card {
+            background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px;
+            padding: 16px; margin-bottom: 16px; transition: 0.2s;
+        }
+        .history-card:hover { border-color: var(--accent-gold); }
+        .history-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .history-title { font-size: 1.1rem; font-weight: bold; color: var(--accent-gold); }
+        .history-meta { font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 12px; }
+        .history-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+        .btn-action {
+            background: var(--bg-primary); color: var(--text-primary); border: 1px solid var(--border-color);
+            padding: 6px 10px; border-radius: 6px; font-size: 0.8rem; cursor: pointer; transition: 0.2s;
+        }
+        .btn-action:hover { background: var(--accent-blue); color: #fff; }
+        .btn-load { background: rgba(227, 179, 65, 0.2); border-color: var(--accent-gold); color: var(--accent-gold); }
+        .btn-load:hover { background: var(--accent-gold); color: #000; }
     </style>
 </head>
 <body>
@@ -113,13 +149,14 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             <div class="status-bar" id="statusBar">
                 <span class="badge badge-gemini">✨ Gemini Cloud: Ativo</span>
                 <span class="badge badge-ollama">🦙 Ollama Local (WSL): Disponível</span>
+                <span class="badge badge-history" onclick="switchTab('tabHistory')">📚 <span id="badgeHistoryText">Histórico de Músicas</span></span>
             </div>
         </header>
 
         <div class="grid">
             <!-- Coluna da Esquerda: Formulário de Briefing -->
             <div class="card">
-                <h2>1. Briefing de Adoração</h2>
+                <h2>1. Novo Briefing de Adoração</h2>
                 <form id="composeForm">
                     <div class="form-group">
                         <label>Tema Central / Doutrina</label>
@@ -159,74 +196,93 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                 </div>
             </div>
 
-            <!-- Coluna da Direita: Resultados dos Agentes -->
+            <!-- Coluna da Direita: Resultados e Histórico -->
             <div class="card">
-                <h2>2. Cabine de Produção & Saída Suno AI</h2>
-                <div id="placeholderMsg" style="text-align: center; padding: 60px 20px; color: var(--text-secondary);">
-                    <p style="font-size: 1.1rem; margin-bottom: 8px;">Preencha o briefing ao lado e clique em <b>Compor Música</b>.</p>
-                    <p style="font-size: 0.9rem;">Os 4 agentes trabalharão em cadeia com ciclo de validação doutrinária.</p>
+                <h2>2. Cabine de Produção & Histórico de Músicas</h2>
+
+                <div class="tabs">
+                    <button class="tab-btn active" id="btnTabSuno" onclick="switchTab('tabSuno')">🎵 Música (Suno AI)</button>
+                    <button class="tab-btn" id="btnTabTheology" onclick="switchTab('tabTheology')">📜 Teologia & Exegese</button>
+                    <button class="tab-btn" id="btnTabAudit" onclick="switchTab('tabAudit')">⚖️ Parecer do Auditor</button>
+                    <button class="tab-btn" id="btnTabHistory" onclick="switchTab('tabHistory')">📚 Histórico (<span id="historyTabCount">0</span>)</button>
                 </div>
 
-                <div class="result-box" id="resultBox">
-                    <div class="tabs">
-                        <button class="tab-btn active" onclick="switchTab('tabSuno')">🎵 Pacote Suno AI</button>
-                        <button class="tab-btn" onclick="switchTab('tabTheology')">📜 Teologia & Exegese</button>
-                        <button class="tab-btn" onclick="switchTab('tabAudit')">⚖️ Parecer do Auditor</button>
+                <!-- Aba 1: Pacote do Suno -->
+                <div class="tab-content active" id="tabSuno">
+                    <div class="suno-field">
+                        <div class="suno-header">
+                            <span class="suno-title">🎹 Campo 'Style of Music' (<span id="styleCharCount">0</span> caracteres)</span>
+                            <button class="btn-copy" onclick="copyText('styleText')">Copiar Estilo</button>
+                        </div>
+                        <pre id="styleText" style="color: var(--accent-gold); font-weight: bold;"></pre>
                     </div>
 
-                    <!-- Aba 1: Pacote do Suno -->
-                    <div class="tab-content active" id="tabSuno">
-                        <div class="suno-field">
-                            <div class="suno-header">
-                                <span class="suno-title">🎹 Campo 'Style of Music' (<span id="styleCharCount">0</span> caracteres)</span>
-                                <button class="btn-copy" onclick="copyText('styleText')">Copiar Estilo</button>
-                            </div>
-                            <pre id="styleText" style="color: var(--accent-gold); font-weight: bold;"></pre>
+                    <div class="suno-field">
+                        <div class="suno-header">
+                            <span class="suno-title">✍️ Campo 'Lyrics' com Metatags [Tag]</span>
+                            <button class="btn-copy" onclick="copyText('lyricsText')">Copiar Letra Completa</button>
                         </div>
-
-                        <div class="suno-field">
-                            <div class="suno-header">
-                                <span class="suno-title">✍️ Campo 'Lyrics' com Metatags [Tag]</span>
-                                <button class="btn-copy" onclick="copyText('lyricsText')">Copiar Letra Completa</button>
-                            </div>
-                            <pre id="lyricsText" style="max-height: 480px; overflow-y: auto;"></pre>
-                        </div>
-                    </div>
-
-                    <!-- Aba 2: Teologia -->
-                    <div class="tab-content" id="tabTheology">
-                        <div class="suno-field">
-                            <h3 id="theologyTitle" style="color: var(--accent-gold); margin-bottom: 12px;"></h3>
-                            <p style="color: var(--text-secondary); margin-bottom: 8px;"><b>Atributos Divinos:</b> <span id="theologyAttributes" style="color: #fff;"></span></p>
-                            <p style="color: var(--text-secondary); margin-bottom: 8px;"><b>Foco Cristocêntrico:</b> <span id="theologyChrist" style="color: #fff;"></span></p>
-                            <p style="color: var(--text-secondary); margin-bottom: 8px;"><b>Palavras Sagradas:</b> <span id="theologyKeywords" style="color: #fff;"></span></p>
-                            <p style="color: var(--text-secondary); margin-bottom: 12px;"><b>Salvaguardas Doutrinárias:</b> <span id="theologyGuardrails" style="color: #ff7b72;"></span></p>
-                            <p style="color: var(--text-secondary);"><b>Síntese Exegética:</b></p>
-                            <p id="theologySummary" style="color: #c9d1d9; margin-top: 4px; line-height: 1.5;"></p>
-                        </div>
-                    </div>
-
-                    <!-- Aba 3: Auditoria -->
-                    <div class="tab-content" id="tabAudit">
-                        <div class="suno-field">
-                            <div class="score-pill" id="auditScore"></div>
-                            <h4 style="margin-bottom: 8px; color: var(--accent-green);">Pontos Fortes:</h4>
-                            <ul id="auditStrengths" style="margin-left: 20px; margin-bottom: 16px; color: #c9d1d9;"></ul>
-                            <h4 style="margin-bottom: 8px; color: var(--accent-gold);">Observações Críticas:</h4>
-                            <ul id="auditCritiques" style="margin-left: 20px; color: #c9d1d9;"></ul>
-                        </div>
+                        <pre id="lyricsText" style="max-height: 480px; overflow-y: auto;"></pre>
                     </div>
                 </div>
+
+                <!-- Aba 2: Teologia -->
+                <div class="tab-content" id="tabTheology">
+                    <div class="suno-field">
+                        <h3 id="theologyTitle" style="color: var(--accent-gold); margin-bottom: 12px;"></h3>
+                        <p style="color: var(--text-secondary); margin-bottom: 8px;"><b>Atributos Divinos:</b> <span id="theologyAttributes" style="color: #fff;"></span></p>
+                        <p style="color: var(--text-secondary); margin-bottom: 8px;"><b>Foco Cristocêntrico:</b> <span id="theologyChrist" style="color: #fff;"></span></p>
+                        <p style="color: var(--text-secondary); margin-bottom: 8px;"><b>Palavras Sagradas:</b> <span id="theologyKeywords" style="color: #fff;"></span></p>
+                        <p style="color: var(--text-secondary); margin-bottom: 12px;"><b>Salvaguardas Doutrinárias:</b> <span id="theologyGuardrails" style="color: #ff7b72;"></span></p>
+                        <p style="color: var(--text-secondary);"><b>Síntese Exegética:</b></p>
+                        <p id="theologySummary" style="color: #c9d1d9; margin-top: 4px; line-height: 1.5;"></p>
+                    </div>
+                </div>
+
+                <!-- Aba 3: Auditoria -->
+                <div class="tab-content" id="tabAudit">
+                    <div class="suno-field">
+                        <div class="score-pill" id="auditScore"></div>
+                        <h4 style="margin-bottom: 8px; color: var(--accent-green);">Pontos Fortes:</h4>
+                        <ul id="auditStrengths" style="margin-left: 20px; margin-bottom: 16px; color: #c9d1d9;"></ul>
+                        <h4 style="margin-bottom: 8px; color: var(--accent-gold);">Observações Críticas:</h4>
+                        <ul id="auditCritiques" style="margin-left: 20px; color: #c9d1d9;"></ul>
+                    </div>
+                </div>
+
+                <!-- Aba 4: Histórico Persistente -->
+                <div class="tab-content" id="tabHistory">
+                    <div style="margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
+                        <h3 style="color: var(--accent-gold);">Histórico de Canções Criadas</h3>
+                        <button class="btn-copy" onclick="loadHistory()">🔄 Atualizar</button>
+                    </div>
+                    <div id="historyListContainer">
+                        <!-- Cards injetados via JavaScript -->
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>
 
     <script>
+        let globalHistory = [];
+
         function switchTab(tabId) {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            event.target.classList.add('active');
-            document.getElementById(tabId).classList.add('active');
+            
+            const btnMap = {
+                'tabSuno': 'btnTabSuno',
+                'tabTheology': 'btnTabTheology',
+                'tabAudit': 'btnTabAudit',
+                'tabHistory': 'btnTabHistory'
+            };
+            const btn = document.getElementById(btnMap[tabId]);
+            if (btn) btn.classList.add('active');
+            
+            const targetContent = document.getElementById(tabId);
+            if (targetContent) targetContent.classList.add('active');
         }
 
         function copyText(elemId) {
@@ -236,18 +292,107 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             });
         }
 
+        function copyRaw(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert("Copiado com sucesso!");
+            });
+        }
+
+        function renderSongOnScreen(item) {
+            // Renderiza na aba Suno
+            document.getElementById('styleText').innerText = item.style_of_music;
+            document.getElementById('styleCharCount').innerText = item.style_of_music.length;
+            document.getElementById('lyricsText').innerText = item.lyrics_with_metatags;
+
+            // Renderiza Teologia
+            if (item.dossier) {
+                document.getElementById('theologyTitle').innerText = item.dossier.theme_title || item.song_title;
+                document.getElementById('theologyAttributes').innerText = (item.dossier.divine_attributes || []).join(', ');
+                document.getElementById('theologyChrist').innerText = item.dossier.christocentric_focus || '';
+                document.getElementById('theologyKeywords').innerText = (item.dossier.sacred_keywords || []).join(', ');
+                document.getElementById('theologyGuardrails').innerText = (item.dossier.doctrinal_guardrails || []).join(' | ');
+                document.getElementById('theologySummary').innerText = item.dossier.exegetical_summary || '';
+            } else {
+                document.getElementById('theologyTitle').innerText = item.song_title;
+                document.getElementById('theologySummary').innerText = item.theological_summary || '';
+            }
+
+            // Renderiza Auditoria
+            const scoreVal = item.audit_score || (item.audit ? item.audit.score : 9.0);
+            document.getElementById('auditScore').innerText = `Nota Final: ${Number(scoreVal).toFixed(1)} / 10.0 (Aprovado)`;
+            if (item.audit && item.audit.strengths) {
+                document.getElementById('auditStrengths').innerHTML = item.audit.strengths.map(s => `<li>${s}</li>`).join('');
+                document.getElementById('auditCritiques').innerHTML = (item.audit.critiques || []).map(c => `<li>${c}</li>`).join('');
+            } else {
+                document.getElementById('auditStrengths').innerHTML = `<li>Harmonia teológica bíblica e métrica alinhada ao Suno.</li>`;
+                document.getElementById('auditCritiques').innerHTML = `<li>Pronto para produção no Suno AI Custom Mode.</li>`;
+            }
+
+            // Atualiza campos do formulário para referência
+            if (item.theme) document.getElementById('theme').value = item.theme;
+            if (item.biblical_reference) document.getElementById('biblical_ref').value = item.biblical_reference;
+        }
+
+        async function loadHistory() {
+            try {
+                const res = await fetch('/api/history');
+                const list = await res.json();
+                globalHistory = list;
+                
+                document.getElementById('historyTabCount').innerText = list.length;
+                document.getElementById('badgeHistoryText').innerText = `Histórico de Músicas (${list.length})`;
+
+                const container = document.getElementById('historyListContainer');
+                if (!list.length) {
+                    container.innerHTML = `<p style="color: var(--text-secondary); text-align: center; padding: 20px;">Nenhuma canção gravada ainda.</p>`;
+                    return;
+                }
+
+                container.innerHTML = list.map((item, idx) => `
+                    <div class="history-card">
+                        <div class="history-card-header">
+                            <span class="history-title">🎵 ${item.song_title}</span>
+                            <span class="badge badge-ollama">★ Nota: ${Number(item.audit_score || 9.0).toFixed(1)}/10</span>
+                        </div>
+                        <div class="history-meta">
+                            📅 <b>Criada em:</b> ${item.created_at || 'Hoje'} | 📖 <b>Base:</b> ${item.biblical_reference || ''}
+                        </div>
+                        <p style="font-size: 0.85rem; color: #8b949e; margin-bottom: 8px;">
+                            <b>Tema:</b> ${item.theme}
+                        </p>
+                        <div style="background: var(--bg-primary); padding: 8px; border-radius: 6px; font-size: 0.8rem; color: var(--accent-gold); font-family: monospace; margin-bottom: 8px;">
+                            ${item.style_of_music}
+                        </div>
+                        <div class="history-actions">
+                            <button class="btn-action btn-load" onclick="selectFromHistory(${idx})">👁️ Carregar na Tela</button>
+                            <button class="btn-action" onclick="copyRaw(globalHistory[${idx}].style_of_music)">📋 Copiar Style</button>
+                            <button class="btn-action" onclick="copyRaw(globalHistory[${idx}].lyrics_with_metatags)">📝 Copiar Letra</button>
+                        </div>
+                    </div>
+                `).join('');
+
+            } catch (e) {
+                console.error("Erro ao carregar histórico:", e);
+            }
+        }
+
+        function selectFromHistory(idx) {
+            const item = globalHistory[idx];
+            if (item) {
+                renderSongOnScreen(item);
+                switchTab('tabSuno');
+            }
+        }
+
+        // Submissão do Formulário
         document.getElementById('composeForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const submitBtn = document.getElementById('submitBtn');
             const stepper = document.getElementById('stepper');
-            const placeholder = document.getElementById('placeholderMsg');
-            const resultBox = document.getElementById('resultBox');
 
             submitBtn.disabled = true;
             submitBtn.innerText = "⏳ Orquestrando os Agentes...";
             stepper.style.display = "flex";
-            placeholder.style.display = "none";
-            resultBox.style.display = "none";
 
             const payload = {
                 theme: document.getElementById('theme').value,
@@ -257,7 +402,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                 vocal_preference: document.getElementById('vocal_pref').value
             };
 
-            // Simulação visual dos steps
+            // Animação visual dos steps
             document.getElementById('step1').className = "step-item active";
             setTimeout(() => { document.getElementById('step1').className = "step-item done"; document.getElementById('step2').className = "step-item active"; }, 600);
             setTimeout(() => { document.getElementById('step2').className = "step-item done"; document.getElementById('step3').className = "step-item active"; }, 1200);
@@ -273,36 +418,38 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                 if (data.success) {
                     document.getElementById('step4').className = "step-item done";
                     
-                    // Preenche Suno
-                    const pkg = data.suno_package;
-                    document.getElementById('styleText').innerText = pkg.style_of_music;
-                    document.getElementById('styleCharCount').innerText = pkg.style_of_music.length;
-                    document.getElementById('lyricsText').innerText = pkg.lyrics_with_metatags;
-
-                    // Preenche Teologia
-                    const dos = data.dossier;
-                    document.getElementById('theologyTitle').innerText = dos.theme_title;
-                    document.getElementById('theologyAttributes').innerText = dos.divine_attributes.join(', ');
-                    document.getElementById('theologyChrist').innerText = dos.christocentric_focus;
-                    document.getElementById('theologyKeywords').innerText = dos.sacred_keywords.join(', ');
-                    document.getElementById('theologyGuardrails').innerText = dos.doctrinal_guardrails.join(' | ');
-                    document.getElementById('theologySummary').innerText = dos.exegetical_summary;
-
-                    // Preenche Auditoria
-                    const aud = data.audit;
-                    document.getElementById('auditScore').innerText = `Nota Final: ${aud.score.toFixed(1)} / 10.0 (Aprovado)`;
-                    document.getElementById('auditStrengths').innerHTML = aud.strengths.map(s => `<li>${s}</li>`).join('');
-                    document.getElementById('auditCritiques').innerHTML = aud.critiques.map(c => `<li>${c}</li>`).join('');
-
-                    resultBox.style.display = "block";
+                    const newItem = {
+                        song_title: data.suno_package.song_title,
+                        style_of_music: data.suno_package.style_of_music,
+                        lyrics_with_metatags: data.suno_package.lyrics_with_metatags,
+                        audit_score: data.audit.score,
+                        dossier: data.dossier,
+                        audit: data.audit,
+                        theme: payload.theme,
+                        biblical_reference: payload.biblical_reference,
+                        created_at: "Agora"
+                    };
+                    renderSongOnScreen(newItem);
+                    switchTab('tabSuno');
+                    loadHistory();
                 } else {
-                    alert("Erro ao processar composição: " + (data.error || "Desconhecido"));
+                    alert("Erro ao compor: " + (data.error || "Desconhecido"));
                 }
             } catch (err) {
                 alert("Falha de conexão com o servidor: " + err);
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.innerText = "⚡ Compor Música com Agentes";
+            }
+        });
+
+        // Carrega ao iniciar a página
+        window.addEventListener('DOMContentLoaded', async () => {
+            await loadHistory();
+            if (globalHistory.length > 0) {
+                // Carrega a primeira música do histórico por padrão na tela
+                renderSongOnScreen(globalHistory[0]);
+                switchTab('tabSuno');
             }
         });
     </script>
@@ -314,6 +461,12 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 @app.route("/", methods=["GET"])
 def index():
     return render_template_string(HTML_TEMPLATE)
+
+
+@app.route("/api/history", methods=["GET"])
+def api_history():
+    """Retorna todas as canções salvas no histórico persistente."""
+    return jsonify(load_song_history())
 
 
 @app.route("/api/status", methods=["GET"])
@@ -334,6 +487,7 @@ def api_status():
         "ollama_host": ollama_host,
         "ollama_available": ollama_ok,
         "ollama_model": config.OLLAMA_MODEL,
+        "total_songs_in_history": len(load_song_history()),
     })
 
 
@@ -351,6 +505,26 @@ def api_compose():
     orchestrator = WorshipSunoOrchestrator()
     dossier, draft, report, package = orchestrator.execute(briefing)
 
+    # Registro persistente no histórico
+    now_str = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+    history_entry = {
+        "id": datetime.now().strftime("%Y%m%d%H%M%S"),
+        "created_at": now_str,
+        "theme": briefing.theme,
+        "biblical_reference": briefing.biblical_reference,
+        "musical_style_hint": briefing.musical_style_hint,
+        "song_title": package.song_title,
+        "style_of_music": package.style_of_music,
+        "target_bpm": package.target_bpm,
+        "vocal_configuration": package.vocal_configuration,
+        "theological_summary": package.theological_summary,
+        "audit_score": report.score,
+        "lyrics_with_metatags": package.lyrics_with_metatags,
+        "dossier": dossier.model_dump(),
+        "audit": report.model_dump(),
+    }
+    save_song_to_history(history_entry)
+
     result_payload = {
         "success": True,
         "dossier": dossier.model_dump(),
@@ -358,7 +532,6 @@ def api_compose():
         "audit": report.model_dump(),
         "suno_package": package.model_dump(),
     }
-    SESSION_HISTORY.append(result_payload)
     return jsonify(result_payload)
 
 
@@ -369,6 +542,7 @@ def run_server(host=None, port=None):
     print("🕊️  BANDA LVS LITÚRGICA MULTIAGENTE & SUNO AI INICIADA 🎵")
     print(f"📡  Interface Web acessível em: http://localhost:{p}")
     print(f"🌐  Rede local / Host: http://{h}:{p}")
+    print(f"📚  Histórico: {len(load_song_history())} canções salvas em historico_musicas.json")
     print(f"✨  Motor Gemini Cloud: {'Ativo com chave' if config.GEMINI_API_KEY else 'Não configurado'}")
     print(f"🦙  Motor Ollama Local (WSL): {config.resolve_ollama_host()}")
     print("=" * 70)
