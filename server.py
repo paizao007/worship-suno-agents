@@ -217,22 +217,76 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                         <small style="display: block; font-size: 0.75rem; color: var(--text-secondary); margin-top: 4px;">💡 <b>Opcional:</b> Deixe vazio e os agentes pesquisarão as melhores referências bíblicas para o tema!</small>
                     </div>
                     <div class="form-group">
-                        <label>Estilo Musical no Suno</label>
-                        <select id="musical_style">
-                            <option value="modern worship, CCM, grand piano, celestial choir, swelling guitars, slow build, cinematic">Modern Worship Solene (Hillsong/Elevation)</option>
-                            <option value="brazilian worship, organic CCM, acoustic piano, acoustic guitar, passionate male lead, strings crescendo">Brazilian Worship Orgânico (Morada/FHOP)</option>
-                            <option value="cinematic worship, orchestral, powerful female vocals, strings section, timpani, slow burning, celestial climax">Cinematic Orchestral Épico (Cordas/Coral)</option>
-                            <option value="black gospel worship, soul, hammond B3 organ, soulful lead, backing choir, expressive">Black Gospel & Soul Worship (Órgão Hammond)</option>
-                            <option value="intimate acoustic worship, nylon guitar, soft piano, tender female vocals, warm ambient reverb">Acoustic Devotional Intimista (Voz e Violão)</option>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                            <label style="margin-bottom: 0;">Estilo Musical no Suno</label>
+                            <span style="font-size: 0.76rem; color: var(--accent-gold); font-weight: bold;">🎶 22+ Estilos & Customizável</span>
+                        </div>
+                        <select id="musical_style_preset" onchange="applyStylePreset()">
+                            <optgroup label="🕊️ Worship Contemporâneo & Soaking">
+                                <option value="modern worship, CCM, grand piano, celestial choir, swelling guitars, slow build, cinematic" selected>Modern Worship Solene (Hillsong / Elevation Worship)</option>
+                                <option value="brazilian worship, organic CCM, acoustic piano, acoustic guitar, passionate male lead, strings crescendo, spontaneous atmosphere">Brazilian Worship Orgânico / Soaking (Morada / FHOP / Casa Worship)</option>
+                                <option value="folk worship, acoustic guitar, mandolin, stomp and holler drums, warm vocal harmonies, heartfelt">Indie Folk Worship (CityAlight / Rend Collective)</option>
+                                <option value="ambient worship, lush pad textures, soft delay electric guitar, intimate piano, whisper vocals, peaceful">Ambient Devotional / Soaking (Quarto de Oração)</option>
+                                <option value="electronic worship, energetic synth leads, punchy 808 bass, upbeat drums, anthem choir, high energy">Synthwave / Eletrônico Cristão (Hillsong Y&F / Planetshakers)</option>
+                            </optgroup>
+                            <optgroup label="🎺 Gospel Negro, Soul & Pentecostal">
+                                <option value="black gospel worship, soul, hammond B3 organ, soulful lead, backing choir, expressive vocal runs, dynamic shout">Black Gospel & Soul Tradicional (Kirk Franklin / Brooklyn Tabernacle)</option>
+                                <option value="contemporary urban gospel, r&b worship, live drums, acoustic guitar, call and response choir, soulful passion">Urban Gospel & R&B Worship (Maverick City Music)</option>
+                                <option value="pentecostal gospel, retro brazilian praise, brass section, energetic drums, vibrant organ, joyful congregational chorus">Pentecostal Retrô / Corinhos de Fogo (Harpa Cristã / Metais & Bateria)</option>
+                                <option value="gospel blues, vintage electric guitar, groovy bassline, raspy vocals, stomping beat, raw passion">Gospel Blues & Southern Soul (The Blind Boys of Alabama)</option>
+                            </optgroup>
+                            <optgroup label="🎻 Orquestral, Clássico & Litúrgico">
+                                <option value="cinematic worship, orchestral, powerful vocals, strings section, brass swell, timpani, slow burning, celestial climax">Cinematic Orchestral Épico (Hans Zimmer style / Cordas & Timpani)</option>
+                                <option value="traditional hymn, pipe organ, 4-part choir harmony, solemn, reverence, majestic brass, stately">Hinologia Tradicional & Sacra (Órgão de Tubos & Coral Sacro Polifônico)</option>
+                                <option value="celtic worship, irish flute, acoustic fiddle, bodhran drums, ethereal female vocals, soaring melodies">Celta Sacro & Épico Medieval (Flautas Irlandesas & Violino)</option>
+                            </optgroup>
+                            <optgroup label="🇧🇷 Ritmos Brasileiros & Regionais">
+                                <option value="forro gospel, baiao, accordion, zabumba, triangle, acoustic rhythm guitar, upbeat brazilian praise">Forró & Baião Gospel (Sanfona, Zabumba & Triângulo)</option>
+                                <option value="samba gospel, pagode, cavaquinho, pandeiro, surdo, joyful male vocal, community choir, celebration">Samba & Pagode Gospel (Cavaquinho, Pandeiro & Surdo)</option>
+                                <option value="sertanejo gospel, acoustic 12-string viola, accordion, country drums, dual vocal harmonies, emotional ballad">Sertanejo Universitário Gospel & Modão Cristão</option>
+                                <option value="reggae worship, roots reggae, heavy dub bass, skank guitar, horn section, rastafari groove with christ-centered lyrics">Reggae Cristão & Roots Worship (Christafari style)</option>
+                            </optgroup>
+                            <optgroup label="🎸 Rock, Baladas & Pop Contemporâneo">
+                                <option value="christian rock, post-rock worship, atmospheric electric guitars, driving drums, distorted chorus, emotive vocals">Rock Cristão & Post-Rock Worship (Guitarras Distorcidas & Bateria Forte)</option>
+                                <option value="power ballad worship, clean electric guitars, dramatic drum fills, soaring high notes, passionate climax">Power Ballad Worship Anos 90/2000 (Solo de Guitarra Emocional)</option>
+                                <option value="christian pop, modern commercial production, crisp vocals, catchy melodic hook, punchy synth bass">Pop Cristão Contemporâneo (TobyMac / Tauren Wells)</option>
+                            </optgroup>
+                            <optgroup label="☕ Acústico, Lo-Fi & Intimista">
+                                <option value="intimate acoustic worship, nylon guitar, soft piano, tender female vocals, warm ambient reverb">Acoustic Devotional Intimista (Voz e Violão Suave)</option>
+                                <option value="lo-fi christian worship, dusty vinyl crackle, mellow rhodes piano, relaxing lo-fi hip hop beat, gentle whisper prayer">Lo-Fi Devocional / Oração Noturna (Rhodes & Batida Relaxante)</option>
+                                <option value="solo grand piano, neoclassical devotional, expressive rubato tempo, contemplative female voice, gentle reverb">Piano Neoclássico Devocional & Voz Suave</option>
+                            </optgroup>
+                            <optgroup label="✍️ Personalizado">
+                                <option value="custom">✍️ Digitar Outro Estilo Livremente...</option>
+                            </optgroup>
                         </select>
+                        <div style="margin-top: 8px;">
+                            <label style="font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 4px; display: block;">Tags do Estilo (100% Editáveis para o Suno AI):</label>
+                            <input type="text" id="musical_style" value="modern worship, CCM, grand piano, celestial choir, swelling guitars, slow build, cinematic" placeholder="Digite os instrumentos e estilo desejados em inglês ou português...">
+                        </div>
                     </div>
                     <div class="form-group">
                         <label>Preferência Vocal</label>
-                        <input type="text" id="vocal_pref" value="Voz masculina emotiva nos versos com coral harmônico no refrão">
+                        <input type="text" id="vocal_pref" list="vocal_suggestions" value="Voz masculina emotiva nos versos com coral harmônico no refrão">
+                        <datalist id="vocal_suggestions">
+                            <option value="Voz masculina emotiva nos versos com coral harmônico no refrão">
+                            <option value="Voz feminina suave e ungida com grande alcance no clímax">
+                            <option value="Dueto vocal (masculino e feminino) em harmonia congregacional">
+                            <option value="Coral litúrgico sacro imponente (4 vozes: Soprano, Contralto, Tenor, Baixo)">
+                            <option value="Voz solene profunda e reverente com coro celestial ao fundo">
+                            <option value="Líder congregacional apaixonado com resposta calorosa da congregação">
+                        </datalist>
                     </div>
                     <div class="form-group">
                         <label>Andamento / Dinâmica</label>
-                        <input type="text" id="tempo_pref" value="Lento (68-72 BPM) com grande crescendo para clímax">
+                        <input type="text" id="tempo_pref" list="tempo_suggestions" value="Lento (68-72 BPM) com grande crescendo para clímax">
+                        <datalist id="tempo_suggestions">
+                            <option value="Lento (68-72 BPM) com grande crescendo para clímax">
+                            <option value="Moderado congregacional (78-85 BPM) envolvente e solene">
+                            <option value="Médio alegre (96-108 BPM) com ritmo constante e celebração">
+                            <option value="Rápido e vibrante (120-135 BPM) com batida enérgica de júbilo">
+                            <option value="Devocional livre (Rubato), sem tempo rígido, focado na oração íntima">
+                        </datalist>
                     </div>
                     
                     <button type="submit" class="btn-submit" id="submitBtn">⚡ Compor Música com Agentes</button>
@@ -381,6 +435,20 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             }
         }
 
+        function applyStylePreset() {
+            const selectElem = document.getElementById('musical_style_preset');
+            const val = selectElem.value;
+            const inputElem = document.getElementById('musical_style');
+            if (val === 'custom') {
+                inputElem.value = '';
+                inputElem.focus();
+                showToast("✍️ Digite seu estilo e instrumentos livremente!");
+            } else {
+                inputElem.value = val;
+                showToast("🎶 Estilo aplicado! Você pode editar o texto se quiser.");
+            }
+        }
+
         function renderSongOnScreen(item) {
             document.getElementById('styleText').innerText = item.style_of_music;
             document.getElementById('styleCharCount').innerText = item.style_of_music.length;
@@ -410,6 +478,12 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 
             if (item.theme) document.getElementById('theme').value = item.theme;
             if (item.biblical_reference) document.getElementById('biblical_ref').value = item.biblical_reference;
+            if (item.musical_style_hint || item.style_of_music) {
+                document.getElementById('musical_style').value = item.musical_style_hint || item.style_of_music;
+            }
+            if (item.vocal_preference || item.vocal_configuration) {
+                document.getElementById('vocal_pref').value = item.vocal_preference || item.vocal_configuration;
+            }
         }
 
         async function loadHistory() {
