@@ -151,6 +151,21 @@ class LyricistAgent(BaseAgent):
             used_lines.add(line.strip().lower())
         return chosen
 
+    def _pick_unused_section(self, pool: list[list[str]], used_lines: set[str]) -> list[str]:
+        """Sorteia uma estrofe/refrão dando prioridade absoluta à que tiver menos linhas repetidas no histórico."""
+        scored = []
+        for sec in pool:
+            overlap = sum(1 for line in sec if line.strip().lower() in used_lines)
+            scored.append((overlap, sec))
+        scored.sort(key=lambda x: x[0])
+        min_overlap = scored[0][0]
+        best_candidates = [sec for overlap, sec in scored if overlap == min_overlap]
+        chosen = random.choice(best_candidates)
+        for line in chosen:
+            self._used_lines.add(line.strip().lower())
+            used_lines.add(line.strip().lower())
+        return chosen
+
     def _pick_unused_title(self, base_candidates: list[str], scripture_ref: str, used_base_titles: set[str]) -> str:
         """Sorteia um título poético cujo nome base nunca tenha sido usado antes."""
         fresh = [
@@ -231,72 +246,197 @@ INSTRUÇÃO ESPECIAL:
             if self._last_dossier.divine_attributes:
                 attributes = list(self._last_dossier.divine_attributes)
 
-        t_lower = (theme_title + " " + scripture_full + " " + user_prompt).lower()
+        t_lower = f"{theme_title} {scripture_full} {self._last_dossier.exegetical_summary if self._last_dossier else ''}".lower()
 
         # =========================================================================
-        # FAMÍLIA 1: SAUDADE / CIDADE CELESTIAL / ETERNIDADE / MARANATA
+        # FAMÍLIA 1: CURA / LIBERTAÇÃO / RESTAURAÇÃO / JEOVÁ RAFÁ
         # =========================================================================
         if any(w in t_lower for w in [
-            "saudade", "cidade", "celestial", "jerusalém", "jerusalem", "pátria", "patria",
-            "maranata", "eternidade", "morada", "peregrino", "hebreus 11", "filipenses 3",
-            "apocalipse 21", "apocalipse 22", "salmo 84", "tessalonicenses", "joão 14"
+            "cura", "curado", "sarado", "sara", "jeová rafá", "jeova rafa", "lucas 4",
+            "enfermidade", "libertação", "libertacao", "cativos", "pisaduras",
+            "bálsamo", "balsamo", "médico", "medico", "restauração", "restauracao",
+            "êxodo 15", "exodo 15", "jeremias 17", "salmo 103:2", "sol da justiça"
         ]):
-            # Diferencia títulos e aberturas quando o foco é "saudade" vs "Cidade Celestial"
-            if "saudade" in t_lower or "salmo 84" in t_lower:
-                base_titles = [
-                    "Santa Saudade do Teu Lar",
-                    "Saudade dos Átrios do Rei",
-                    "Lágrimas de Saudade pelo Céu",
-                    "Suspiro de um Peregrino",
-                    "Saudade da Tua Presença Eterna",
-                    "Coração que Anseia pelo Céu",
-                    "Quando a Saudade Encontrar o Rei",
-                    "Alma que Suspira por Sião",
-                ]
-            else:
-                base_titles = [
-                    "Arquiteto da Cidade Celestial",
-                    "Portais da Nova Jerusalém",
-                    "Além do Rio de Cristal",
-                    "Fundamentos da Pátria Celestial",
-                    "Brilho da Cidade do Grande Rei",
-                    "Moradas da Casa do Meu Pai",
-                    "Ruas de Ouro e Luz Eterna",
-                    "A Noiva Rumo à Cidade Santa",
-                ]
+            base_titles = [
+                "O Senhor Que Me Sara",
+                "Cadeias Rompidas na Cruz",
+                "Jeová Rafá, Minha Cura",
+                "Pelas Suas Pisaduras Sarados",
+                "Bálsamo Que Restaura a Alma",
+                "Toque de Vida e Graça",
+                "O Sol da Justiça Nasceu",
+                "Libertação aos Cativos",
+            ]
+            v1_openings = [
+                ["O Espírito do Senhor está sobre nós para ungir,", "As cadeias mais pesadas pela fé vão se abrir,"],
+                ["Águas amargas se tornam manancial de poder,", "Quando o Senhor que sara nos faz renascer,"],
+                ["Pelas Tuas feridas fomos nós resgatados,", "Pelo Teu santo sangue sarados e curados,"],
+                ["Ao clamor do aflito o Senhor se inclinou,", "Com a destra de justiça minha vida tocou,"],
+            ]
+            v1_closings = [
+                [f"Conforme a promessa viva em {scripture_ref},", "A graça de Jesus desfaz as trevas e traz luz."],
+                ["Nenhuma enfermidade pode resistir ao Teu poder,", "Pois Tu és Jeová Rafá que nos faz reviver."],
+                ["O bálsamo celeste desce sobre o coração,", "Trazendo vida nova, paz e libertação."],
+            ]
+            v2_openings = [
+                ["Aos quebrantados de coração o Senhor vem curar,", "E todo cativeiro em vitória transformar,"],
+                ["Sol da Justiça que traz salvação nas Suas asas,", "Tua presença enche de saúde nossas casas,"],
+                ["Ele perdoa todas as nossas iniquidades,", "E sara com amor todas as enfermidades,"],
+            ]
+            v2_closings = [
+                ["Levantamos as mãos para render gratidão,", "Pois em Cristo encontramos total restauração."],
+                ["Onde havia tristeza nasce um hino de louvor,", "Ao Deus que nos renova em Seu eterno amor."],
+                ["Toda dor se dissipa na presença do Rei,", "Na Sua fidelidade sempre confiarei."],
+            ]
+            pre_pool = [
+                ["Quebrem-se as correntes, abram-se as prisões,", "O Libertador opera em nossos corações:"],
+                ["Ele levou sobre Si as nossas dores e aflições,", "Ouvindo o clamor humilde de nossas orações:"],
+            ]
+            chorus_pool = [
+                [
+                    "Tu és Jeová Rafá, o Deus que sara e restaura!",
+                    "Toda enfermidade e jugo cai agora!",
+                    "Pelas Tuas pisaduras sarados nós somos,",
+                    "Filhos redimidos pelo sangue que fomos!",
+                    "Jesus, o Médico dos médicos, opera com poder,",
+                    "Vida abundante faz em nós florescer!"
+                ],
+                [
+                    "Rompeu os grilhões, libertou os cativos!",
+                    "Em Cristo Jesus nós estamos vivos!",
+                    "Sua destra de graça nos levantou do pó,",
+                    "Adoramos ao Senhor que é Santo e Deus só!",
+                    "Toda glória a Jesus, nosso Libertador,",
+                    "Que sara a ferida com Seu santo amor!"
+                ],
+            ]
+            bridge_pool = [
+                [
+                    "Haja vida! Haja cura no Teu santo nome!",
+                    "O poder do pecado e da morte se consome!",
+                    "Ergue-te, ó Igreja, em fé e santidade,",
+                    "Jesus é o mesmo ontem, hoje e por toda a eternidade!"
+                ],
+                [
+                    "Basta uma palavra da Tua santa voz,",
+                    "E o milagre acontece no meio de nós!",
+                    "Para sempre exaltamos o Teu braço forte,",
+                    "Que venceu a doença, o pecado e a morte!"
+                ],
+            ]
 
+        # =========================================================================
+        # FAMÍLIA 2: VOLTA DE CRISTO / SEGUNDA VINDA / MARANATA
+        # =========================================================================
+        elif any(w in t_lower for w in [
+            "volta", "maranata", "segunda vinda", "arrebatamento", "trombeta",
+            "nuvens", "noiva", "1 tessalonicenses", "tessalonicenses 4",
+            "apocalipse 22", "apocalipse 19", "mateus 24", "mateus 25"
+        ]):
+            base_titles = [
+                "O Clamor da Noiva",
+                "Maranata, O Rei Vem",
+                "Ao Som da Última Trombeta",
+                "O Noivo Vem Nas Nuvens",
+                "Certamente Venho Sem Demora",
+                "Até Que Ele Venha",
+                "Vigiai, O Rei Está Às Portas",
+            ]
+            v1_openings = [
+                ["Ergamos os nossos olhos para o horizonte além,", "Ouvindo o sussurro santo: o Noivo em breve vem,"],
+                ["O gemido da criação logo vai cessar,", "Quando o Cordeiro em glória nas nuvens despontar,"],
+                ["Com as lâmpadas acesas e o azeite a transbordar,", "A Igreja vigilante se prepara para adorar,"],
+            ]
+            v1_closings = [
+                [f"Conforme a Palavra viva em {scripture_ref},", "Todo olho O verá descendo em majestade e luz."],
+                ["O mundo e suas dores vão para sempre findar,", "E a face do Amado vamos contemplar."],
+            ]
+            v2_openings = [
+                ["A trombeta de Deus nos ares ressoará,", "E a voz do Arcanjo os santos despertará,"],
+                ["Seremos transformados na glória do Senhor,", "Para sempre unidos ao nosso Salvador,"],
+            ]
+            v2_closings = [
+                ["Toda lágrima dos olhos o próprio Deus limpará,", "E a morte derrotada nunca mais voltará."],
+                ["Na ceia do Cordeiro tomaremos o nosso lugar,", "Com vestes de justiça para sempre celebrar."],
+            ]
+            pre_pool = [
+                ["O Espírito e a Noiva clamam a uma voz:", "Maranata, Rei da Glória, vem buscar a todos nós!"],
+                ["A noite está findando, o dia vai raiar,", "Prepara-te, ó Noiva, o Rei vai chegar:"],
+            ]
+            chorus_pool = [
+                [
+                    "Maranata! Ora vem, Senhor Jesus!",
+                    "Desce em Tua glória, esplendor e luz!",
+                    "A Igreja Te espera com ardente clamor,",
+                    "Reina pelos séculos, bendito Salvador!",
+                    "Todo joelho se dobrará diante do Rei dos Reis,",
+                    "Para sempre exaltado entre todos os Seus fiéis!"
+                ],
+                [
+                    "O Noivo esperado em breve voltará!",
+                    "Toda a criação diante Dele se prostrará!",
+                    "Vem buscar Tua Noiva comprada na cruz,",
+                    "Nossa esperança viva é o Teu retorno, Jesus!",
+                    "Aleluia ao Cordeiro que triunfou na dor,",
+                    "Maranata para sempre ao nosso Redentor!"
+                ],
+            ]
+            bridge_pool = [
+                [
+                    "Tragada foi a morte na vitória da cruz!",
+                    "Os portais se abrirão para o Rei Jesus!",
+                    "Face a face com o Cordeiro cantaremos sem cessar:",
+                    "Santo, Santo é o Senhor que veio nos resgatar!"
+                ],
+                [
+                    "Ouçam o clamor que ecoa pelas nações:",
+                    "O Leão de Judá vem libertar os corações!",
+                    "Nem sombras nem sepulturas O puderam deter,",
+                    "O Rei está voltando com suprema glória e poder!"
+                ],
+            ]
+
+        # =========================================================================
+        # FAMÍLIA 3: SAUDADE DA PÁTRIA CELESTIAL & NOVA JERUSALÉM
+        # =========================================================================
+        elif any(w in t_lower for w in [
+            "saudade", "cidade celestial", "nova jerusalém", "nova jerusalem",
+            "pátria", "patria", "peregrino", "morada", "mansão", "mansao",
+            "hebreus 11", "salmo 84", "apocalipse 21", "filipenses 3:20", "joão 14:1"
+        ]):
+            base_titles = [
+                "Santa Saudade do Teu Lar",
+                "Saudade dos Átrios do Rei",
+                "Além do Rio de Cristal",
+                "Fundamentos da Pátria Celestial",
+                "Suspiro de um Peregrino",
+                "Ruas de Ouro e Luz Eterna",
+                "Portais da Nova Jerusalém",
+            ]
             v1_openings = [
                 ["Caminho neste mundo como quem vai voltar,", "Trago no peito a chama de um eterno lar,"],
                 ["Minha alma tem saudade dos átrios do Senhor,", "Onde não há mais pranto, nem sombras, nem temor,"],
-                ["Olhando para o horizonte além da escuridão,", "Ouço o chamado eterno da celestial Sião,"],
                 ["Como estrangeiro e peregrino passo por aqui,", "Pois minha herança eterna está guardada em Ti,"],
-                ["Quantas vezes na noite meu coração chorou,", "Lembrando da morada que Cristo preparou,"],
                 ["Não pertenço às areias deste mundo fugaz,", "Busco a Cidade Santa onde reina a plena paz,"],
             ]
             v1_closings = [
                 [f"Na promessa bendita escrita em {scripture_ref},", "Vejo a Cidade Eterna onde o Cordeiro é a luz."],
                 ["Aguardo os fundamentos que o próprio Deus traçou,", "A Pátria Celestial que Jesus me preparou."],
-                [f"Guardando na memória a luz de {scripture_ref},", "Cada passo na terra me aproxima de Jesus."],
                 ["Onde os muros de jaspe refletem Teu esplendor,", "E a alma descansa nos braços do Redentor."],
             ]
             v2_openings = [
                 ["As tendas desta terra não podem me prender,", "Pois lá nos altos céus está o meu viver,"],
-                ["Cada lágrima caída o Pai enxugará,", "E a noite do deserto para sempre findará,"],
                 ["Lá não haverá noite, nem lâmpada ou sol,", "Pois a glória de Cristo é o nosso farol,"],
                 ["Da árvore da vida em breve vou provar,", "Junto ao rio cristalino que flui do Teu altar,"],
-                ["O tempo de espera logo vai terminar,", "A trombeta nos ares está prestes a soar,"],
             ]
             v2_closings = [
-                ["Veremos as ruas de ouro e o mar de cristal,", "Quando soar nas nuvens o toque triunfal."],
-                ["Seremos transformados na glória de Jesus,", "Revestidos pra sempre de imortalidade e luz."],
-                ["E o Noivo esperado em glória descerá,", "Toda saudade antiga em Seu abraço acabará."],
+                ["Veremos as ruas de ouro e o mar de cristal,", "No banquete bendito do Reino eternal."],
+                ["E o abraço do Pai toda dor dissipará,", "E a santa comunhão jamais terminará."],
                 ["Diante do Teu trono cantaremos sem cessar,", "Na pátria prometida onde vamos habitar."],
             ]
             pre_pool = [
-                ["O Espírito e a Noiva clamam em uma só voz:", "Maranata, Rei da Glória, vem buscar a todos nós!"],
                 ["Esta santa saudade aponta para o céu,", "Onde veremos Cristo sem a sombra de um véu:"],
                 ["Já posso ouvir os anjos preparando a canção,", "E o coração da Igreja pulsa em adoração:"],
-                ["Mais perto está o dia da nossa redenção,", "Erguemos para o alto a nossa oração:"],
             ]
             chorus_pool = [
                 [
@@ -304,81 +444,67 @@ INSTRUÇÃO ESPECIAL:
                     "Do abraço do Cordeiro no banquete eternal!",
                     "Aqui sou peregrino, minha pátria está nos céus,",
                     "Face a face adorarei na presença do meu Deus!",
-                    "Ora vem, Senhor Jesus, consumar a redenção,",
-                    "Tua Noiva Te espera de todo o coração!"
+                    "Minha alma anseia por contemplar a Tua luz,",
+                    "Leva-me para o Teu lar, ó meu amado Jesus!"
                 ],
                 [
                     "Cidade Santa, Nova Jerusalém!",
                     "Onde o Cordeiro Vivo é a luz que nos mantém!",
-                    "Deus enxugará dos olhos toda dor e aflição,",
-                    "A morte foi vencida pelo Autor da Salvação!",
-                    "Maranata, vem depressa, nosso amado Salvador,",
-                    "Leva a Tua Igreja para o Reino do Teu amor!"
-                ],
-                [
-                    "Minha alma suspira pelos átrios do Senhor!",
-                    "Tenho sede do meu lar, tenho fome do Teu amor!",
-                    "Na casa do meu Pai muitas moradas há,",
-                    "Jesus foi preparar lugar e em breve voltará!",
-                    "Todo joelho se dobrará diante do Rei Jesus,",
-                    "Para sempre viveremos na Cidade da Tua Luz!"
+                    "Deus enxugará dos olhos toda lágrima e dor,",
+                    "Viveremos nos átrios do perfeito amor!",
+                    "Valeu a pena crer, valeu a pena esperar,",
+                    "Na casa do meu Pai é onde vou morar!"
                 ],
             ]
             bridge_pool = [
                 [
-                    "Não há mais morte, não há mais dor!",
-                    "Só o cântico novo ao nosso Redentor!",
-                    "Prepara as nossas vestes em santidade e fé,",
-                    "Até o grande dia em que estivermos de pé!"
-                ],
-                [
                     "Abre os portais eternos, ó Cidade de Luz!",
                     "Queremos contemplar a face de Jesus!",
-                    "Valeu a pena esperar, valeu a pena crer,",
-                    "Com o Rei dos Reis pra sempre iremos viver!"
+                    "Nem ouro nem riquezas se comparam ao Teu olhar,",
+                    "Contigo, ó Redentor, queremos sempre estar!"
                 ],
                 [
-                    "Vem, Senhor Jesus! O Teu povo clama a Ti!",
-                    "Acende a esperança enquanto estamos aqui!",
-                    "De glória em glória até o céu se abrir,",
-                    "O nosso Rei eterno está prestes a vir!"
+                    "Adeus, dores do mundo! Adeus, aflição!",
+                    "Chegamos à morada da eterna redenção!",
+                    "Com todos os remidos erguemos o louvor:",
+                    "Para sempre em Sião com o nosso Salvador!"
                 ],
             ]
 
         # =========================================================================
-        # FAMÍLIA 2: AMOR A DEUS / PRIMEIRO AMOR / AMOR ÁGAPE DA CRUZ
+        # FAMÍLIA 4: AMOR A DEUS / PRIMEIRO AMOR / DEVOÇÃO
         # =========================================================================
-        elif any(w in t_lower for w in ["amor", "ágape", "agape", "primeiro amor", "devoção", "amou", "1 joão 4", "joão 3:16", "romanos 5:8", "marcos 12:30"]):
+        elif any(w in t_lower for w in [
+            "primeiro amor", "amar a deus", "amo a deus", "devoção", "devocao",
+            "intimidade", "sede de deus", "marcos 12:30", "salmo 42", "salmo 63",
+            "salmo 73", "1 joão 4:19", "deuteronômio 6:5"
+        ]):
             base_titles = [
                 "Chama do Primeiro Amor",
-                "Oceano do Teu Ágape",
-                "Porque Me Amaste Primeiro",
                 "De Todo o Meu Coração",
-                "Laços de Eterna Ternura",
-                "Amor Escrito no Calvário",
+                "Porque Me Amaste Primeiro",
                 "Minha Alma Tem Sede de Ti",
                 "Fogo no Altar da Devoção",
+                "Amor Que Não Se Apaga",
+                "Tesouro Supremo da Minha Alma",
             ]
             v1_openings = [
-                ["Antes que a aurora tocasse a imensidão,", "Teu coração já tinha a nossa redenção,"],
                 ["Como a corça suspira pelas águas a correr,", "Assim a minha alma anseia pelo Teu viver,"],
-                ["Não foi por meu esforço nem por merecimento,", "Mas pelo Teu eterno e santo livramento,"],
                 ["De madrugada acordo para buscar Tua luz,", "Nada neste mundo se compara a Ti, Jesus,"],
+                ["Quem mais eu tenho nos céus além de Ti, Senhor?", "Na terra não desejo outro bem ou esplendor,"],
             ]
             v1_closings = [
-                [f"Como revela a graça escrita em {scripture_ref},", "Fomos resgatados pelo sangue de Jesus."],
+                [f"Conforme o mandamento doce em {scripture_ref},", "Consagro minha vida ao Teu amor, Jesus."],
                 ["Tua benignidade vale mais que a própria vida,", "Em Teu altar sagrado minha história está contida."],
                 ["Com laços de ternura Tu vieste me atrair,", "E hoje o meu prazer é Te amar e Te servir."],
             ]
             v2_openings = [
-                ["Qual é a altura e a largura desse eterno amor?", "Que entregou o Filho amado pelo pecador,"],
-                ["Quem mais eu tenho nos céus além de Ti, Senhor?", "Na terra não desejo outro bem ou esplendor,"],
+                ["Quero voltar às obras da primeira paixão,", "E derramar meu vaso em pura adoração,"],
                 ["Ainda que a carne e o coração venham a falhar,", "Deus é a fortaleza onde posso descansar,"],
             ]
             v2_closings = [
                 ["O perfeito amor lança fora todo o medo,", "E guarda a minha vida no Teu santo segredo."],
-                ["Nem altura nem abismo podem nos separar,", "Do amor que no Calvário veio nos salvar."],
-                ["Quero voltar às obras da primeira paixão,", "E derramar meu vaso em pura adoração."],
+                ["As muitas águas não apagarão esse amor,", "Pois foste Tu quem me amou primeiro, ó Redentor."],
             ]
             pre_pool = [
                 ["Nós Te amamos porque Tu nos amaste primeiro,", "Rendemos nossa vida aos pés do Cordeiro:"],
@@ -394,33 +520,84 @@ INSTRUÇÃO ESPECIAL:
                     "Todo o meu afeto pertence a Ti, Jesus!"
                 ],
                 [
-                    "Ó Amor incomparável que brilhou lá na cruz!",
-                    "Nossa vida inteira se rende a Ti, Jesus!",
-                    "Mais profundo que os mares é o Teu perdão,",
-                    "Escreveste o Teu nome em nosso coração!",
-                    "Para sempre cantaremos a grandeza desse amor,",
-                    "Digno de toda honra és Tu, nosso Redentor!"
+                    "Acende o fogo que nunca se apagará!",
+                    "Em Teu altar meu coração descansará!",
+                    "Mais que bênçãos ou dons, eu quero a Ti, Senhor,",
+                    "Viver mergulhado no Teu imenso amor!",
+                    "A Ti me entrego em santa devoção,",
+                    "Reina absoluto sobre a minha oração!"
                 ],
             ]
             bridge_pool = [
                 [
                     "Acende outra vez a chama do primeiro amor!",
                     "Purifica o nosso altar, ó Santo Redentor!",
-                    "As muitas águas não apagarão essa paixão,",
-                    "Reina soberano sobre a nossa geração!"
-                ],
-                [
-                    "Mais que palavras, entregamos nosso ser!",
-                    "Para o Teu louvor queremos sempre viver!",
-                    "Tudo o que somos vem da Tua mão,",
-                    "Recebe a nossa eterna gratidão!"
+                    "Toda a minha afeição pertence a Ti, Jesus,",
+                    "Que deste a Tua vida por mim naquela cruz!"
                 ],
             ]
 
         # =========================================================================
-        # FAMÍLIA 3: SANTIDADE / TRONO / ISAÍAS 6 / APOCALIPSE 4
+        # FAMÍLIA 5: GRAÇA SALVADORA / SACRIFÍCIO DA CRUZ / REDENÇÃO
         # =========================================================================
-        elif any(w in t_lower for w in ["santidade", "serafins", "isaías 6", "isaias 6", "apocalipse 4", "salmo 99", "êxodo 15", "kadosh"]):
+        elif any(w in t_lower for w in [
+            "graça", "graca", "cruz", "calvário", "calvario", "sangue", "redenção",
+            "redencao", "justificação", "justificacao", "efésios 2:8", "romanos 5:1",
+            "gálatas 2:20", "cordeiro imolado"
+        ]):
+            base_titles = [
+                "Amor Escrito no Calvário",
+                "Oceano do Teu Ágape",
+                "A Cruz Que Me Salvou",
+                "Pela Graça Fui Comprado",
+                "Precioso Sangue Vertido",
+                "O Véu Rasgado no Gólgota",
+            ]
+            v1_openings = [
+                ["Não foi por meu esforço nem por merecimento,", "Mas pelo Teu eterno e santo livramento,"],
+                ["Olho para o madeiro onde o Justo padeceu,", "E vejo o infinito amor que me acolheu,"],
+            ]
+            v1_closings = [
+                [f"Conforme a graça revelada em {scripture_ref},", "Fomos resgatados pelo sangue de Jesus."],
+                ["Ali o castigo da nossa paz caiu sobre Ti,", "E vida abundante conquistaste para mim."],
+            ]
+            v2_openings = [
+                ["O véu do santuário de alto a baixo se rasgou,", "E o caminho vivo para o Pai se inaugurou,"],
+                ["Já não sou eu quem vive, mas Cristo vive em mim,", "Uma aliança eterna que jamais terá um fim,"],
+            ]
+            v2_closings = [
+                ["Justificados pela fé temos a paz com Deus,", "Herdeiros com Jesus das bênçãos lá dos céus."],
+                ["Nenhuma condenação há para quem em Cristo está,", "Sua misericórdia para sempre nos susterá."],
+            ]
+            pre_pool = [
+                ["Diante da cruz nos prostramos em gratidão,", "Erguendo aos céus o cântico da redenção:"],
+            ]
+            chorus_pool = [
+                [
+                    "Ó Graça sublime que resgatou o pecador!",
+                    "Lavados no sangue do nosso Redentor!",
+                    "Está consumado, a dívida Ele pagou,",
+                    "Das garras da morte e do medo nos livrou!",
+                    "Para sempre exaltamos o nome de Jesus,",
+                    "O Cordeiro imaculado que venceu naquela cruz!"
+                ],
+            ]
+            bridge_pool = [
+                [
+                    "Não há outro nome pelo qual possamos nos salvar!",
+                    "Jesus Cristo, o Justo, que veio nos resgatar!",
+                    "A Ele toda honra, o louvor e o poder,",
+                    "A razão infinita do nosso viver!"
+                ],
+            ]
+
+        # =========================================================================
+        # FAMÍLIA 6: SANTIDADE / MAJESTADE / TRONO CELESTIAL
+        # =========================================================================
+        elif any(w in t_lower for w in [
+            "santidade", "santo", "trono", "serafins", "isaías 6", "isaias 6",
+            "apocalipse 4", "salmo 99", "kadosh", "fogo consumidor"
+        ]):
             base_titles = [
                 "Beleza da Tua Santidade",
                 "Diante do Mar de Cristal",
@@ -432,7 +609,6 @@ INSTRUÇÃO ESPECIAL:
             v1_openings = [
                 ["Quem é semelhante a Ti entre os poderes,", "Glorificado em santidade, temível em louvores,"],
                 ["Diante do trono onde brilha o cristal,", "Prostram-se os anjos em reverência real,"],
-                ["Os céus manifestam o Teu resplendor,", "Toda a criação treme diante do Senhor,"],
             ]
             v1_closings = [
                 [f"Conforme a visão sagrada de {scripture_ref},", "Todo o universo se curva perante Jesus."],
@@ -467,7 +643,165 @@ INSTRUÇÃO ESPECIAL:
             ]
 
         # =========================================================================
-        # FAMÍLIA 4: TEMAS GERAIS & DINÂMICOS (FÉ, GRAÇA, CURA, ESPÍRITO SANTO, REFÚGIO, ETC.)
+        # FAMÍLIA 7: REFÚGIO / FORTALEZA / PAZ NA PROVAÇÃO
+        # =========================================================================
+        elif any(w in t_lower for w in [
+            "refúgio", "refugio", "fortaleza", "provação", "provacao", "vale",
+            "deserto", "tempestade", "salmo 46", "salmo 91", "salmo 23",
+            "habacuque", "2 coríntios 12", "tiago 1", "paz"
+        ]):
+            base_titles = [
+                "Refúgio Inabalável",
+                "Socorro Bem Presente",
+                "O Pastor Que Me Guia No Vale",
+                "Ainda Que a Figueira Não Floresça",
+                "À Sombra do Onipotente",
+                "A Paz Que Excede Todo o Entendimento",
+            ]
+            v1_openings = [
+                ["Ainda que a terra se transtorne e os montes caiam no mar,", "No refúgio do Altíssimo minh'alma vai descansar,"],
+                ["O Senhor é o meu pastor e nada vai me faltar,", "Por verdes pastos serenos Ele me faz caminhar,"],
+            ]
+            v1_closings = [
+                [f"Seguro na promessa fiel de {scripture_ref},", "Minha esperança viva está posta em Jesus."],
+                ["Sob Suas asas sagradas encontro proteção,", "Minha rocha segura em tempos de aflição."],
+            ]
+            v2_openings = [
+                ["Ainda que eu ande pelo vale escuro e sombrio,", "Não temerei mal algum, pois em Deus eu confio,"],
+                ["Tua graça me basta quando fraco eu me sinto,", "Pois Teu poder se aperfeiçoa e me faz convicto,"],
+            ]
+            v2_closings = [
+                ["Tua vara e Teu cajado me trazem consolo e paz,", "A fidelidade do Senhor jamais volta atrás."],
+                ["Ainda que a figueira não venha a florescer,", "No Deus da salvação o meu ser vai se erguer."],
+            ]
+            pre_pool = [
+                ["Não temerei o terror da noite nem o perigo,", "Pois o Senhor Todo-Poderoso caminha comigo:"],
+            ]
+            chorus_pool = [
+                [
+                    "Deus é o nosso refúgio e fortaleza presente!",
+                    "Socorro bem certo no coração do crente!",
+                    "A tempestade se aquieta ao som da Tua voz,",
+                    "O Deus de Jacó é refúgio seguro para nós!",
+                    "Descanso em Tua paz que excede o entendimento,",
+                    "Fiel para sempre em cada momento!"
+                ],
+            ]
+            bridge_pool = [
+                [
+                    "Minha âncora firme em meio ao vendaval!",
+                    "Tua fidelidade me livra de todo o mal!",
+                    "Passarão os céus e a terra, mas Tua Palavra não passará,",
+                    "Quem confia no Senhor jamais se abalará!"
+                ],
+            ]
+
+        # =========================================================================
+        # FAMÍLIA 8: ESPÍRITO SANTO / AVIVAMENTO / PENTECOSTES
+        # =========================================================================
+        elif any(w in t_lower for w in [
+            "espírito", "espirito", "pentecostes", "avivamento", "unção", "uncao",
+            "consolador", "fogo", "vento", "atos 2", "ezequiel 37", "zacarias 4"
+        ]):
+            base_titles = [
+                "Vento Impetuoso do Céu",
+                "Fogo do Espírito Santo",
+                "Rios de Água Viva",
+                "Sopra Sobre os Ossos Secos",
+                "Aviva a Tua Obra, Senhor",
+            ]
+            v1_openings = [
+                ["Como em Jerusalém de repente o vento soprou,", "O poder do Espírito Santo o cenáculo inundou,"],
+                ["Sopra, ó Vento dos quatro cantos sobre o nosso altar,", "Para que este povo possa ressuscitar,"],
+            ]
+            v1_closings = [
+                [f"Conforme prometido em {scripture_ref},", "Línguas de fogo descem revelando a Jesus."],
+                ["Não por força nem por violência haveremos de vencer,", "Mas pelo Santo Espírito e Seu eterno poder."],
+            ]
+            v2_openings = [
+                ["Do nosso interior fluirão rios de vida e graça,", "Consumindo o pecado enquanto Tua presença passa,"],
+                ["Consolador bendito que nos guia em verdade,", "Enche a Tua Igreja de santa autoridade,"],
+            ]
+            v2_closings = [
+                ["Queima a palha do ego e acende o fervor,", "Para que o mundo veja a glória do Salvador."],
+                ["Produz em nosso peito o fruto de retidão,", "Amor, paciência, paz e consagração."],
+            ]
+            pre_pool = [
+                ["Ouvimos o estrondo da Tua glória a descer,", "Aviva o Teu povo com fogo e poder:"],
+            ]
+            chorus_pool = [
+                [
+                    "Vem, Santo Espírito, enche este lugar!",
+                    "Batiza com fogo o nosso coração e altar!",
+                    "Rios de água viva brotem do nosso ser,",
+                    "Aviva a Tua Igreja para Te obedecer!",
+                    "A Ti, Consolador, todo o nosso clamor,",
+                    "Glorifica a Jesus Cristo, o nosso Senhor!"
+                ],
+            ]
+            bridge_pool = [
+                [
+                    "Vento impetuoso, sopra outra vez!",
+                    "Queremos viver a pureza que um dia nos deste!",
+                    "Até que as nações se curvem diante da cruz,",
+                    "No poder do Espírito Santo em nome de Jesus!"
+                ],
+            ]
+
+        # =========================================================================
+        # FAMÍLIA 9: LOUVOR CONGREGACIONAL / GRATIDÃO & JÚBILO
+        # =========================================================================
+        elif any(w in t_lower for w in [
+            "gratidão", "gratidao", "louvor", "júbilo", "jubilo", "celebração", "celebracao",
+            "salmo 100", "salmo 150", "filipenses 4", "alegria", "festa"
+        ]):
+            base_titles = [
+                "Entrai Por Suas Portas Com Ações de Graças",
+                "Celebrai Com Júbilo ao Senhor",
+                "Bendize, Ó Minha Alma",
+                "Tudo o Que Tem Fôlego Louve",
+                "Cântico Novo de Alegria",
+            ]
+            v1_openings = [
+                ["Celebrai com júbilo ao Senhor, todas as terras,", "Ele desfaz o pranto e vence todas as guerras,"],
+                ["Bendize, ó minha alma, e não te esqueças jamais,", "De todos os Seus benefícios santos e reais,"],
+            ]
+            v1_closings = [
+                [f"Conforme entoamos o cântico de {scripture_ref},", "Rendemos graças e honras ao Rei Jesus."],
+                ["Porque o Senhor é bom e Sua misericórdia dura para sempre,", "Sua fidelidade alcança toda semente."],
+            ]
+            v2_openings = [
+                ["Entrai por Suas portas entoando hinos de amor,", "Nos Seus átrios sagrados tributando louvor,"],
+                ["Tudo quanto tem fôlego erga a voz e proclame,", "Que não há outro Deus cujo poder se derrame,"],
+            ]
+            v2_closings = [
+                ["Com trombetas e harpas, saltério e tamborim,", "Exaltamos a graça que não terá fim."],
+                ["A alegria do Senhor é a nossa fortaleza,", "Em Sua presença santa contemplamos pureza."],
+            ]
+            pre_pool = [
+                ["Batam palmas os povos, cantem com exaltação,", "Pois o Senhor é grande sobre toda nação:"],
+            ]
+            chorus_pool = [
+                [
+                    "Aleluia ao Senhor! Digno de todo louvor!",
+                    "Exaltamos com júbilo o nosso Redentor!",
+                    "Entramos em Seus átrios com ações de gratidão,",
+                    "Pois Ele fez prodígios na nossa redenção!",
+                    "Seja a glória, a honra e o poder eternal,",
+                    "Ao nosso Deus bendito no trono celestial!"
+                ],
+            ]
+            bridge_pool = [
+                [
+                    "Celebrem céus e terra, montanhas e mares!",
+                    "Ecoem hinos santos por todos os lugares!",
+                    "Do nascer do sol até o poente brilhar,",
+                    "O nome de Jesus vamos glorificar!"
+                ],
+            ]
+
+        # =========================================================================
+        # FAMÍLIA 10: TEMAS DINÂMICOS GERAIS
         # =========================================================================
         else:
             kw1 = sacred_words[0] if len(sacred_words) > 0 else "Tua presença"
@@ -526,12 +860,33 @@ INSTRUÇÃO ESPECIAL:
                 ],
             ]
 
+        # Selo bíblico e consagração final dinâmica por família
+        outro_closing = "A Ti toda a honra, glória e louvor para sempre, Jesus. Amém."
+        if any(w in t_lower for w in ["volta", "maranata", "segunda vinda"]):
+            outro_closing = "Vem sem demora, Senhor Jesus! Tua Noiva Te espera. Amém."
+        elif any(w in t_lower for w in ["saudade", "cidade", "pátria", "patria", "céu"]):
+            outro_closing = "Nosso coração suspira pela Pátria Celestial. Amém."
+        elif any(w in t_lower for w in ["cura", "médico", "medico", "sarado", "jeová rafá", "lucas 4"]):
+            outro_closing = "Pelas Tuas pisaduras fomos sarados e restaurados para sempre. Amém."
+        elif any(w in t_lower for w in ["santidade", "santo", "trono", "serafins"]):
+            outro_closing = "Santo, Santo, Santo é o Senhor Deus Todo-Poderoso. Amém."
+        elif any(w in t_lower for w in ["amor", "ágape", "primeiro amor"]):
+            outro_closing = "Nós Te amamos porque Tu nos amaste primeiro, Jesus. Amém."
+        elif any(w in t_lower for w in ["graça", "cruz", "sangue"]):
+            outro_closing = "Pela graça fomos salvos e justificados no Teu sangue. Amém."
+        elif any(w in t_lower for w in ["refúgio", "paz", "descanso"]):
+            outro_closing = "Em paz me deito e durmo, pois só Tu, Senhor, me fazes viver seguro. Amém."
+        elif any(w in t_lower for w in ["espírito", "espirito", "fogo", "avivamento"]):
+            outro_closing = "Enche a Tua Igreja de poder e graça até que Tu venhas. Amém."
+        elif any(w in t_lower for w in ["louvor", "gratidão", "júbilo", "celebração"]):
+            outro_closing = "Tudo quanto tem fôlego louve ao Senhor! Aleluia! Amém."
+
         chosen_title = self._pick_unused_title(base_titles, scripture_ref, used_base_titles)
         v1_lines = self._pick_unused_couplet(v1_openings, used_lines) + self._pick_unused_couplet(v1_closings, used_lines)
         v2_lines = self._pick_unused_couplet(v2_openings, used_lines) + self._pick_unused_couplet(v2_closings, used_lines)
         pre_lines = self._pick_unused_couplet(pre_pool, used_lines)
-        chorus_lines = self._pick_unused_couplet(chorus_pool, used_lines)
-        bridge_lines = self._pick_unused_couplet(bridge_pool, used_lines)
+        chorus_lines = self._pick_unused_section(chorus_pool, used_lines)
+        bridge_lines = self._pick_unused_section(bridge_pool, used_lines)
 
         return SongDraft(
             title=chosen_title,
@@ -569,7 +924,7 @@ INSTRUÇÃO ESPECIAL:
                     lines=[
                         f"Palavra viva e eterna em {scripture_ref}:",
                         f"\"{verse_essence}\"",
-                        "A Ti toda a glória, Jesus. Amém.",
+                        outro_closing,
                     ],
                 ),
             ],
