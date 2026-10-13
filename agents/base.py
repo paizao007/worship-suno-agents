@@ -87,7 +87,7 @@ class BaseAgent(ABC):
 
         # 1. Tentativa via Google Gemini Cloud API
         if config.GEMINI_API_KEY and now > getattr(BaseAgent, "_gemini_cooldown_until", 0):
-            for model_name in ["gemini-flash-latest", "gemini-3.6-flash", "gemini-3.8-flash"]:
+            for model_name in ["gemini-flash-lite-latest", "gemini-2.5-flash-lite", "gemini-flash-latest", "gemini-3.8-flash"]:
                 url = (
                     f"https://generativelanguage.googleapis.com/v1beta/models/"
                     f"{model_name}:generateContent?key={config.GEMINI_API_KEY}"
@@ -100,7 +100,7 @@ class BaseAgent(ABC):
                     },
                 }
                 try:
-                    r = requests.post(url, json=payload, timeout=6)
+                    r = requests.post(url, json=payload, timeout=8)
                     if r.status_code == 200:
                         data = r.json()
                         candidates = data.get("candidates", [])
@@ -112,11 +112,10 @@ class BaseAgent(ABC):
                                     if parsed:
                                         return response_model.model_validate(parsed)
                     elif r.status_code == 429:
-                        BaseAgent._gemini_cooldown_until = now + 300
-                        break
+                        continue
                 except Exception:
-                    BaseAgent._gemini_cooldown_until = now + 180
-                    break
+                    continue
+            BaseAgent._gemini_cooldown_until = now + 60
 
         # 2. Tentativa via Cloud Generative AI (com timeout curto de 5s e cooldown)
         if now > getattr(BaseAgent, "_cloud_cooldown_until", 0):
