@@ -89,10 +89,15 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             padding: 0;
             -webkit-tap-highlight-color: transparent;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            max-width: 100%;
         }
         
         html {
             scroll-behavior: smooth;
+            width: 100%;
+            max-width: 100vw;
+            overflow-x: hidden;
+            position: relative;
         }
         
         body {
@@ -101,13 +106,20 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             padding: 24px;
             min-height: 100vh;
             font-size: 18px;
-            overflow-x: hidden;
+            overflow-x: hidden !important;
             width: 100%;
+            max-width: 100vw;
+            position: relative;
+            word-wrap: break-word;
+            overflow-wrap: anywhere;
         }
         
         .container {
             max-width: 1480px;
+            width: 100%;
             margin: 0 auto;
+            overflow-x: hidden;
+            box-sizing: border-box;
         }
         
         header {
@@ -115,6 +127,10 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             margin-bottom: 24px;
             border-bottom: 1px solid var(--border-color);
             padding-bottom: 20px;
+            width: 100%;
+            max-width: 100%;
+            overflow-x: hidden;
+            box-sizing: border-box;
         }
         header h1 {
             font-size: 2.35rem;
@@ -122,11 +138,17 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             margin-bottom: 10px;
             line-height: 1.25;
             letter-spacing: -0.5px;
+            word-break: break-word;
+            overflow-wrap: anywhere;
+            max-width: 100%;
         }
         header p {
             color: var(--text-secondary);
             font-size: 1.15rem;
             line-height: 1.4;
+            word-break: break-word;
+            overflow-wrap: anywhere;
+            max-width: 100%;
         }
         
         .status-bar {
@@ -135,6 +157,9 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             justify-content: center;
             margin-top: 16px;
             flex-wrap: wrap;
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
         }
         .badge {
             padding: 8px 14px;
@@ -145,6 +170,9 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             align-items: center;
             gap: 6px;
             touch-action: manipulation;
+            max-width: 100%;
+            word-break: break-word;
+            overflow-wrap: anywhere;
         }
         .badge-gemini { background: rgba(88, 166, 255, 0.15); color: var(--accent-blue); border: 1px solid var(--accent-blue); }
         .badge-ollama { background: rgba(63, 185, 80, 0.15); color: var(--accent-green); border: 1px solid var(--accent-green); }
@@ -152,9 +180,13 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         
         .grid {
             display: grid;
-            grid-template-columns: 480px 1fr;
+            grid-template-columns: 480px minmax(0, 1fr);
             gap: 24px;
             align-items: start;
+            width: 100%;
+            max-width: 100%;
+            min-width: 0;
+            box-sizing: border-box;
         }
         
         .card {
@@ -163,6 +195,13 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             border-radius: 12px;
             padding: 24px;
             box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 100%;
+            min-width: 0;
+            overflow-x: hidden;
+            box-sizing: border-box;
+            word-wrap: break-word;
+            overflow-wrap: anywhere;
         }
         .card h2 {
             font-size: 1.45rem;
@@ -173,10 +212,17 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             display: flex;
             align-items: center;
             gap: 8px;
+            word-break: break-word;
+            overflow-wrap: anywhere;
+            max-width: 100%;
         }
         
         .form-group {
             margin-bottom: 18px;
+            width: 100%;
+            max-width: 100%;
+            min-width: 0;
+            box-sizing: border-box;
         }
         .form-group label {
             display: block;
@@ -184,10 +230,15 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             font-weight: 600;
             color: #c9d1d9;
             margin-bottom: 8px;
+            word-break: break-word;
+            overflow-wrap: anywhere;
+            max-width: 100%;
         }
         
         .form-group input, .form-group textarea, .form-group select {
-            width: 100%;
+            width: 100% !important;
+            max-width: 100% !important;
+            min-width: 0 !important;
             min-height: 50px;
             padding: 12px 14px;
             background: var(--bg-primary);
@@ -198,6 +249,13 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             outline: none;
             transition: border-color 0.2s, box-shadow 0.2s;
             touch-action: manipulation;
+            box-sizing: border-box !important;
+            overflow-wrap: anywhere;
+        }
+        .form-group select {
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            overflow: hidden;
         }
         .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
             border-color: var(--accent-gold);
@@ -205,7 +263,8 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         }
         
         .btn-submit {
-            width: 100%;
+            width: 100% !important;
+            max-width: 100% !important;
             min-height: 56px;
             padding: 14px;
             background: linear-gradient(135deg, #e3b341, #d29922);
@@ -221,6 +280,8 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             align-items: center;
             gap: 8px;
             touch-action: manipulation;
+            box-sizing: border-box;
+            word-break: break-word;
         }
         .btn-submit:active {
             transform: scale(0.98);
@@ -240,6 +301,9 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             background: rgba(0, 0, 0, 0.2);
             border-radius: 8px;
             border: 1px solid var(--border-color);
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
         }
         .step-item {
             display: flex;
@@ -247,6 +311,9 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             gap: 10px;
             font-size: 1.05rem;
             color: var(--text-secondary);
+            word-break: break-word;
+            overflow-wrap: anywhere;
+            max-width: 100%;
         }
         .step-item.active { color: var(--accent-gold); font-weight: bold; }
         .step-item.done { color: var(--accent-green); }
@@ -257,6 +324,13 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             border-radius: 10px;
             padding: 18px;
             margin-bottom: 18px;
+            width: 100%;
+            max-width: 100%;
+            min-width: 0;
+            box-sizing: border-box;
+            overflow-x: hidden;
+            word-wrap: break-word;
+            overflow-wrap: anywhere;
         }
         .suno-header {
             display: flex;
@@ -265,12 +339,19 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             margin-bottom: 12px;
             flex-wrap: wrap;
             gap: 8px;
+            width: 100%;
+            max-width: 100%;
+            min-width: 0;
+            box-sizing: border-box;
         }
         .suno-title {
             font-size: 1.15rem;
             font-weight: bold;
             color: var(--accent-blue);
             line-height: 1.35;
+            word-break: break-word;
+            overflow-wrap: anywhere;
+            max-width: 100%;
         }
         
         .btn-copy {
@@ -289,6 +370,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             justify-content: center;
             gap: 6px;
             touch-action: manipulation;
+            box-sizing: border-box;
         }
         .btn-copy:active {
             background: var(--accent-gold);
@@ -297,16 +379,21 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         }
         
         pre {
-            white-space: pre-wrap;
-            word-break: break-word;
-            overflow-wrap: break-word;
+            white-space: pre-wrap !important;
+            word-break: break-word !important;
+            overflow-wrap: anywhere !important;
             font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
             font-size: 1.12rem;
             line-height: 1.65;
             color: #e6edf3;
+            width: 100% !important;
+            max-width: 100% !important;
+            min-width: 0 !important;
+            box-sizing: border-box !important;
+            overflow-x: hidden !important;
         }
         
-        /* Abas com suporte touch e sticky no mobile */
+        /* Abas com suporte touch e overflow horizontal contido */
         .tabs {
             display: flex;
             gap: 8px;
@@ -316,6 +403,10 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
             scrollbar-width: none;
+            width: 100%;
+            max-width: 100%;
+            min-width: 0;
+            box-sizing: border-box;
         }
         .tabs::-webkit-scrollbar { display: none; }
         .tab-btn {
@@ -332,12 +423,20 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             min-height: 44px;
             transition: color 0.15s, background 0.15s;
             touch-action: manipulation;
+            box-sizing: border-box;
         }
         .tab-btn.active {
             color: var(--accent-gold);
             background: var(--bg-card);
         }
-        .tab-content { display: none; }
+        .tab-content {
+            display: none;
+            width: 100%;
+            max-width: 100%;
+            min-width: 0;
+            box-sizing: border-box;
+            overflow-x: hidden;
+        }
         .tab-content.active { display: block; }
         
         .score-pill {
@@ -345,6 +444,8 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             font-weight: bold;
             color: var(--accent-green);
             margin-bottom: 14px;
+            word-break: break-word;
+            overflow-wrap: anywhere;
         }
 
         /* Cards do Histórico */
@@ -355,6 +456,13 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             padding: 18px;
             margin-bottom: 16px;
             transition: border-color 0.2s;
+            width: 100%;
+            max-width: 100%;
+            min-width: 0;
+            box-sizing: border-box;
+            overflow-x: hidden;
+            word-wrap: break-word;
+            overflow-wrap: anywhere;
         }
         .history-card:active { border-color: var(--accent-gold); }
         .history-card-header {
@@ -364,24 +472,36 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             margin-bottom: 10px;
             flex-wrap: wrap;
             gap: 8px;
+            width: 100%;
+            max-width: 100%;
+            min-width: 0;
+            box-sizing: border-box;
         }
         .history-title {
             font-size: 1.22rem;
             font-weight: bold;
             color: var(--accent-gold);
             word-break: break-word;
+            overflow-wrap: anywhere;
+            max-width: 100%;
         }
         .history-meta {
             font-size: 0.95rem;
             color: var(--text-secondary);
             margin-bottom: 10px;
             line-height: 1.4;
+            word-break: break-word;
+            overflow-wrap: anywhere;
+            max-width: 100%;
         }
         .history-actions {
             display: flex;
             gap: 10px;
             flex-wrap: wrap;
             margin-top: 12px;
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
         }
         .btn-action {
             background: var(--bg-primary);
@@ -398,6 +518,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             align-items: center;
             justify-content: center;
             touch-action: manipulation;
+            box-sizing: border-box;
         }
         .btn-action:active {
             background: var(--accent-blue);
@@ -435,6 +556,8 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             text-align: center;
             max-width: 90vw;
             word-break: break-word;
+            overflow-wrap: anywhere;
+            box-sizing: border-box;
         }
         #toast.show {
             transform: translateX(-50%) translateY(0);
@@ -444,6 +567,9 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         /* Barra de Ações Rápidas Flutuante na Base para Celulares */
         .mobile-action-bar {
             display: none;
+            max-width: 100vw;
+            box-sizing: border-box;
+            overflow-x: hidden;
         }
 
         /* =========================================================================
@@ -453,40 +579,70 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             body {
                 padding: max(12px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) max(90px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left));
                 font-size: 16px;
+                width: 100%;
+                max-width: 100vw;
+                overflow-x: hidden !important;
+            }
+            
+            .container {
+                width: 100%;
+                max-width: 100%;
+                overflow-x: hidden;
             }
             
             header {
                 margin-bottom: 16px;
                 padding-bottom: 14px;
+                width: 100%;
+                max-width: 100%;
+                overflow-x: hidden;
             }
             header h1 {
                 font-size: 1.65rem;
                 line-height: 1.25;
+                word-break: break-word;
+                overflow-wrap: anywhere;
             }
             header p {
                 font-size: 1.0rem;
+                word-break: break-word;
+                overflow-wrap: anywhere;
             }
             
             .status-bar {
                 gap: 8px;
+                width: 100%;
+                max-width: 100%;
             }
             .badge {
                 font-size: 0.88rem;
                 padding: 6px 10px;
+                word-break: break-word;
+                overflow-wrap: anywhere;
             }
             
             .grid {
-                grid-template-columns: 1fr;
+                grid-template-columns: minmax(0, 1fr) !important;
                 gap: 16px;
+                width: 100% !important;
+                max-width: 100% !important;
+                min-width: 0 !important;
+                overflow-x: hidden;
             }
             
             .card {
-                padding: 16px 14px;
+                padding: 16px 12px !important;
                 border-radius: 12px;
+                width: 100% !important;
+                max-width: 100% !important;
+                min-width: 0 !important;
+                overflow-x: hidden !important;
             }
             .card h2 {
                 font-size: 1.35rem;
                 margin-bottom: 14px;
+                word-break: break-word;
+                overflow-wrap: anywhere;
             }
             
             /* Evita que inputs deem zoom automático no iOS/Android (>=16px) */
@@ -494,17 +650,25 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                 font-size: 16px !important;
                 min-height: 48px;
                 padding: 10px 12px;
+                width: 100% !important;
+                max-width: 100% !important;
+                min-width: 0 !important;
+                box-sizing: border-box !important;
             }
             .form-group label {
                 font-size: 1.0rem;
+                word-break: break-word;
+                overflow-wrap: anywhere;
             }
             
             .btn-submit {
                 min-height: 52px;
                 font-size: 1.15rem;
+                width: 100% !important;
+                max-width: 100% !important;
             }
             
-            /* Abas fixas (sticky) ao rolar no mobile para nunca perder a navegação */
+            /* Abas fixas (sticky) ao rolar no mobile SEM margens negativas que extravasem a tela */
             .tabs {
                 position: sticky;
                 top: 0;
@@ -512,29 +676,38 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                 background: rgba(22, 27, 34, 0.98);
                 backdrop-filter: blur(12px);
                 -webkit-backdrop-filter: blur(12px);
-                padding: 10px 4px;
-                margin: -8px -14px 14px -14px;
-                padding-left: 14px;
-                padding-right: 14px;
+                padding: 10px 0;
+                margin: 0 0 14px 0 !important;
                 border-bottom: 1.5px solid var(--border-color);
+                width: 100% !important;
+                max-width: 100% !important;
+                min-width: 0 !important;
+                overflow-x: auto !important;
+                box-sizing: border-box;
             }
             .tab-btn {
-                padding: 8px 14px;
-                font-size: 0.98rem;
+                padding: 8px 12px;
+                font-size: 0.95rem;
                 min-height: 42px;
             }
             
             .suno-field {
-                padding: 14px 12px;
+                padding: 14px 10px !important;
                 margin-bottom: 14px;
+                width: 100% !important;
+                max-width: 100% !important;
+                min-width: 0 !important;
+                overflow-x: hidden !important;
             }
             .suno-header {
                 flex-direction: column;
                 align-items: stretch;
                 gap: 10px;
+                width: 100% !important;
+                max-width: 100% !important;
             }
             .suno-header .btn-copy {
-                width: 100%;
+                width: 100% !important;
                 min-height: 46px;
                 font-size: 1.02rem;
             }
@@ -542,6 +715,13 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             pre {
                 font-size: 1.02rem;
                 line-height: 1.6;
+                width: 100% !important;
+                max-width: 100% !important;
+                min-width: 0 !important;
+                white-space: pre-wrap !important;
+                word-break: break-word !important;
+                overflow-wrap: anywhere !important;
+                overflow-x: hidden !important;
             }
             
             /* Ações de histórico com layout adaptável de 2 colunas */
@@ -549,14 +729,18 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                 display: grid;
                 grid-template-columns: 1fr 1fr;
                 gap: 8px;
+                width: 100%;
+                max-width: 100%;
             }
             .history-actions .btn-load {
                 grid-column: span 2;
                 min-height: 46px;
                 font-size: 1.05rem;
+                width: 100%;
             }
             .history-actions .btn-action:not(.btn-load) {
                 min-height: 44px;
+                width: 100%;
             }
             
             /* Barra de Ações Rápidas na parte inferior do celular (Polegar) */
@@ -572,20 +756,25 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                 -webkit-backdrop-filter: blur(14px);
                 border-top: 1.5px solid var(--accent-gold);
                 z-index: 9990;
-                padding: 8px 10px;
-                gap: 8px;
+                padding: 8px 6px;
+                gap: 6px;
                 align-items: center;
                 justify-content: space-around;
                 box-shadow: 0 -6px 20px rgba(0, 0, 0, 0.7);
+                width: 100%;
+                max-width: 100vw;
+                box-sizing: border-box;
+                overflow-x: hidden;
             }
             .mobile-bar-btn {
                 flex: 1;
+                min-width: 0;
                 min-height: 46px;
                 background: var(--bg-card);
                 color: var(--text-primary);
                 border: 1px solid var(--border-color);
                 border-radius: 8px;
-                font-size: 0.95rem;
+                font-size: 0.92rem;
                 font-weight: bold;
                 display: flex;
                 align-items: center;
@@ -594,6 +783,8 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                 cursor: pointer;
                 padding: 6px 2px;
                 white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
                 touch-action: manipulation;
                 transition: transform 0.1s, background 0.15s;
             }
@@ -611,9 +802,10 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         
         /* Telas muito pequenas (Android 320px - 380px) */
         @media (max-width: 380px) {
-            header h1 { font-size: 1.45rem; }
-            .card { padding: 12px 10px; }
-            .mobile-bar-btn { font-size: 0.85rem; }
+            header h1 { font-size: 1.4rem; }
+            .card { padding: 12px 8px !important; }
+            .mobile-bar-btn { font-size: 0.82rem; }
+            .tab-btn { padding: 8px 10px; font-size: 0.88rem; }
         }
     </style>
 </head>
@@ -644,7 +836,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                             <button type="button" class="btn-action" style="min-height: 38px; padding: 6px 14px; font-size: 0.95rem; background: rgba(227, 179, 65, 0.15); border-color: var(--accent-gold); color: var(--accent-gold);" onclick="autoFillScriptures()">🎲 Sortear Versículo</button>
                         </div>
                         <input type="text" id="biblical_ref" value="Isaías 6:1-4 (Vi o Senhor assentado sobre um alto e sublime trono, e os serafins clamavam: Santo, Santo, Santo)" placeholder="Opcional: Deixe em branco para o Teólogo sortear automaticamente...">
-                        <div id="agentManagementBox" style="margin-top: 10px; padding: 12px 14px; background: rgba(227, 179, 65, 0.08); border-left: 4px solid var(--accent-gold); border-radius: 8px; font-size: 1.0rem; color: #e6edf3; line-height: 1.55; word-break: break-word;">
+                        <div id="agentManagementBox" style="margin-top: 10px; padding: 12px 14px; background: rgba(227, 179, 65, 0.08); border-left: 4px solid var(--accent-gold); border-radius: 8px; font-size: 1.0rem; color: #e6edf3; line-height: 1.55; word-break: break-word; overflow-wrap: anywhere; max-width: 100%; box-sizing: border-box; min-width: 0;">
                             <div style="color: var(--accent-gold); font-weight: bold; font-size: 1.05rem; margin-bottom: 6px;">🧠 Gestão do Agente Teólogo:</div>
                             <div style="margin-bottom: 4px;">📌 <b>Tema Identificado:</b> <span id="identifiedThemeText" style="color: #58a6ff;">Santidade Transcendente & Majestade do Trono de Deus</span></div>
                             <div style="margin-bottom: 4px;">🎯 <b>Versículo Sorteado:</b> <span id="drawnVerseStatus" style="color: #3fb950;">Isaías 6:1-4 (Clique em "Sortear Versículo" para sortear outro do mesmo tema!)</span></div>
@@ -725,7 +917,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                             <option value="Rápido e vibrante (120-135 BPM) com batida enérgica de júbilo">
                             <option value="Devocional livre (Rubato), sem tempo rígido, focado na oração íntima">
                         </datalist>
-                        <div id="producerManagementBox" style="margin-top: 10px; padding: 12px 14px; background: rgba(88, 166, 255, 0.08); border-left: 4px solid #58a6ff; border-radius: 8px; font-size: 1.0rem; color: #e6edf3; line-height: 1.55; word-break: break-word;">
+                        <div id="producerManagementBox" style="margin-top: 10px; padding: 12px 14px; background: rgba(88, 166, 255, 0.08); border-left: 4px solid #58a6ff; border-radius: 8px; font-size: 1.0rem; color: #e6edf3; line-height: 1.55; word-break: break-word; overflow-wrap: anywhere; max-width: 100%; box-sizing: border-box; min-width: 0;">
                             <div style="color: #58a6ff; font-weight: bold; font-size: 1.05rem; margin-bottom: 6px;">🎹 Gestão do Agente Musical (Baseado no Tema & Reflexão):</div>
                             <div style="margin-bottom: 4px;">🎶 <b>Arranjo Sorteado:</b> <span id="arrangementNameText" style="color: var(--accent-gold);">Automático — Será gerado com Estilo + Voz + BPM para cada música!</span></div>
                             <div>💡 <b>Direção Musical:</b> <span id="producerRationaleText" style="color: #c9d1d9;">Ao clicar em "Compor Música com Agentes", o Diretor Musical criará o Style já com BPM e Voz incluídos de acordo com a geração.</span></div>
@@ -761,7 +953,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                             <span class="suno-title">🎹 Campo 'Style of Music' — Com Voz e BPM (<span id="styleCharCount">0</span> carac.)</span>
                             <button class="btn-copy" onclick="copyText('styleText', 'Style of Music (com Voz e BPM) copiado!')">📋 Copiar Estilo</button>
                         </div>
-                        <pre id="styleText" style="color: var(--accent-gold); font-weight: bold;"></pre>
+                        <pre id="styleText" style="color: var(--accent-gold); font-weight: bold; overflow-wrap: anywhere !important; word-break: break-word !important; width: 100% !important; max-width: 100% !important; min-width: 0 !important; box-sizing: border-box !important; overflow-x: hidden !important;"></pre>
                     </div>
 
                     <div class="suno-field">
@@ -769,7 +961,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                             <span class="suno-title">✍️ Campo 'Lyrics' com Metatags [Tag]</span>
                             <button class="btn-copy" onclick="copyText('lyricsText', 'Letra completa copiada!')">📝 Copiar Letra</button>
                         </div>
-                        <pre id="lyricsText" style="max-height: 580px; overflow-y: auto;"></pre>
+                        <pre id="lyricsText" style="max-height: 580px; overflow-y: auto; overflow-x: hidden !important; overflow-wrap: anywhere !important; word-break: break-word !important; width: 100% !important; max-width: 100% !important; min-width: 0 !important; box-sizing: border-box !important;"></pre>
                     </div>
                 </div>
 
@@ -1074,7 +1266,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                         <p style="font-size: 0.95rem; color: #58a6ff; margin-bottom: 10px; line-height: 1.4;">
                             🎤 <b>Voz:</b> ${item.vocal_configuration || 'Voz & Coral'} &nbsp;|&nbsp; ⏱️ <b>BPM / Dinâmica:</b> ${item.target_bpm || '70 BPM'}
                         </p>
-                        <div style="background: var(--bg-primary); padding: 10px 12px; border-radius: 6px; font-size: 0.98rem; color: var(--accent-gold); font-family: monospace; margin-bottom: 12px; word-break: break-all;">
+                        <div style="background: var(--bg-primary); padding: 10px 12px; border-radius: 6px; font-size: 0.98rem; color: var(--accent-gold); font-family: monospace; margin-bottom: 12px; word-break: break-word; overflow-wrap: anywhere; max-width: 100%; box-sizing: border-box; overflow-x: hidden;">
                             ${item.style_of_music}
                         </div>
                         <div class="history-actions">
