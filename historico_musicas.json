@@ -1,5 +1,135 @@
 [
   {
+    "id": "20261012204437",
+    "created_at": "12/10/2026 20:44:37",
+    "theme": "vida",
+    "biblical_reference": "Lucas 4:18-19 (O Espírito do Senhor está sobre Mim, para proclamar libertação aos cativos e restaurar os oprimidos)",
+    "musical_style_hint": "intimate acoustic worship, fingerpicked guitar, warm cello, soft piano, tender female lead vocals, vocal harmony, 66 BPM, slow emotional build",
+    "song_title": "Alma que Suspira por Sião (Lucas 4:18-19)",
+    "style_of_music": "intimate acoustic worship, fingerpicked guitar, warm cello, soft piano, tender female lead vocals, vocal harmony, 66 BPM, slow emotional build",
+    "target_bpm": "Lento devocional (66 BPM) começando em voz e violão e crescendo com violoncelo",
+    "vocal_configuration": "Voz feminina suave e intimista nos versos, abrindo com harmonia vocal no refrão",
+    "theological_summary": "Reflexão Bíblica em Lucas 4:18-19 (\"O Espírito do Senhor está sobre Mim, para proclamar libertação aos cativos e restaurar os oprimidos\"): A canção exalta 'vida' dentro da doutrina de Cristo o Médico dos Médicos: Cura, Libertação & Restauração, destacando jeová rafá (o senhor que sara), sol da justiça, restaurador da alma. Foco Cristocêntrico: Em Seu ministério terreno e na cruz, Jesus revelou o Reino de Deus curando enfermos, libertando cativos e vencendo a morte.",
+    "audit_score": 9.8,
+    "lyrics_with_metatags": "[66 BPM - Slow Devotional Tempo]\n[Fingerpicked Acoustic Guitar & Warm Cello Intro]\n\n[Verse 1]\n[Tender Female Lead Vocals]\n[Intimate Acoustic Guitar]\nMinha alma tem saudade dos átrios do Senhor,\nOnde não há mais pranto, nem sombras, nem temor,\nAguardo os fundamentos que o próprio Deus traçou,\nA Pátria Celestial que Jesus me preparou.\n\n[Verse 2]\n[Soft Piano & Cello Enter]\n[Warm Vocal Harmony]\nO tempo de espera logo vai terminar,\nA trombeta nos ares está prestes a soar,\nSeremos transformados na glória de Jesus,\nRevestidos pra sempre de imortalidade e luz.\n\n[Pre-Chorus]\n[Subtle Percussive Swell]\n[Growing Emotion]\nO Espírito e a Noiva clamam em uma só voz:\nMaranata, Rei da Glória, vem buscar a todos nós!\n\n[Chorus]\n[Emotional Chorus]\n[Soaring Female Lead, Acoustic Band & Backing Choir]\nCidade Santa, Nova Jerusalém!\nOnde o Cordeiro Vivo é a luz que nos mantém!\nDeus enxugará dos olhos toda dor e aflição,\nA morte foi vencida pelo Autor da Salvação!\nMaranata, vem depressa, nosso amado Salvador,\nLeva a Tua Igreja para o Reino do Teu amor!\n\n[Bridge]\n[Spontaneous Devotional Climax]\n[Passionate Female Lead & Lush Strings]\nNão há mais morte, não há mais dor!\nSó o cântico novo ao nosso Redentor!\nPrepara as nossas vestes em santidade e fé,\nAté o grande dia em que estivermos de pé!\n\n[Outro]\n[Gentle Acoustic Guitar Outro]\n[Whispered Female Vocal Prayer]\nPalavra viva e eterna em Lucas 4:18-19:\n\"O Espírito do Senhor está sobre Mim, para proclamar libertação aos cativos e restaurar os oprimidos\"\nA Ti toda a glória, Jesus. Amém.\n\n[Fade out]\n[End]",
+    "dossier": {
+      "theme_title": "Cristo o Médico dos Médicos: Cura, Libertação & Restauração — Lucas 4:18-19",
+      "primary_scriptures": [
+        "Lucas 4:18-19 (O Espírito do Senhor está sobre Mim, para proclamar libertação aos cativos e restaurar os oprimidos)",
+        "Isaías 53:5 (O castigo que nos traz a paz estava sobre Ele, e pelas Suas pisaduras fomos sarados)",
+        "Êxodo 15:26 (Porque Eu sou o Senhor que te sara — Jeová Rafá)"
+      ],
+      "divine_attributes": [
+        "Jeová Rafá (O Senhor que Sara)",
+        "Sol da Justiça",
+        "Restaurador da Alma",
+        "Poder Libertador"
+      ],
+      "christocentric_focus": "Em Seu ministério terreno e na cruz, Jesus revelou o Reino de Deus curando enfermos, libertando cativos e vencendo a morte.",
+      "sacred_keywords": [
+        "Pelas Suas pisaduras",
+        "Sol da Justiça",
+        "Jeová Rafá",
+        "Bálsamo de Gileade",
+        "Toque nas vestes",
+        "Vida em abundância"
+      ],
+      "doctrinal_guardrails": [
+        "Submeter o clamor por cura à soberania amorosa de Deus, exaltando a cura maior da alma juntamente com o poder divino de restaurar."
+      ],
+      "emotional_and_spiritual_tone": "Fé expectante, clamor humilde, gratidão pela restauração e exaltação ao poder de Cristo.",
+      "exegetical_summary": "Reflexão Bíblica em Lucas 4:18-19 (\"O Espírito do Senhor está sobre Mim, para proclamar libertação aos cativos e restaurar os oprimidos\"): A canção exalta 'vida' dentro da doutrina de Cristo o Médico dos Médicos: Cura, Libertação & Restauração, destacando jeová rafá (o senhor que sara), sol da justiça, restaurador da alma. Foco Cristocêntrico: Em Seu ministério terreno e na cruz, Jesus revelou o Reino de Deus curando enfermos, libertando cativos e vencendo a morte."
+    },
+    "audit": {
+      "approved": true,
+      "score": 9.8,
+      "theological_fidelity_score": 9.8,
+      "poetic_prosody_score": 9.8,
+      "strengths": [
+        "Fidelidade exegética a Lucas 4:18-19: a letra traduz o tema 'Cristo o Médico dos Médicos: Cura, Libertação & Restauração — Lucas 4:18-19' em poesia cantável e bíblica.",
+        "Cristocentrismo preservado (Jeová Rafá (O Senhor que Sara), Sol da Justiça), mantendo a adoração vertical e reverente.",
+        "Arquitetura litúrgica completa com 6 seções estruturadas (Verse 1, Verse 2, Pre-Chorus, Chorus, Bridge, Outro) e cadência respirável para o Suno AI.",
+        "Originalidade poética validada: versos inéditos livres de clichês antropocêntricos."
+      ],
+      "critiques": [
+        "Manter a dinâmica crescente entre o Pré-Refrão e o Refrão para destacar a mensagem central de Lucas 4:18-19."
+      ],
+      "actionable_revisions": []
+    },
+    "arrangement": {
+      "arrangement_name": "Acústico Devocional Intimista (Violão, Violoncelo, Voz Feminina • 66 BPM)",
+      "style_of_music": "intimate acoustic worship, fingerpicked guitar, warm cello, soft piano, tender female lead vocals, vocal harmony, 66 BPM, slow emotional build",
+      "vocal_preference": "Voz feminina suave e intimista nos versos, abrindo com harmonia vocal no refrão",
+      "tempo_dynamics": "Lento devocional (66 BPM) começando em voz e violão e crescendo com violoncelo",
+      "producer_rationale": "Para o tema 'vida' e a reflexão em Lucas 4:18-19, o Agente Musical gerou o estilo completo com BPM e Voz: 'Acústico Devocional Intimista (Violão, Violoncelo, Voz Feminina • 66 BPM)'."
+    }
+  },
+  {
+    "id": "20261012204211",
+    "created_at": "12/10/2026 20:42:11",
+    "theme": "vida",
+    "biblical_reference": "Êxodo 15:26 (Porque Eu sou o Senhor que te sara — Jeová Rafá)",
+    "musical_style_hint": "modern congregational worship, grand piano, ambient electric guitars, emotional male lead vocals, full choir, 72 BPM, slow build to anthemic climax",
+    "song_title": "Quando a Saudade Encontrar o Rei (Êxodo 15:26)",
+    "style_of_music": "modern congregational worship, grand piano, ambient electric guitars, emotional male lead vocals, full choir, 72 BPM, slow build to anthemic climax",
+    "target_bpm": "Moderado solene (72 BPM) iniciando no piano e explodindo no refrão",
+    "vocal_configuration": "Voz masculina emotiva nos versos com coral congregacional forte no refrão",
+    "theological_summary": "Reflexão Bíblica em Êxodo 15:26 (\"Porque Eu sou o Senhor que te sara — Jeová Rafá\"): A canção exalta 'vida' dentro da doutrina de Cristo o Médico dos Médicos: Cura, Libertação & Restauração, destacando jeová rafá (o senhor que sara), sol da justiça, restaurador da alma. Foco Cristocêntrico: Em Seu ministério terreno e na cruz, Jesus revelou o Reino de Deus curando enfermos, libertando cativos e vencendo a morte.",
+    "audit_score": 9.8,
+    "lyrics_with_metatags": "[72 BPM - Solemn Worship Tempo]\n[Atmospheric Grand Piano & Swelling Guitar Intro]\n\n[Verse 1]\n[Emotional Male Lead Vocal]\n[Grand Piano Only]\nOlhando para o horizonte além da escuridão,\nOuço o chamado eterno da celestial Sião,\nOnde os muros de jaspe refletem Teu esplendor,\nE a alma descansa nos braços do Redentor.\n\n[Verse 2]\n[Warm Bass & Soft Tom Drums]\n[Subtle Strings]\nLá não haverá noite, nem lâmpada ou sol,\nPois a glória de Cristo é o nosso farol,\nVeremos as ruas de ouro e o mar de cristal,\nQuando soar nas nuvens o toque triunfal.\n\n[Pre-Chorus]\n[Drums Build Tension]\n[Rising Guitars]\nJá posso ouvir os anjos preparando a canção,\nE o coração da Igreja pulsa em adoração:\n\n[Chorus]\n[Anthemic Chorus]\n[Passionate Male Lead, Full Band & Congregational Choir]\nMinha alma suspira pelos átrios do Senhor!\nTenho sede do meu lar, tenho fome do Teu amor!\nNa casa do meu Pai muitas moradas há,\nJesus foi preparar lugar e em breve voltará!\nTodo joelho se dobrará diante do Rei Jesus,\nPara sempre viveremos na Cidade da Tua Luz!\n\n[Bridge]\n[Explosive Worship Bridge]\n[Soaring Male Tenor & Full Choir]\nNão há mais morte, não há mais dor!\nSó o cântico novo ao nosso Redentor!\nPrepara as nossas vestes em santidade e fé,\nAté o grande dia em que estivermos de pé!\n\n[Outro]\n[Acoustic Piano Breakdown]\n[Reverent Fade Out]\nPalavra viva e eterna em Êxodo 15:26:\n\"Porque Eu sou o Senhor que te sara — Jeová Rafá\"\nA Ti toda a glória, Jesus. Amém.\n\n[Fade out]\n[End]",
+    "dossier": {
+      "theme_title": "Cristo o Médico dos Médicos: Cura, Libertação & Restauração — Êxodo 15:26",
+      "primary_scriptures": [
+        "Êxodo 15:26 (Porque Eu sou o Senhor que te sara — Jeová Rafá)",
+        "malaquias 4:2 (Mas para vós outros, os que temeis o Meu nome, nascerá o Sol da Justiça, trazendo salvação e cura nas Suas asas)",
+        "Isaías 53:5 (O castigo que nos traz a paz estava sobre Ele, e pelas Suas pisaduras fomos sarados)"
+      ],
+      "divine_attributes": [
+        "Jeová Rafá (O Senhor que Sara)",
+        "Sol da Justiça",
+        "Restaurador da Alma",
+        "Poder Libertador"
+      ],
+      "christocentric_focus": "Em Seu ministério terreno e na cruz, Jesus revelou o Reino de Deus curando enfermos, libertando cativos e vencendo a morte.",
+      "sacred_keywords": [
+        "Pelas Suas pisaduras",
+        "Sol da Justiça",
+        "Jeová Rafá",
+        "Bálsamo de Gileade",
+        "Toque nas vestes",
+        "Vida em abundância"
+      ],
+      "doctrinal_guardrails": [
+        "Submeter o clamor por cura à soberania amorosa de Deus, exaltando a cura maior da alma juntamente com o poder divino de restaurar."
+      ],
+      "emotional_and_spiritual_tone": "Fé expectante, clamor humilde, gratidão pela restauração e exaltação ao poder de Cristo.",
+      "exegetical_summary": "Reflexão Bíblica em Êxodo 15:26 (\"Porque Eu sou o Senhor que te sara — Jeová Rafá\"): A canção exalta 'vida' dentro da doutrina de Cristo o Médico dos Médicos: Cura, Libertação & Restauração, destacando jeová rafá (o senhor que sara), sol da justiça, restaurador da alma. Foco Cristocêntrico: Em Seu ministério terreno e na cruz, Jesus revelou o Reino de Deus curando enfermos, libertando cativos e vencendo a morte."
+    },
+    "audit": {
+      "approved": true,
+      "score": 9.8,
+      "theological_fidelity_score": 9.7,
+      "poetic_prosody_score": 9.8,
+      "strengths": [
+        "Fidelidade exegética a Êxodo 15:26: a letra traduz o tema 'Cristo o Médico dos Médicos: Cura, Libertação & Restauração — Êxodo 15:26' em poesia cantável e bíblica.",
+        "Cristocentrismo preservado (Jeová Rafá (O Senhor que Sara), Sol da Justiça), mantendo a adoração vertical e reverente.",
+        "Arquitetura litúrgica completa com 6 seções estruturadas (Verse 1, Verse 2, Pre-Chorus, Chorus, Bridge, Outro) e cadência respirável para o Suno AI.",
+        "Originalidade poética validada: versos inéditos livres de clichês antropocêntricos."
+      ],
+      "critiques": [
+        "Manter a dinâmica crescente entre o Pré-Refrão e o Refrão para destacar a mensagem central de Êxodo 15:26."
+      ],
+      "actionable_revisions": []
+    },
+    "arrangement": {
+      "arrangement_name": "Modern Worship Congregacional (Grand Piano, Guitarras, Voz Masculina • 72 BPM)",
+      "style_of_music": "modern congregational worship, grand piano, ambient electric guitars, emotional male lead vocals, full choir, 72 BPM, slow build to anthemic climax",
+      "vocal_preference": "Voz masculina emotiva nos versos com coral congregacional forte no refrão",
+      "tempo_dynamics": "Moderado solene (72 BPM) iniciando no piano e explodindo no refrão",
+      "producer_rationale": "Para o tema 'vida' e a reflexão em Êxodo 15:26, o Agente Musical gerou o estilo completo com BPM e Voz: 'Modern Worship Congregacional (Grand Piano, Guitarras, Voz Masculina • 72 BPM)'."
+    }
+  },
+  {
     "id": "20261012200439",
     "created_at": "12/10/2026 20:04:39",
     "theme": "saudade",

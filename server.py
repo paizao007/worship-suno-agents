@@ -1,7 +1,7 @@
 """
 Servidor Web e API REST do Sistema Multiagente de Adoração para Suno AI.
 🕊️ Banda LVS Litúrgica Multiagente & Suno AI 🎵
-Otimizado para Celulares (Mobile First / PWA) e Desktop com Histórico Persistente.
+Otimizado para Celulares (Mobile First / Android / iOS / PWA) e Desktop com Histórico Persistente.
 """
 
 import sys
@@ -57,12 +57,14 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
     <meta name="theme-color" content="#0d1117">
+    <meta name="color-scheme" content="dark">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Banda LVS">
+    <meta name="format-detection" content="telephone=no">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🕊️</text></svg>">
     <link rel="manifest" href="/manifest.json">
     <title>🕊️ Banda LVS Litúrgica Multiagente & Suno AI 🎵</title>
@@ -72,126 +74,546 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             --bg-secondary: #161b22;
             --bg-card: #21262d;
             --accent-gold: #e3b341;
+            --accent-gold-hover: #d29922;
             --accent-blue: #58a6ff;
             --accent-green: #3fb950;
+            --accent-purple: #d2a8ff;
             --text-primary: #f0f6fc;
             --text-secondary: #8b949e;
             --border-color: #30363d;
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
-        body { background: var(--bg-primary); color: var(--text-primary); padding: 24px; min-height: 100vh; font-size: 18px; }
-        .container { max-width: 1480px; margin: 0 auto; }
         
-        header { text-align: center; margin-bottom: 26px; border-bottom: 1px solid var(--border-color); padding-bottom: 20px; }
-        header h1 { font-size: 2.35rem; color: var(--accent-gold); margin-bottom: 10px; line-height: 1.25; }
-        header p { color: var(--text-secondary); font-size: 1.18rem; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
         
-        .status-bar { display: flex; gap: 12px; justify-content: center; margin-top: 16px; flex-wrap: wrap; }
-        .badge { padding: 8px 16px; border-radius: 20px; font-size: 0.98rem; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; }
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        body {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            padding: 24px;
+            min-height: 100vh;
+            font-size: 18px;
+            overflow-x: hidden;
+            width: 100%;
+        }
+        
+        .container {
+            max-width: 1480px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 24px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 20px;
+        }
+        header h1 {
+            font-size: 2.35rem;
+            color: var(--accent-gold);
+            margin-bottom: 10px;
+            line-height: 1.25;
+            letter-spacing: -0.5px;
+        }
+        header p {
+            color: var(--text-secondary);
+            font-size: 1.15rem;
+            line-height: 1.4;
+        }
+        
+        .status-bar {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 16px;
+            flex-wrap: wrap;
+        }
+        .badge {
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            touch-action: manipulation;
+        }
         .badge-gemini { background: rgba(88, 166, 255, 0.15); color: var(--accent-blue); border: 1px solid var(--accent-blue); }
         .badge-ollama { background: rgba(63, 185, 80, 0.15); color: var(--accent-green); border: 1px solid var(--accent-green); }
         .badge-history { background: rgba(227, 179, 65, 0.15); color: var(--accent-gold); border: 1px solid var(--accent-gold); cursor: pointer; }
         
-        .grid { display: grid; grid-template-columns: 480px 1fr; gap: 24px; }
+        .grid {
+            display: grid;
+            grid-template-columns: 480px 1fr;
+            gap: 24px;
+            align-items: start;
+        }
         
-        .card { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 12px; padding: 24px; }
-        .card h2 { font-size: 1.5rem; margin-bottom: 18px; color: var(--accent-gold); border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
+        .card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+        }
+        .card h2 {
+            font-size: 1.45rem;
+            margin-bottom: 18px;
+            color: var(--accent-gold);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
         
-        .form-group { margin-bottom: 18px; }
-        .form-group label { display: block; font-size: 1.08rem; font-weight: 600; color: #c9d1d9; margin-bottom: 8px; }
+        .form-group {
+            margin-bottom: 18px;
+        }
+        .form-group label {
+            display: block;
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: #c9d1d9;
+            margin-bottom: 8px;
+        }
         
-        /* Fontes grandes e confortáveis nos campos de entrada */
         .form-group input, .form-group textarea, .form-group select {
-            width: 100%; min-height: 50px; padding: 12px 14px; background: var(--bg-primary); border: 1px solid var(--border-color);
-            border-radius: 8px; color: var(--text-primary); font-size: 1.12rem; outline: none; transition: 0.2s;
+            width: 100%;
+            min-height: 50px;
+            padding: 12px 14px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 1.12rem;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            touch-action: manipulation;
         }
         .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
-            border-color: var(--accent-gold); box-shadow: 0 0 0 2px rgba(227, 179, 65, 0.2);
+            border-color: var(--accent-gold);
+            box-shadow: 0 0 0 2px rgba(227, 179, 65, 0.2);
         }
         
         .btn-submit {
-            width: 100%; min-height: 56px; padding: 14px; background: linear-gradient(135deg, #e3b341, #d29922);
-            color: #000; font-weight: bold; font-size: 1.22rem; border: none; border-radius: 8px; cursor: pointer; transition: 0.2s;
-            display: flex; justify-content: center; align-items: center; gap: 8px;
+            width: 100%;
+            min-height: 56px;
+            padding: 14px;
+            background: linear-gradient(135deg, #e3b341, #d29922);
+            color: #000;
+            font-weight: bold;
+            font-size: 1.22rem;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.15s, opacity 0.15s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            touch-action: manipulation;
         }
-        .btn-submit:active { transform: scale(0.98); opacity: 0.9; }
-        .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-submit:active {
+            transform: scale(0.98);
+            opacity: 0.9;
+        }
+        .btn-submit:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
         
-        .stepper { display: flex; flex-direction: column; gap: 12px; margin-top: 18px; }
-        .step-item { display: flex; align-items: center; gap: 10px; font-size: 1.05rem; color: var(--text-secondary); }
+        .stepper {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 18px;
+            padding: 14px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+        .step-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.05rem;
+            color: var(--text-secondary);
+        }
         .step-item.active { color: var(--accent-gold); font-weight: bold; }
         .step-item.done { color: var(--accent-green); }
         
-        .suno-field { background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 8px; padding: 18px; margin-bottom: 18px; }
-        .suno-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px; }
-        .suno-title { font-size: 1.18rem; font-weight: bold; color: var(--accent-blue); }
+        .suno-field {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 18px;
+            margin-bottom: 18px;
+        }
+        .suno-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .suno-title {
+            font-size: 1.15rem;
+            font-weight: bold;
+            color: var(--accent-blue);
+            line-height: 1.35;
+        }
         
         .btn-copy {
-            background: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border-color);
-            padding: 10px 16px; border-radius: 6px; font-size: 1.02rem; font-weight: 600; cursor: pointer; transition: 0.2s;
-            min-height: 42px; display: inline-flex; align-items: center; gap: 6px;
+            background: var(--bg-card);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-size: 1.02rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.15s, transform 0.15s;
+            min-height: 44px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            touch-action: manipulation;
         }
-        .btn-copy:active { background: var(--accent-gold); color: #000; transform: scale(0.96); }
+        .btn-copy:active {
+            background: var(--accent-gold);
+            color: #000;
+            transform: scale(0.96);
+        }
         
         pre {
-            white-space: pre-wrap; word-break: break-word; font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
-            font-size: 1.12rem; line-height: 1.65; color: #e6edf3;
+            white-space: pre-wrap;
+            word-break: break-word;
+            overflow-wrap: break-word;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+            font-size: 1.12rem;
+            line-height: 1.65;
+            color: #e6edf3;
         }
         
-        /* Abas com rolagem suave por toque em telas pequenas */
+        /* Abas com suporte touch e sticky no mobile */
         .tabs {
-            display: flex; gap: 8px; margin-bottom: 18px; border-bottom: 1px solid var(--border-color);
-            padding-bottom: 10px; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none;
+            display: flex;
+            gap: 8px;
+            margin-bottom: 18px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
         }
         .tabs::-webkit-scrollbar { display: none; }
         .tab-btn {
-            background: none; border: none; color: var(--text-secondary); font-size: 1.08rem; font-weight: 600;
-            padding: 10px 16px; cursor: pointer; border-radius: 6px; white-space: nowrap; flex-shrink: 0; min-height: 44px;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.08rem;
+            font-weight: 600;
+            padding: 10px 18px;
+            cursor: pointer;
+            border-radius: 8px;
+            white-space: nowrap;
+            flex-shrink: 0;
+            min-height: 44px;
+            transition: color 0.15s, background 0.15s;
+            touch-action: manipulation;
         }
-        .tab-btn.active { color: var(--accent-gold); background: var(--bg-card); }
+        .tab-btn.active {
+            color: var(--accent-gold);
+            background: var(--bg-card);
+        }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
         
-        .score-pill { font-size: 1.35rem; font-weight: bold; color: var(--accent-green); margin-bottom: 14px; }
+        .score-pill {
+            font-size: 1.35rem;
+            font-weight: bold;
+            color: var(--accent-green);
+            margin-bottom: 14px;
+        }
 
         /* Cards do Histórico */
         .history-card {
-            background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px;
-            padding: 16px; margin-bottom: 16px; transition: 0.2s;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 18px;
+            margin-bottom: 16px;
+            transition: border-color 0.2s;
         }
         .history-card:active { border-color: var(--accent-gold); }
-        .history-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 6px; }
-        .history-title { font-size: 1.22rem; font-weight: bold; color: var(--accent-gold); }
-        .history-meta { font-size: 0.96rem; color: var(--text-secondary); margin-bottom: 10px; }
-        .history-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+        .history-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .history-title {
+            font-size: 1.22rem;
+            font-weight: bold;
+            color: var(--accent-gold);
+            word-break: break-word;
+        }
+        .history-meta {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+        .history-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 12px;
+        }
         .btn-action {
-            background: var(--bg-primary); color: var(--text-primary); border: 1px solid var(--border-color);
-            padding: 10px 16px; border-radius: 6px; font-size: 1.0rem; font-weight: 600; cursor: pointer; transition: 0.2s; min-height: 42px;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 1.0rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.15s, transform 0.15s;
+            min-height: 44px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            touch-action: manipulation;
         }
-        .btn-action:active { background: var(--accent-blue); color: #fff; transform: scale(0.96); }
-        .btn-load { background: rgba(227, 179, 65, 0.15); border-color: var(--accent-gold); color: var(--accent-gold); }
-        .btn-load:active { background: var(--accent-gold); color: #000; }
+        .btn-action:active {
+            background: var(--accent-blue);
+            color: #fff;
+            transform: scale(0.96);
+        }
+        .btn-load {
+            background: rgba(227, 179, 65, 0.15);
+            border-color: var(--accent-gold);
+            color: var(--accent-gold);
+        }
+        .btn-load:active {
+            background: var(--accent-gold);
+            color: #000;
+        }
 
-        /* Toast flutuante moderno para celulares (substitui alert feio) */
+        /* Toast flutuante moderno para celulares */
         #toast {
-            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px);
-            background: #1c2128; color: var(--accent-gold); border: 1px solid var(--accent-gold);
-            padding: 14px 28px; border-radius: 30px; font-weight: bold; font-size: 1.1rem;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6); z-index: 9999; opacity: 0; transition: 0.3s ease;
-            pointer-events: none; text-align: center; max-width: 90vw;
+            position: fixed;
+            bottom: 84px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: #1c2128;
+            color: var(--accent-gold);
+            border: 1.5px solid var(--accent-gold);
+            padding: 14px 26px;
+            border-radius: 30px;
+            font-weight: bold;
+            font-size: 1.05rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.7);
+            z-index: 99999;
+            opacity: 0;
+            transition: transform 0.25s ease, opacity 0.25s ease;
+            pointer-events: none;
+            text-align: center;
+            max-width: 90vw;
+            word-break: break-word;
         }
-        #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+        #toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
 
-        /* Regras Específicas para Smartphones (Mobile-First) */
+        /* Barra de Ações Rápidas Flutuante na Base para Celulares */
+        .mobile-action-bar {
+            display: none;
+        }
+
+        /* =========================================================================
+           RESPONSIVIDADE AVANÇADA PARA CELULARES & DISPOSITIVOS ANDROID
+           ========================================================================= */
         @media (max-width: 920px) {
-            body { padding: 14px 10px 30px 10px; font-size: 17px; }
-            header { margin-bottom: 18px; padding-bottom: 14px; }
-            header h1 { font-size: 1.75rem; }
-            header p { font-size: 1.05rem; }
-            .grid { grid-template-columns: 1fr; gap: 18px; }
-            .card { padding: 16px; border-radius: 10px; }
-            .btn-action, .btn-copy { flex: 1; justify-content: center; }
-            pre { font-size: 1.02rem; }
+            body {
+                padding: max(12px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) max(90px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left));
+                font-size: 16px;
+            }
+            
+            header {
+                margin-bottom: 16px;
+                padding-bottom: 14px;
+            }
+            header h1 {
+                font-size: 1.65rem;
+                line-height: 1.25;
+            }
+            header p {
+                font-size: 1.0rem;
+            }
+            
+            .status-bar {
+                gap: 8px;
+            }
+            .badge {
+                font-size: 0.88rem;
+                padding: 6px 10px;
+            }
+            
+            .grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+            
+            .card {
+                padding: 16px 14px;
+                border-radius: 12px;
+            }
+            .card h2 {
+                font-size: 1.35rem;
+                margin-bottom: 14px;
+            }
+            
+            /* Evita que inputs deem zoom automático no iOS/Android (>=16px) */
+            .form-group input, .form-group textarea, .form-group select {
+                font-size: 16px !important;
+                min-height: 48px;
+                padding: 10px 12px;
+            }
+            .form-group label {
+                font-size: 1.0rem;
+            }
+            
+            .btn-submit {
+                min-height: 52px;
+                font-size: 1.15rem;
+            }
+            
+            /* Abas fixas (sticky) ao rolar no mobile para nunca perder a navegação */
+            .tabs {
+                position: sticky;
+                top: 0;
+                z-index: 100;
+                background: rgba(22, 27, 34, 0.98);
+                backdrop-filter: blur(12px);
+                -webkit-backdrop-filter: blur(12px);
+                padding: 10px 4px;
+                margin: -8px -14px 14px -14px;
+                padding-left: 14px;
+                padding-right: 14px;
+                border-bottom: 1.5px solid var(--border-color);
+            }
+            .tab-btn {
+                padding: 8px 14px;
+                font-size: 0.98rem;
+                min-height: 42px;
+            }
+            
+            .suno-field {
+                padding: 14px 12px;
+                margin-bottom: 14px;
+            }
+            .suno-header {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 10px;
+            }
+            .suno-header .btn-copy {
+                width: 100%;
+                min-height: 46px;
+                font-size: 1.02rem;
+            }
+            
+            pre {
+                font-size: 1.02rem;
+                line-height: 1.6;
+            }
+            
+            /* Ações de histórico com layout adaptável de 2 colunas */
+            .history-actions {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+            }
+            .history-actions .btn-load {
+                grid-column: span 2;
+                min-height: 46px;
+                font-size: 1.05rem;
+            }
+            .history-actions .btn-action:not(.btn-load) {
+                min-height: 44px;
+            }
+            
+            /* Barra de Ações Rápidas na parte inferior do celular (Polegar) */
+            .mobile-action-bar {
+                display: flex;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                height: 64px;
+                background: rgba(13, 17, 23, 0.96);
+                backdrop-filter: blur(14px);
+                -webkit-backdrop-filter: blur(14px);
+                border-top: 1.5px solid var(--accent-gold);
+                z-index: 9990;
+                padding: 8px 10px;
+                gap: 8px;
+                align-items: center;
+                justify-content: space-around;
+                box-shadow: 0 -6px 20px rgba(0, 0, 0, 0.7);
+            }
+            .mobile-bar-btn {
+                flex: 1;
+                min-height: 46px;
+                background: var(--bg-card);
+                color: var(--text-primary);
+                border: 1px solid var(--border-color);
+                border-radius: 8px;
+                font-size: 0.95rem;
+                font-weight: bold;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 4px;
+                cursor: pointer;
+                padding: 6px 2px;
+                white-space: nowrap;
+                touch-action: manipulation;
+                transition: transform 0.1s, background 0.15s;
+            }
+            .mobile-bar-btn:active {
+                background: var(--accent-gold);
+                color: #000;
+                transform: scale(0.95);
+            }
+            .mobile-bar-btn.gold {
+                background: rgba(227, 179, 65, 0.2);
+                border-color: var(--accent-gold);
+                color: var(--accent-gold);
+            }
+        }
+        
+        /* Telas muito pequenas (Android 320px - 380px) */
+        @media (max-width: 380px) {
+            header h1 { font-size: 1.45rem; }
+            .card { padding: 12px 10px; }
+            .mobile-bar-btn { font-size: 0.85rem; }
         }
     </style>
 </head>
@@ -199,17 +621,17 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     <div class="container">
         <header>
             <h1>🕊️ Banda LVS Litúrgica Multiagente & Suno AI 🎵</h1>
-            <p>Composição Sacra • Rigor Bíblico • Engenharia de Prompts para Suno</p>
+            <p>Composição Sacra • Rigor Bíblico • Engenharia de Prompts para Suno AI</p>
             <div class="status-bar" id="statusBar">
                 <span class="badge badge-gemini">✨ Gemini Cloud: Ativo</span>
                 <span class="badge badge-ollama">🦙 Ollama Local (WSL): Disponível</span>
-                <span class="badge badge-history" onclick="switchTab('tabHistory')">📚 <span id="badgeHistoryText">Histórico</span></span>
+                <span class="badge badge-history" onclick="switchTab('tabHistory'); scrollToElement('resultCard');">📚 <span id="badgeHistoryText">Histórico</span></span>
             </div>
         </header>
 
         <div class="grid">
             <!-- Formulário de Briefing -->
-            <div class="card">
+            <div class="card" id="briefingCard">
                 <h2>1. Novo Briefing de Adoração</h2>
                 <form id="composeForm">
                     <div class="form-group">
@@ -219,20 +641,20 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                     <div class="form-group">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; gap: 8px; flex-wrap: wrap;">
                             <label style="margin-bottom: 0;">Passagens Bíblicas Base</label>
-                            <button type="button" class="btn-action" style="min-height: 36px; padding: 6px 14px; font-size: 0.96rem; background: rgba(227, 179, 65, 0.15); border-color: var(--accent-gold); color: var(--accent-gold);" onclick="autoFillScriptures()">🎲 Sortear Versículo do Tema</button>
+                            <button type="button" class="btn-action" style="min-height: 38px; padding: 6px 14px; font-size: 0.95rem; background: rgba(227, 179, 65, 0.15); border-color: var(--accent-gold); color: var(--accent-gold);" onclick="autoFillScriptures()">🎲 Sortear Versículo</button>
                         </div>
                         <input type="text" id="biblical_ref" value="Isaías 6:1-4 (Vi o Senhor assentado sobre um alto e sublime trono, e os serafins clamavam: Santo, Santo, Santo)" placeholder="Opcional: Deixe em branco para o Teólogo sortear automaticamente...">
-                        <div id="agentManagementBox" style="margin-top: 10px; padding: 14px 16px; background: rgba(227, 179, 65, 0.08); border-left: 4px solid var(--accent-gold); border-radius: 8px; font-size: 1.02rem; color: #e6edf3; line-height: 1.55;">
-                            <div style="color: var(--accent-gold); font-weight: bold; font-size: 1.08rem; margin-bottom: 6px;">🧠 Gestão do Agente Teólogo:</div>
+                        <div id="agentManagementBox" style="margin-top: 10px; padding: 12px 14px; background: rgba(227, 179, 65, 0.08); border-left: 4px solid var(--accent-gold); border-radius: 8px; font-size: 1.0rem; color: #e6edf3; line-height: 1.55; word-break: break-word;">
+                            <div style="color: var(--accent-gold); font-weight: bold; font-size: 1.05rem; margin-bottom: 6px;">🧠 Gestão do Agente Teólogo:</div>
                             <div style="margin-bottom: 4px;">📌 <b>Tema Identificado:</b> <span id="identifiedThemeText" style="color: #58a6ff;">Santidade Transcendente & Majestade do Trono de Deus</span></div>
                             <div style="margin-bottom: 4px;">🎯 <b>Versículo Sorteado:</b> <span id="drawnVerseStatus" style="color: #3fb950;">Isaías 6:1-4 (Clique em "Sortear Versículo" para sortear outro do mesmo tema!)</span></div>
                             <div style="margin-top: 6px;">📖 <b>Reflexão Bíblica:</b> <span id="biblicalReflectionText" style="color: #d2a8ff;">Meditação na majestade santa do Senhor no alto e sublime trono, conduzindo a igreja à reverência e adoração.</span></div>
                         </div>
                     </div>
                     <div class="form-group">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 4px;">
                             <label style="margin-bottom: 0;">Estilo Musical no Suno</label>
-                            <span style="font-size: 0.95rem; color: var(--accent-gold); font-weight: bold;">🤖 Gerado pela Reflexão ou Manual</span>
+                            <span style="font-size: 0.92rem; color: var(--accent-gold); font-weight: bold;">🤖 Gerado pela Reflexão ou Manual</span>
                         </div>
                         <select id="musical_style_preset" onchange="applyStylePreset()">
                             <optgroup label="🤖 Gestão Inteligente do Agente Musical (Recomendado)">
@@ -277,7 +699,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                             </optgroup>
                         </select>
                         <div style="margin-top: 10px;">
-                            <label style="font-size: 0.98rem; color: #c9d1d9; margin-bottom: 6px; display: block;">Tags do Estilo (Já com Estilo + Voz + BPM p/ o Suno AI):</label>
+                            <label style="font-size: 0.96rem; color: #c9d1d9; margin-bottom: 6px; display: block;">Tags do Estilo (Estilo + Voz + BPM p/ o Suno AI):</label>
                             <input type="text" id="musical_style" value="modern worship, CCM, grand piano, celestial choir, swelling guitars, emotional male lead vocals, 70 BPM, slow build to epic climax" placeholder="Digite os instrumentos, voz e BPM desejados...">
                         </div>
                     </div>
@@ -303,8 +725,8 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                             <option value="Rápido e vibrante (120-135 BPM) com batida enérgica de júbilo">
                             <option value="Devocional livre (Rubato), sem tempo rígido, focado na oração íntima">
                         </datalist>
-                        <div id="producerManagementBox" style="margin-top: 10px; padding: 14px 16px; background: rgba(88, 166, 255, 0.08); border-left: 4px solid #58a6ff; border-radius: 8px; font-size: 1.02rem; color: #e6edf3; line-height: 1.55;">
-                            <div style="color: #58a6ff; font-weight: bold; font-size: 1.08rem; margin-bottom: 6px;">🎹 Gestão do Agente Musical (Baseado no Tema & Reflexão):</div>
+                        <div id="producerManagementBox" style="margin-top: 10px; padding: 12px 14px; background: rgba(88, 166, 255, 0.08); border-left: 4px solid #58a6ff; border-radius: 8px; font-size: 1.0rem; color: #e6edf3; line-height: 1.55; word-break: break-word;">
+                            <div style="color: #58a6ff; font-weight: bold; font-size: 1.05rem; margin-bottom: 6px;">🎹 Gestão do Agente Musical (Baseado no Tema & Reflexão):</div>
                             <div style="margin-bottom: 4px;">🎶 <b>Arranjo Sorteado:</b> <span id="arrangementNameText" style="color: var(--accent-gold);">Automático — Será gerado com Estilo + Voz + BPM para cada música!</span></div>
                             <div>💡 <b>Direção Musical:</b> <span id="producerRationaleText" style="color: #c9d1d9;">Ao clicar em "Compor Música com Agentes", o Diretor Musical criará o Style já com BPM e Voz incluídos de acordo com a geração.</span></div>
                         </div>
@@ -322,7 +744,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             </div>
 
             <!-- Cabine de Produção e Histórico -->
-            <div class="card">
+            <div class="card" id="resultCard">
                 <h2>2. Cabine de Produção & Saída Suno AI</h2>
 
                 <div class="tabs">
@@ -336,7 +758,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                 <div class="tab-content active" id="tabSuno">
                     <div class="suno-field">
                         <div class="suno-header">
-                            <span class="suno-title">🎹 Campo 'Style of Music' — Já com Voz e BPM (<span id="styleCharCount">0</span> carac.)</span>
+                            <span class="suno-title">🎹 Campo 'Style of Music' — Com Voz e BPM (<span id="styleCharCount">0</span> carac.)</span>
                             <button class="btn-copy" onclick="copyText('styleText', 'Style of Music (com Voz e BPM) copiado!')">📋 Copiar Estilo</button>
                         </div>
                         <pre id="styleText" style="color: var(--accent-gold); font-weight: bold;"></pre>
@@ -347,14 +769,14 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                             <span class="suno-title">✍️ Campo 'Lyrics' com Metatags [Tag]</span>
                             <button class="btn-copy" onclick="copyText('lyricsText', 'Letra completa copiada!')">📝 Copiar Letra</button>
                         </div>
-                        <pre id="lyricsText" style="max-height: 620px; overflow-y: auto;"></pre>
+                        <pre id="lyricsText" style="max-height: 580px; overflow-y: auto;"></pre>
                     </div>
                 </div>
 
                 <!-- Aba 2: Teologia -->
                 <div class="tab-content" id="tabTheology">
-                    <div class="suno-field" style="font-size: 1.08rem; line-height: 1.6;">
-                        <h3 id="theologyTitle" style="color: var(--accent-gold); margin-bottom: 14px; font-size: 1.35rem;"></h3>
+                    <div class="suno-field" style="font-size: 1.05rem; line-height: 1.6;">
+                        <h3 id="theologyTitle" style="color: var(--accent-gold); margin-bottom: 14px; font-size: 1.3rem;"></h3>
                         <p style="color: var(--text-secondary); margin-bottom: 10px;"><b>Atributos Divinos:</b> <span id="theologyAttributes" style="color: #fff;"></span></p>
                         <p style="color: var(--text-secondary); margin-bottom: 10px;"><b>Foco Cristocêntrico:</b> <span id="theologyChrist" style="color: #fff;"></span></p>
                         <p style="color: var(--text-secondary); margin-bottom: 10px;"><b>Palavras Sagradas:</b> <span id="theologyKeywords" style="color: #fff;"></span></p>
@@ -366,18 +788,18 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 
                 <!-- Aba 3: Auditoria -->
                 <div class="tab-content" id="tabAudit">
-                    <div class="suno-field" style="font-size: 1.08rem; line-height: 1.6;">
+                    <div class="suno-field" style="font-size: 1.05rem; line-height: 1.6;">
                         <div class="score-pill" id="auditScore"></div>
-                        <h4 style="margin-bottom: 10px; color: var(--accent-green); font-size: 1.18rem;">Pontos Fortes:</h4>
-                        <ul id="auditStrengths" style="margin-left: 22px; margin-bottom: 18px; color: #e6edf3; font-size: 1.06rem;"></ul>
-                        <h4 style="margin-bottom: 10px; color: var(--accent-gold); font-size: 1.18rem;">Observações Críticas:</h4>
-                        <ul id="auditCritiques" style="margin-left: 22px; color: #e6edf3; font-size: 1.06rem;"></ul>
+                        <h4 style="margin-bottom: 10px; color: var(--accent-green); font-size: 1.15rem;">Pontos Fortes:</h4>
+                        <ul id="auditStrengths" style="margin-left: 20px; margin-bottom: 18px; color: #e6edf3; font-size: 1.04rem;"></ul>
+                        <h4 style="margin-bottom: 10px; color: var(--accent-gold); font-size: 1.15rem;">Observações Críticas:</h4>
+                        <ul id="auditCritiques" style="margin-left: 20px; color: #e6edf3; font-size: 1.04rem;"></ul>
                     </div>
                 </div>
 
                 <!-- Aba 4: Histórico Persistente -->
                 <div class="tab-content" id="tabHistory">
-                    <div style="margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
+                    <div style="margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
                         <h3 style="color: var(--accent-gold); font-size: 1.25rem;">Histórico de Canções Salvas</h3>
                         <button class="btn-copy" onclick="loadHistory()">🔄 Atualizar</button>
                     </div>
@@ -386,6 +808,14 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 
             </div>
         </div>
+    </div>
+
+    <!-- Barra de Ações Rápidas Flutuante na Base para Celulares Android / iOS -->
+    <div id="mobileActionBar" class="mobile-action-bar">
+        <button class="mobile-bar-btn gold" onclick="copyText('styleText', 'Style de Áudio copiado!')">📋 Style</button>
+        <button class="mobile-bar-btn gold" onclick="copyText('lyricsText', 'Letra copiada!')">📝 Letra</button>
+        <button class="mobile-bar-btn" onclick="scrollToElement('briefingCard')">⚡ Novo</button>
+        <button class="mobile-bar-btn" onclick="switchTab('tabHistory'); scrollToElement('resultCard');">📚 Histórico</button>
     </div>
 
     <!-- Toast flutuante para celulares -->
@@ -399,6 +829,65 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             toast.innerText = msg || "✓ Copiado com sucesso!";
             toast.classList.add('show');
             setTimeout(() => { toast.classList.remove('show'); }, 2200);
+        }
+
+        // Cópia universal com suporte garantido a todos os navegadores Android e WebViews
+        function copyToClipboard(text, successMsg) {
+            if (!text) {
+                showToast("Nenhum texto para copiar.");
+                return;
+            }
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(text).then(() => {
+                    showToast(successMsg || "✓ Copiado!");
+                    if (navigator.vibrate) navigator.vibrate(25);
+                }).catch(() => fallbackCopy(text, successMsg));
+            } else {
+                fallbackCopy(text, successMsg);
+            }
+        }
+
+        function fallbackCopy(text, successMsg) {
+            const ta = document.createElement("textarea");
+            ta.value = text;
+            ta.style.position = "fixed";
+            ta.style.left = "-9999px";
+            ta.style.top = "-9999px";
+            ta.setAttribute("readonly", "");
+            document.body.appendChild(ta);
+            ta.focus();
+            ta.select();
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    showToast(successMsg || "✓ Copiado com sucesso!");
+                    if (navigator.vibrate) navigator.vibrate(25);
+                } else {
+                    showToast("Por favor, selecione e copie o texto manualmente.");
+                }
+            } catch (err) {
+                showToast("Erro ao copiar: " + err);
+            }
+            document.body.removeChild(ta);
+        }
+
+        function copyText(elemId, customMsg) {
+            const elem = document.getElementById(elemId);
+            const text = elem ? elem.innerText : "";
+            copyToClipboard(text, customMsg);
+        }
+
+        function copyRaw(text, customMsg) {
+            copyToClipboard(text, customMsg);
+        }
+
+        function scrollToElement(id) {
+            const el = document.getElementById(id);
+            if (el) {
+                const yOffset = -20;
+                const y = el.getBoundingClientRect().top + window.pageYOffset + yOffset;
+                window.scrollTo({ top: y, behavior: 'smooth' });
+            }
         }
 
         function switchTab(tabId) {
@@ -418,23 +907,6 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             if (targetContent) targetContent.classList.add('active');
         }
 
-        function copyText(elemId, customMsg) {
-            const text = document.getElementById(elemId).innerText;
-            navigator.clipboard.writeText(text).then(() => {
-                showToast(customMsg || "✓ Copiado para a área de transferência!");
-            }).catch(() => {
-                showToast("✓ Copiado!");
-            });
-        }
-
-        function copyRaw(text, customMsg) {
-            navigator.clipboard.writeText(text).then(() => {
-                showToast(customMsg || "✓ Copiado com sucesso!");
-            }).catch(() => {
-                showToast("✓ Copiado!");
-            });
-        }
-
         function syncStyleWithVocalAndBpm() {
             const styleElem = document.getElementById('musical_style');
             const vocalVal = (document.getElementById('vocal_pref').value || '').toLowerCase();
@@ -445,7 +917,6 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             // Remove tags de BPM antigas para substituir pela nova
             base = base.replace(/,\\s*\\d{2,3}\\s*BPM[^,]*/gi, '');
 
-            // Verifica se já tem indicação vocal; se o usuário trocou a voz, garante a tag vocal correspondente
             let vocalTag = "passionate lead vocals & choir";
             if (vocalVal.includes("dueto")) vocalTag = "male and female vocal duet, rich harmony";
             else if (vocalVal.includes("feminina") && vocalVal.includes("soul")) vocalTag = "soulful female lead vocals, gospel choir";
@@ -487,7 +958,6 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                     if (data.biblical_reflection) {
                         document.getElementById('biblicalReflectionText').innerText = data.biblical_reflection;
                     }
-                    // Se estiver no modo Automático pelo Agente, também já atualiza Estilo (com Voz e BPM), Voz e Dinâmica!
                     const presetMode = document.getElementById('musical_style_preset').value;
                     if (presetMode === 'auto' && data.arrangement) {
                         document.getElementById('musical_style').value = data.arrangement.style_of_music;
@@ -496,7 +966,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                         document.getElementById('arrangementNameText').innerText = data.arrangement.arrangement_name;
                         document.getElementById('producerRationaleText').innerText = data.arrangement.producer_rationale;
                     }
-                    showToast(`🎲 Sorteado: ${data.chosen_verse.split(' (')[0]} + Style com Voz e BPM!`);
+                    showToast(`🎲 Sorteado: ${data.chosen_verse.split(' (')[0]}`);
                 } else {
                     showToast("Aviso: " + (data.error || "Não foi possível sugerir"));
                 }
@@ -510,7 +980,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             const val = selectElem.value;
             const inputElem = document.getElementById('musical_style');
             if (val === 'auto') {
-                showToast("🤖 Modo Automático ativado! O Agente Musical gerará Estilo, Voz e BPM pela Reflexão Bíblica.");
+                showToast("🤖 Modo Automático: Estilo gerado pela Reflexão Bíblica.");
                 autoFillScriptures();
             } else if (val === 'custom') {
                 inputElem.value = '';
@@ -598,13 +1068,13 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                         <div class="history-meta">
                             📅 <b>Criada:</b> ${item.created_at || 'Hoje'} | 📖 <b>Base:</b> ${item.biblical_reference || ''}
                         </div>
-                        <p style="font-size: 1.04rem; color: #c9d1d9; margin-bottom: 6px;">
+                        <p style="font-size: 1.02rem; color: #c9d1d9; margin-bottom: 6px;">
                             <b>Tema:</b> ${item.theme}
                         </p>
-                        <p style="font-size: 0.96rem; color: #58a6ff; margin-bottom: 10px;">
+                        <p style="font-size: 0.95rem; color: #58a6ff; margin-bottom: 10px; line-height: 1.4;">
                             🎤 <b>Voz:</b> ${item.vocal_configuration || 'Voz & Coral'} &nbsp;|&nbsp; ⏱️ <b>BPM / Dinâmica:</b> ${item.target_bpm || '70 BPM'}
                         </p>
-                        <div style="background: var(--bg-primary); padding: 12px; border-radius: 6px; font-size: 1.02rem; color: var(--accent-gold); font-family: monospace; margin-bottom: 10px; word-break: break-all;">
+                        <div style="background: var(--bg-primary); padding: 10px 12px; border-radius: 6px; font-size: 0.98rem; color: var(--accent-gold); font-family: monospace; margin-bottom: 12px; word-break: break-all;">
                             ${item.style_of_music}
                         </div>
                         <div class="history-actions">
@@ -625,7 +1095,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             if (item) {
                 renderSongOnScreen(item, true);
                 switchTab('tabSuno');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
+                scrollToElement('resultCard');
                 showToast(`Canção "${item.song_title}" carregada!`);
             }
         }
@@ -694,7 +1164,13 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                     renderSongOnScreen(newItem, true);
                     switchTab('tabSuno');
                     loadHistory();
-                    showToast("🎉 Nova Música + Arranjo gerados com base na Reflexão Bíblica!");
+                    
+                    // Em telas de celular, rola suavemente para o resultado para o usuário ver na hora!
+                    if (window.innerWidth <= 920) {
+                        scrollToElement('resultCard');
+                    }
+                    
+                    showToast("🎉 Nova Música + Arranjo gerados com sucesso!");
                 } else {
                     showToast("Erro ao compor: " + (data.error || "Desconhecido"));
                 }
@@ -727,13 +1203,14 @@ def index():
 
 @app.route("/manifest.json", methods=["GET"])
 def manifest():
-    """Manifest PWA para permitir adicionar o app à tela inicial do celular como aplicativo."""
+    """Manifest PWA para permitir adicionar o app à tela inicial do celular como aplicativo nativo."""
     return jsonify({
         "name": "Banda LVS Litúrgica & Suno AI",
         "short_name": "Banda LVS",
         "description": "Composição Multiagente de Músicas de Adoração para Suno AI",
         "start_url": "/",
         "display": "standalone",
+        "orientation": "portrait",
         "background_color": "#0d1117",
         "theme_color": "#0d1117",
         "icons": [
