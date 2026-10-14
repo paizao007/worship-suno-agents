@@ -318,6 +318,60 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         .step-item.active { color: var(--accent-gold); font-weight: bold; }
         .step-item.done { color: var(--accent-green); }
         
+        /* Cartões de Seleção de Passagens Bíblicas */
+        .scripture-card-opt {
+            background: var(--bg-primary);
+            border: 1.5px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px 14px;
+            cursor: pointer;
+            transition: border-color 0.15s, background 0.15s, transform 0.1s;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            box-sizing: border-box;
+            width: 100%;
+            text-align: left;
+        }
+        .scripture-card-opt:hover {
+            border-color: #58a6ff;
+            background: rgba(88, 166, 255, 0.06);
+        }
+        .scripture-card-opt:active {
+            transform: scale(0.99);
+        }
+        .scripture-card-opt.selected {
+            border-color: var(--accent-gold);
+            background: rgba(227, 179, 65, 0.12);
+            box-shadow: 0 0 10px rgba(227, 179, 65, 0.15);
+        }
+        .scripture-card-opt .ref-title {
+            color: var(--accent-gold);
+            font-weight: bold;
+            font-size: 1.05rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+        }
+        .scripture-card-opt.selected .ref-title {
+            color: #ffdf5d;
+        }
+        .scripture-card-opt .ref-badge {
+            font-size: 0.82rem;
+            padding: 3px 8px;
+            border-radius: 12px;
+            background: rgba(227, 179, 65, 0.2);
+            color: var(--accent-gold);
+            font-weight: 600;
+        }
+        .scripture-card-opt .ref-text {
+            color: #c9d1d9;
+            font-size: 0.94rem;
+            line-height: 1.45;
+            font-style: italic;
+        }
+        
         .suno-field {
             background: var(--bg-primary);
             border: 1px solid var(--border-color);
@@ -828,18 +882,35 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                 <form id="composeForm">
                     <div class="form-group">
                         <label>Tema Central / Doutrina</label>
-                        <input type="text" id="theme" value="A Santidade de Deus e a Visão do Trono Celestial" onchange="autoFillScriptures()" required>
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap; width: 100%;">
+                            <input type="text" id="theme" value="A Santidade de Deus e a Visão do Trono Celestial" onchange="autoFillScriptures(true)" style="flex: 1; min-width: 220px;" required>
+                            <button type="button" class="btn-action" style="background: rgba(88, 166, 255, 0.15); border-color: #58a6ff; color: #58a6ff; white-space: nowrap;" onclick="autoFillScriptures(true)">🔍 Pesquisar Passagens</button>
+                        </div>
                     </div>
                     <div class="form-group">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; gap: 8px; flex-wrap: wrap;">
-                            <label style="margin-bottom: 0;">Passagens Bíblicas Base</label>
-                            <button type="button" class="btn-action" style="min-height: 38px; padding: 6px 14px; font-size: 0.95rem; background: rgba(227, 179, 65, 0.15); border-color: var(--accent-gold); color: var(--accent-gold);" onclick="autoFillScriptures()">🎲 Sortear Versículo</button>
+                            <label style="margin-bottom: 0;">Passagens Bíblicas Encontradas pelo Teólogo</label>
+                            <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                                <button type="button" class="btn-action" style="min-height: 38px; padding: 6px 14px; font-size: 0.95rem; background: rgba(227, 179, 65, 0.15); border-color: var(--accent-gold); color: var(--accent-gold);" onclick="cycleNextScripture()">🎲 Sortear Outro Desta Lista</button>
+                            </div>
                         </div>
-                        <input type="text" id="biblical_ref" value="Isaías 6:1-4 (Vi o Senhor assentado sobre um alto e sublime trono, e os serafins clamavam: Santo, Santo, Santo)" placeholder="Opcional: Deixe em branco para o Teólogo sortear automaticamente...">
+
+                        <!-- Dropdown de Seleção Rápida de Opções -->
+                        <div style="margin-bottom: 10px;">
+                            <select id="scriptureSelector" onchange="onSelectScriptureOption(this.value)" style="width: 100%; min-height: 48px; padding: 10px 14px; background: var(--bg-primary); border: 1.5px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-size: 1.05rem; outline: none;">
+                                <option value="">📚 Carregando opções de versículos...</option>
+                            </select>
+                        </div>
+
+                        <!-- Lista Visual de Cartões Clicáveis com Versículos -->
+                        <div id="scriptureCardsList" style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px;"></div>
+
+                        <label style="font-size: 0.95rem; color: #8b949e; margin-bottom: 4px; display: block;">✍️ Passagem Ativa Escolhida (editável livremente se quiser personalizar):</label>
+                        <input type="text" id="biblical_ref" value="Isaías 6:1-4 (Vi o Senhor assentado sobre um alto e sublime trono, e os serafins clamavam: Santo, Santo, Santo)" placeholder="Clique em uma opção acima ou digite qualquer passagem bíblica...">
                         <div id="agentManagementBox" style="margin-top: 10px; padding: 12px 14px; background: rgba(227, 179, 65, 0.08); border-left: 4px solid var(--accent-gold); border-radius: 8px; font-size: 1.0rem; color: #e6edf3; line-height: 1.55; word-break: break-word; overflow-wrap: anywhere; max-width: 100%; box-sizing: border-box; min-width: 0;">
                             <div style="color: var(--accent-gold); font-weight: bold; font-size: 1.05rem; margin-bottom: 6px;">🧠 Gestão do Agente Teólogo:</div>
                             <div style="margin-bottom: 4px;">📌 <b>Tema Identificado:</b> <span id="identifiedThemeText" style="color: #58a6ff;">Santidade Transcendente & Majestade do Trono de Deus</span></div>
-                            <div style="margin-bottom: 4px;">🎯 <b>Versículo Sorteado:</b> <span id="drawnVerseStatus" style="color: #3fb950;">Isaías 6:1-4 (Clique em "Sortear Versículo" para sortear outro do mesmo tema!)</span></div>
+                            <div style="margin-bottom: 4px;">🎯 <b>Versículo Ativo:</b> <span id="drawnVerseStatus" style="color: #3fb950;">Isaías 6:1-4</span></div>
                             <div style="margin-top: 6px;">📖 <b>Reflexão Bíblica:</b> <span id="biblicalReflectionText" style="color: #d2a8ff;">Meditação na majestade santa do Senhor no alto e sublime trono, conduzindo a igreja à reverência e adoração.</span></div>
                         </div>
                     </div>
@@ -1131,9 +1202,91 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             styleElem.value = base;
         }
 
-        async function autoFillScriptures() {
+        let currentScripturesPool = [];
+        let currentScriptureIndex = 0;
+
+        function renderScriptureOptions(scriptures, selectedVerse) {
+            currentScripturesPool = scriptures || [];
+            const selector = document.getElementById('scriptureSelector');
+            const listContainer = document.getElementById('scriptureCardsList');
+            if (!selector || !listContainer) return;
+
+            selector.innerHTML = '';
+            listContainer.innerHTML = '';
+
+            if (!currentScripturesPool.length) {
+                selector.innerHTML = '<option value="">Nenhuma passagem encontrada</option>';
+                return;
+            }
+
+            currentScripturesPool.forEach((verse, idx) => {
+                const isSelected = (verse === selectedVerse || (!selectedVerse && idx === 0));
+                if (isSelected) currentScriptureIndex = idx;
+
+                const refShort = verse.includes('(') ? verse.split('(')[0].trim() : verse;
+                const refText = (verse.includes('(') && verse.includes(')')) 
+                    ? verse.substring(verse.indexOf('(') + 1, verse.lastIndexOf(')')).trim() 
+                    : '';
+
+                // Adiciona opção ao select
+                const opt = document.createElement('option');
+                opt.value = verse;
+                opt.textContent = `Opção ${idx + 1}: ${refShort} — ${refText.substring(0, 75)}...`;
+                if (isSelected) opt.selected = true;
+                selector.appendChild(opt);
+
+                // Cria cartão interativo clicável
+                const card = document.createElement('div');
+                card.className = `scripture-card-opt ${isSelected ? 'selected' : ''}`;
+                card.onclick = () => selectScriptureByIndex(idx);
+                card.innerHTML = `
+                    <div class="ref-title">
+                        <span>📖 ${refShort}</span>
+                        <span class="ref-badge">${isSelected ? '✓ Ativo' : 'Opção ' + (idx + 1)}</span>
+                    </div>
+                    ${refText ? `<div class="ref-text">"${refText}"</div>` : ''}
+                `;
+                listContainer.appendChild(card);
+            });
+        }
+
+        function selectScriptureByIndex(idx) {
+            if (!currentScripturesPool.length || idx < 0 || idx >= currentScripturesPool.length) return;
+            currentScriptureIndex = idx;
+            const chosen = currentScripturesPool[idx];
+            document.getElementById('biblical_ref').value = chosen;
+            document.getElementById('drawnVerseStatus').innerText = `${chosen} (Opção ${idx + 1} de ${currentScripturesPool.length})`;
+
+            const refShort = chosen.includes('(') ? chosen.split('(')[0].trim() : chosen;
+            showToast(`✨ Passagem selecionada: ${refShort}`);
+
+            // Atualiza seleção visual dos cartões e dropdown
+            renderScriptureOptions(currentScripturesPool, chosen);
+        }
+
+        function onSelectScriptureOption(val) {
+            if (!val) return;
+            const idx = currentScripturesPool.indexOf(val);
+            if (idx !== -1) {
+                selectScriptureByIndex(idx);
+            } else {
+                document.getElementById('biblical_ref').value = val;
+                showToast("✨ Passagem atualizada!");
+            }
+        }
+
+        function cycleNextScripture() {
+            if (!currentScripturesPool.length) {
+                autoFillScriptures(true);
+                return;
+            }
+            const nextIdx = (currentScriptureIndex + 1) % currentScripturesPool.length;
+            selectScriptureByIndex(nextIdx);
+        }
+
+        async function autoFillScriptures(forceRefresh = false) {
             const theme = document.getElementById('theme').value.trim();
-            const currentRef = document.getElementById('biblical_ref').value.trim();
+            const currentRef = forceRefresh ? '' : document.getElementById('biblical_ref').value.trim();
             const currentStyle = document.getElementById('musical_style').value.trim();
             if (!theme) {
                 showToast("⚠️ Digite um tema primeiro!");
@@ -1146,10 +1299,15 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                 if (data.success && data.chosen_verse) {
                     document.getElementById('biblical_ref').value = data.chosen_verse;
                     document.getElementById('identifiedThemeText').innerText = data.identified_theme;
-                    document.getElementById('drawnVerseStatus').innerText = `${data.chosen_verse} (Sorteado dentre ${data.pool_size} passagens deste tema)`;
+                    document.getElementById('drawnVerseStatus').innerText = `${data.chosen_verse} (${data.pool_size} opções encontradas para este tema)`;
                     if (data.biblical_reflection) {
                         document.getElementById('biblicalReflectionText').innerText = data.biblical_reflection;
                     }
+
+                    // Renderiza as opções de versículos em cartões e dropdown
+                    const poolList = (data.scriptures && data.scriptures.length) ? data.scriptures : [data.chosen_verse];
+                    renderScriptureOptions(poolList, data.chosen_verse);
+
                     const presetMode = document.getElementById('musical_style_preset').value;
                     if (presetMode === 'auto' && data.arrangement) {
                         document.getElementById('musical_style').value = data.arrangement.style_of_music;
@@ -1158,7 +1316,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                         document.getElementById('arrangementNameText').innerText = data.arrangement.arrangement_name;
                         document.getElementById('producerRationaleText').innerText = data.arrangement.producer_rationale;
                     }
-                    showToast(`🎲 Sorteado: ${data.chosen_verse.split(' (')[0]}`);
+                    showToast(`📚 ${poolList.length} opções de passagens encontradas!`);
                 } else {
                     showToast("Aviso: " + (data.error || "Não foi possível sugerir"));
                 }
@@ -1381,6 +1539,8 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                 renderSongOnScreen(globalHistory[0], false);
                 switchTab('tabSuno');
             }
+            // Inicializa as opções de versículos para o tema inicial
+            autoFillScriptures();
         });
     </script>
 </body>

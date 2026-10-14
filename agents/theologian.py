@@ -302,25 +302,37 @@ class TheologianAgent(BaseAgent):
                 best_match = entry
 
         if not best_match:
-            # Síntese semântica direta sobre as próprias palavras do usuário
-            chosen_v = f"Salmo 145:1-3 (Exaltar-Te-ei, ó Deus meu e Rei; bendirei o Teu nome para todo o sempre)"
+            general_pool = [
+                "Salmo 145:1-3 (Exaltar-Te-ei, ó Deus meu e Rei; bendirei o Teu nome para todo o sempre)",
+                "Salmo 103:1-5 (Bendize, ó minha alma, ao Senhor, e não te esqueças de nenhum de Seus benefícios)",
+                "Isaías 40:28-31 (Não sabes, não ouviste? O Senhor é o Deus eterno; os que esperam no Senhor renovam as suas forças)",
+                "João 1:1-4 (No princípio era o Verbo, e o Verbo estava com Deus, e o Verbo era Deus; Nele estava a vida)",
+                "Colossenses 1:16-17 (Tudo foi criado por meio de Cristo e para Ele; Ele é antes de todas as coisas)",
+                "Filipenses 2:9-11 (Pelo que Deus O exaltou soberanamente e Lhe deu o nome que está sobre todo nome)",
+                "Apocalipse 5:12-13 (Digno é o Cordeiro que foi morto de receber poder, honra, glória e louvor)"
+            ]
+            available = [v for v in general_pool if exclude_clean not in v.lower()]
+            chosen_v = random.choice(available if available else general_pool)
             identified = f"Exegese Teológica sobre '{theme_clean}'"
-            verses_list = [chosen_v, "Colossenses 1:16-17 (Tudo foi criado por meio de Cristo e para Ele)"]
-            attributes = ["Soberano e Santo", "Fiel em Toda a Palavra", "Redentor Eterno"]
+            verses_list = [chosen_v] + [v for v in general_pool if v != chosen_v]
+            attributes = ["Soberano e Santo", "Fiel em Toda a Palavra", "Redentor Eterno", "Criador de Todas as Coisas"]
             christ_focus = f"Cristo Jesus é o centro e a plenitude de toda adoração bíblica sobre '{theme_clean}'."
-            sacred_words = [theme_clean, "Graça e Verdade", "Luz Eterna", "Cordeiro Digno"]
+            sacred_words = [theme_clean, "Graça e Verdade", "Luz Eterna", "Cordeiro Digno", "Nome sobre todo nome"]
             tone = "Reverência solene, profundidade bíblica e gratidão cristocêntrica."
             guardrails = ["Manter Deus e Cristo como o centro absoluto da mensagem da canção."]
+            ref_part = chosen_v.split("(")[0].strip() if "(" in chosen_v else chosen_v
+            txt_part = chosen_v.split("(", 1)[1].rsplit(")", 1)[0].strip() if "(" in chosen_v else chosen_v
             reflection = (
-                f"Pesquisa Bíblica sobre '{theme_clean}': Esta canção exalta a soberania e a graça de Deus manifestas em Cristo Jesus. "
-                f"A mensagem proclama que toda revelação divina culmina no amor redentor da cruz e na glória do Senhor."
+                f"Pesquisa Bíblica em {ref_part}: \"{txt_part}\". "
+                f"Para o tema '{theme_clean}', esta passagem canônica nos conduz à soberania de Deus, "
+                f"proclamando que toda a criação e redenção culminam na glória de Cristo Jesus."
             )
         else:
             identified = best_match["identified_theme"]
-            pool = [best_match["chosen_verse"]] + best_match["complementary_verses"]
+            pool = [best_match["chosen_verse"]] + [v for v in best_match["complementary_verses"] if v != best_match["chosen_verse"]]
             available = [v for v in pool if exclude_clean not in v.lower()]
             chosen_v = random.choice(available if available else pool)
-            verses_list = [chosen_v] + [v for v in pool if v != chosen_v][:2]
+            verses_list = [chosen_v] + [v for v in pool if v != chosen_v]
             attributes = best_match["attributes"]
             christ_focus = best_match["christ_focus"]
             sacred_words = best_match["sacred_keywords"]
