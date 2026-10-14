@@ -320,6 +320,38 @@ THEMATIC_ARRANGEMENTS = {
                 "outro": "[Gentle Acoustic Chord]\n[Peaceful End]"
             }
         }
+    ],
+    "humildade_crianca": [
+        {
+            "arrangement_name": "Acústico Singelo & Íntimo nos Braços do Pai (Piano Suave, Violão Dedilhado • 64 BPM)",
+            "style_of_music": "intimate acoustic worship, fingerpicked acoustic guitar, gentle upright piano, warm cello, tender heartfelt lead vocal, 64 BPM, pure and peaceful dynamics",
+            "vocal_preference": "Voz suave e terna, sincera e despretensiosa, cantando como uma oração no colo do Pai",
+            "tempo_dynamics": "Lento e sereno (64 BPM), criando um ambiente de descanso, pureza e recolhimento filial",
+            "metatags": {
+                "intro": ["[64 BPM - Gentle & Pure Worship Tempo]", "[Fingerpicked Acoustic Guitar & Soft Upright Piano Intro]"],
+                "verse1": "[Tender Gentle Lead Vocal]\n[Soft Fingerpicked Guitar Only]\n[Childlike Faith]",
+                "verse2": "[Warm Cello Enters]\n[Gentle Piano Notes]\n[Peaceful Rest]",
+                "prechorus": "[Soft Vocal Swell]\n[Sweet String Harmony]",
+                "chorus": "[Heartfelt Intimate Chorus]\n[Pure Lead Vocals, Soft Acoustic Band & Subtle Backing Choir]",
+                "bridge": "[Tender Devotional Climax]\n[Passionate Prayer in the Father's Arms]\n[Warm Strings & Upright Piano]",
+                "outro": "[Quiet Acoustic Guitar Breakdown]\n[Whispered Final Prayer: 'Nos Teus braços, Pai. Amém']\n[Fade Out]"
+            }
+        },
+        {
+            "arrangement_name": "Balada Lofi Acústica Infantil Sagrada (Piano Rhodes, Violoncelo Suave, Voz Acolhedora • 68 BPM)",
+            "style_of_music": "intimate gentle ballad, warm rhodes piano, nylon string guitar, solo cello, soft emotional vocals, 68 BPM, sweet tender lullaby worship dynamics",
+            "vocal_preference": "Voz acolhedora e terna (feminina ou dueto suave) com sentimento de ninar da alma nos braços de Deus",
+            "tempo_dynamics": "Lento suave (68 BPM) com dinâmica de paz e sossego da alma",
+            "metatags": {
+                "intro": ["[68 BPM - Sweet Devotional Tempo]", "[Nylon String Guitar & Warm Rhodes Piano Intro]"],
+                "verse1": "[Gentle Warm Lead Vocal]\n[Nylon Guitar Arpeggio]",
+                "verse2": "[Solo Cello Enters]\n[Soft Heartbeat Drumming]",
+                "prechorus": "[Subtle Vocal Harmony]\n[Gentle Build]",
+                "chorus": "[Sweet Worship Chorus]\n[Heartfelt Vocals & Soft Orchestra Swell]",
+                "bridge": "[Intimate Prayer of Simplicity]\n[Soft Piano & Strings]",
+                "outro": "[Soft Nylon Guitar Chord]\n[Peaceful Silence]"
+            }
+        }
     ]
 }
 
@@ -350,7 +382,9 @@ class SunoProducerAgent(BaseAgent):
         """
         combined = _norm(f"{theme} {biblical_reference} {biblical_reflection}")
 
-        if any(w in combined for w in ["primeiro amor", "amo-te", "madrugada", "sede", "intimidade", "meu amado", "coracao", "devocao"]):
+        if any(w in combined for w in ["crianca", "criança", "pequeno", "pequenino", "humild", "singel", "simplicidade", "desmamar", "colo do pai", "menino", "filhinho", "mateus 18", "marcos 10", "lucas 18", "salmo 131"]):
+            pool_key = "humildade_crianca"
+        elif any(w in combined for w in ["primeiro amor", "amo-te", "madrugada", "sede", "intimidade", "meu amado", "coracao", "devocao"]):
             pool_key = "amor_intimo"
         elif any(w in combined for w in ["amor", "agape", "cruz", "sangue", "graca", "redencao", "perdao", "arrepend", "cordeiro"]):
             pool_key = "amor_agape_cruz"
@@ -358,7 +392,7 @@ class SunoProducerAgent(BaseAgent):
             pool_key = random.choice(["santidade_trono", "paz_refugio_cura", "amor_intimo"])
         elif any(w in combined for w in ["santidade", "santo", "trono", "serafins", "majestade", "gloria", "rei", "exodo", "isaias 6", "apocalipse"]):
             pool_key = "santidade_trono"
-        elif any(w in combined for w in ["espirito", "fogo", "avivamento", "pentecostes", "uncao", "vento", "poder", "guerra", "batalha"]):
+        elif any(w in combined for w in ["espirito", "fogo", "avivamento", "pentecostes", "uncao", "vento", "poder", "guerra", "batalha", "armadura"]):
             pool_key = "avivamento_fogo"
         elif any(w in combined for w in ["gratidao", "alegria", "jubilo", "celebr", "festa", "louvor", "acoes de gracas", "vitoria"]):
             pool_key = "celebracao_jubilo"

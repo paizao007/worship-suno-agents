@@ -26,6 +26,10 @@ class UserBriefing(BaseModel):
         default="Voz masculina emotiva ou dueto com coral",
         description="Preferência de arranjo vocal"
     )
+    user_prompt: Optional[str] = Field(
+        default="",
+        description="Instruções adicionais ou inspiração livre do usuário"
+    )
 
 
 class TheologicalDossier(BaseModel):

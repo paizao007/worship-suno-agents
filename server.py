@@ -1494,6 +1494,7 @@ def api_compose():
         musical_style_hint=data.get("musical_style_hint", "auto"),
         tempo_hint=data.get("tempo_hint", "Lento com crescendo épico"),
         vocal_preference=data.get("vocal_preference", "Voz masculina emotiva"),
+        user_prompt=data.get("user_prompt", ""),
     )
 
     orchestrator = WorshipSunoOrchestrator()

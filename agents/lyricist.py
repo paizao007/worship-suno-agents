@@ -249,9 +249,95 @@ INSTRUÇÃO ESPECIAL:
         t_lower = f"{theme_title} {scripture_full} {self._last_dossier.exegetical_summary if self._last_dossier else ''}".lower()
 
         # =========================================================================
-        # FAMÍLIA 1: CURA / LIBERTAÇÃO / RESTAURAÇÃO / JEOVÁ RAFÁ
+        # FAMÍLIA: SE TORNAR COMO CRIANÇA / HUMILDADE / SIMPLICIDADE & COLO DO PAI
         # =========================================================================
         if any(w in t_lower for w in [
+            "criança", "crianca", "crianças", "criancas", "pequenos", "pequeninos",
+            "como crianca", "como criança", "como uma crianca", "como uma criança",
+            "tornar como crianca", "tornar como criança", "se tornar como crianca",
+            "se tornar como uma crianca", "se tornar como uma criança", "se tornar como",
+            "mateus 18", "marcos 10", "lucas 18", "salmo 131", "colo do pai",
+            "humildade", "simplicidade", "singeleza", "desmamada", "menino", "filhinhos"
+        ]):
+            base_titles = [
+                "Como Uma Criança nos Teus Braços",
+                "No Colo do Meu Pai",
+                "Coração Singelo e Puro",
+                "O Menor no Teu Reino",
+                "Alma Serena em Teus Braços",
+                "Simplicidade Diante do Altar",
+                "Descanso Filial em Ti",
+                "Ensina-me a Ser Pequeno",
+            ]
+            v1_openings = [
+                ["Despindo o orgulho e as glórias que o mundo me deu,", "Venho como um menino aos pés do Deus dos céus,"],
+                ["Como a criança desmamada no colo a descansar,", "Fiz calar a minha alma para Te adorar,"],
+                ["Não busco grandezas que não posso alcançar,", "Apenas nos Teus braços desejo repousar,"],
+                ["Jesus chamou os pequeninos com tanto amor e luz,", "O Teu Reino pertence a quem se curva à Tua cruz,"],
+            ]
+            v1_closings = [
+                [f"Conforme a santa Palavra viva em {scripture_ref},", "Quem se faz bem pequeno encontra o Reino pela fé."],
+                ["Nos Teus braços de amor descanso o coração,", "Encontrando a pureza da verdadeira adoração."],
+                ["Pois dos tais é o Teu Reino de graça e redenção,", "Onde a fé de uma criança desfaz toda aflição."],
+            ]
+            v2_openings = [
+                ["Abba, Pai de bondade, seguro a Tua mão,", "Guia os meus passos com Tua santa direção,"],
+                ["Olho nos Teus olhos e esqueço todo o temor,", "Pois sou Teu filho amado, guardado em Teu amor,"],
+                ["Cria em mim a pureza de um sincero coração,", "Longe da vaidade e de toda pretensão,"],
+            ]
+            v2_closings = [
+                ["Nos Teus braços paternos a alma encontra a paz,", "Tua doce presença é tudo o que me satisfaz."],
+                ["Ensina-me a viver na mais pura dependência,", "Rendendo todo o meu ser à Tua santa providência."],
+                ["A maior grandeza é ser menor diante do Rei,", "Na Tua santa graça para sempre viverei."],
+            ]
+            pre_pool = [
+                ["Ouvindo a doce voz do Salvador a me chamar:", "Deixai vir a Mim os pequeninos para amar:"],
+                ["Aos sábios deste mundo a glória se escondeu,", "Mas aos pequeninos o Pai se revelou do céu:"],
+            ]
+            chorus_pool = [
+                [
+                    "Faze-me ser como uma criança, Pai de amor!",
+                    "Simples na fé, dependente do Teu favor!",
+                    "Não quero ser grande, só quero ser Teu,",
+                    "Pois o menor na terra é o maior lá no céu!",
+                ],
+                [
+                    "No Teu colo seguro, ó meu doce Jesus,",
+                    "A minha alma descansa e caminha em Tua luz!",
+                    "Coração desprovido de orgulho e pesar,",
+                    "Como uma criança eu vim Te adorar!",
+                ],
+                [
+                    "Dos pequeninos é o Reino da Tua santa paz,",
+                    "O Teu amor paterno tudo me satisfaz!",
+                    "Abba Pai, meu refúgio e consolador,",
+                    "Recebe a singeleza do meu humilde louvor!",
+                ],
+            ]
+            bridge_pool = [
+                [
+                    "Se eu não me converter e não me humilhar,",
+                    "No Teu Reino de glória não poderei entrar!",
+                    "Quebre a minha soberba, arranca a altivez,",
+                    "Faz-me puro e singelo mais uma vez!",
+                ],
+                [
+                    "Tu colocaste uma criança no centro do Teu olhar,",
+                    "Para a todos nós a verdadeira fé ensinar:",
+                    "A grandeza no Reino é servir e se prostrar,",
+                    "E no colo do Pai para sempre confiar!",
+                ],
+            ]
+            outro_pool = [
+                "Nos Teus braços de amor descanso... Como uma criança. Amém.",
+                "Abba Pai, eu sou Teu filho pequeno. Amém.",
+                "Simples, puro e dependente de Ti, Jesus. Amém.",
+            ]
+
+        # =========================================================================
+        # FAMÍLIA 1: CURA / LIBERTAÇÃO / RESTAURAÇÃO / JEOVÁ RAFÁ
+        # =========================================================================
+        elif any(w in t_lower for w in [
             "cura", "curado", "sarado", "sara", "jeová rafá", "jeova rafa", "lucas 4",
             "enfermidade", "libertação", "libertacao", "cativos", "pisaduras",
             "bálsamo", "balsamo", "médico", "medico", "restauração", "restauracao",

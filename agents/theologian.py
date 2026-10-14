@@ -260,6 +260,49 @@ THEOLOGICAL_POOLS = [
         "sacred_words": ["Eu e a minha casa", "Edificada sobre a Rocha", "De geração em geração", "Altar na família", "Aliança eterna"],
         "guardrails": ["Manter Deus como o Senhor da família, evitando idolatria familiar e apontando o lar para o serviço ao Reino."],
         "tone": "Gratidão familiar, consagração do lar, bênção sacerdotal e aliança solene."
+    },
+    {
+        "id": "humildade_crianca",
+        "name": "Simplicidade, Pureza & Tornar-se como Criança (O Maior no Reino)",
+        "keywords": [
+            "criança", "crianca", "crianças", "criancas", "pequenos", "pequeninos",
+            "como crianca", "como criança", "como uma crianca", "como uma criança",
+            "tornar como crianca", "tornar como criança", "se tornar como crianca",
+            "se tornar como uma crianca", "se tornar como uma criança", "se tornar como",
+            "humildade", "simplicidade", "singeleza", "dependência", "dependencia",
+            "colo do pai", "menino", "filhinhos", "infância espiritual", "puro coração",
+            "puro coracao", "mansidão", "mansidao"
+        ],
+        "verses": [
+            "Mateus 18:2-4 (Se não vos converterdes e não vos tornardes como crianças, de modo algum entrareis no Reino dos Céus; quem se humilhar como esta criança, esse é o maior)",
+            "Marcos 10:14-15 (Deixai vir a Mim os pequeninos e não os embaraceis, porque dos tais é o Reino de Deus; quem não receber o Reino como uma criança, de modo nenhum entrará nele)",
+            "Salmo 131:1-2 (Fiz calar e sossegar a minha alma, como a criança desmamada no colo de sua mãe; assim é a minha alma para comigo)",
+            "Lucas 18:16-17 (Deixai vir a Mim as criancinhas; dos tais é o Reino de Deus)",
+            "Mateus 11:25 (Graças Te dou, ó Pai, porque ocultaste estas coisas aos sábios e instruídos e as revelaste aos pequeninos)",
+            "1 Pedro 2:2 (Desejai afetuosamente, como meninos recém-nascidos, o leite espiritual não falsificado, para que por ele cresçais)",
+            "1 João 3:1 (Vede que grande amor nos tem concedido o Pai, a ponto de sermos chamados filhos de Deus)"
+        ],
+        "attributes": ["Pai de Ternura e Acolhimento", "Refúgio dos Humildes", "Soberano que Exalta os Pequeninos", "Graça aos Desvalidos"],
+        "christ_focus": "Jesus acolheu as crianças em Seus braços, repreendeu a soberba humana e ensinou que o Reino pertence aos puros, humildes e totalmente dependentes do Pai.",
+        "sacred_words": ["Como uma criança", "Colo do Pai", "Coração singelo", "Simplicidade e pureza", "O menor no Reino", "Descanso em Teus braços", "Dependência filial", "Abba Pai"],
+        "guardrails": ["Não confundir ser como criança com imaturidade moral; a metáfora do Evangelho retrata a ausência de soberba, fé sincera e total dependência do Pai."],
+        "tone": "Intimidade suave, pureza despretensiosa, ternura nos braços do Pai, descanso filial e adoração singela."
+    },
+    {
+        "id": "batalha_espiritual",
+        "name": "A Armadura de Deus, Oração & Vitória em Cristo",
+        "keywords": ["armadura", "batalha", "guerra", "inimigo", "espada", "escudo", "firmes", "vencedores", "vencer", "efésios 6", "efesios 6"],
+        "verses": [
+            "Efésios 6:10-18 (Revesti-vos de toda a armadura de Deus, para poderdes ficar firmes contra as ciladas do diabo)",
+            "2 Coríntios 10:4-5 (As armas da nossa milícia não são carnais, mas poderosas em Deus para destruir fortalezas)",
+            "Romanos 8:37 (Em todas estas coisas, porém, somos mais que vencedores, por meio Daquele que nos amou)",
+            "Salmo 91:5-7 (Não temerás o terror noturno nem a seta que voe de dia; mil cairão ao teu lado, mas tu não serás atingido)"
+        ],
+        "attributes": ["Senhor dos Exércitos (Jeová Sabaoth)", "Capitão da Nossa Salvação", "Vencedor da Morte", "Escudo Protetor"],
+        "christ_focus": "Cristo desarmou os principados e potestades na cruz, triunfando sobre eles (Colossenses 2:15).",
+        "sacred_words": ["Armadura de Deus", "Escudo da fé", "Espada do Espírito", "Mais que vencedores", "Poder da oração"],
+        "guardrails": ["Manter a vitória fundada no sangue de Cristo e na autoridade da Sua Palavra, não em presunção humana."],
+        "tone": "Fé resoluta, firmeza espiritual, autoridade em Cristo e vigilância santa."
     }
 ]
 
@@ -281,6 +324,21 @@ DEFAULT_POOL = {
     "guardrails": ["Manter a centralidade teocêntrica e cristocêntrica em cada estrofe."],
     "tone": "Solene exaltação, reverência e celebração da grandeza de Deus."
 }
+
+
+THEOLOGICAL_DOSSIER_JSON_EXAMPLE = """{
+  "theme_title": "Identificação Doutrinária Precisa — Referência Bíblica Principal",
+  "exegetical_summary": "Reflexão exegética cristocêntrica profunda conectando o tema ao versículo de forma fidedigna e sem clichês.",
+  "primary_scriptures": [
+    "Livro Capítulo:Versículo (Texto resumido)",
+    "Passagem complementar (Texto)"
+  ],
+  "divine_attributes": ["Atributo Eterno de Deus 1", "Atributo 2", "Atributo 3"],
+  "christocentric_focus": "Como a pessoa e a obra de Jesus Cristo são o centro desta mensagem espiritual.",
+  "sacred_keywords": ["Metáfora Bíblica 1", "Expressão Sagrada 2", "Expressão 3"],
+  "doctrinal_guardrails": ["Princípios para evitar desvios, antropocentrismo ou sentimentalismos superficiais."],
+  "emotional_and_spiritual_tone": "Atmosfera devocional precisa (ex: intimidade suave, descanso filial, reverência solene)."
+}"""
 
 
 class TheologianAgent(BaseAgent):
@@ -364,15 +422,18 @@ class TheologianAgent(BaseAgent):
             biblical_info = analysis["chosen_verse"]
             briefing.biblical_reference = biblical_info
 
-        prompt = f"""Analise este pedido de canção de adoração e construa o Dossier Teológico completo:
+        prompt = f"""Analise este pedido de canção de adoração cristã e construa o Dossier Teológico completo:
 Tema: {briefing.theme}
 Passagens Bíblicas Base: {biblical_info}
 Estilo e Clima: {briefing.musical_style_hint} | {briefing.tempo_hint}
 Preferência Vocal: {briefing.vocal_preference}
+Instruções Adicionais: {briefing.user_prompt or 'Nenhuma'}
 
-IMPORTANTE: Utilize as passagens bíblicas e o tema informados para fundamentar com rigor canônico!
+IMPORTANTE: 
+1. Respeite rigorosamente o sentido e o contexto do Tema e das Passagens Bíblicas Base informadas!
+2. Se o tema for sobre simplicidade, pureza ou tornar-se como criança (Mateus 18, Marcos 10, Salmo 131), todo o dossiê DEVE refletir intimidade suave, dependência filial, acolhimento nos braços do Pai e ausência de soberba, NUNCA imponência bélica ou triunfalismo descontextualizado.
 """
-        return self._generate_contextual_demonstration(prompt, TheologicalDossier)
+        return self.call_llm(prompt, TheologicalDossier, custom_json_example=THEOLOGICAL_DOSSIER_JSON_EXAMPLE)
 
     def _generate_contextual_demonstration(self, user_prompt: str, response_model: Type[BaseModel]) -> BaseModel:
         # Extrai o tema real e a passagem bíblica real do prompt
